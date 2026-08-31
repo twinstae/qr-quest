@@ -9,7 +9,6 @@ declare global {
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-
 afterEach(async () => {
   await cleanupReactRoots();
 });
