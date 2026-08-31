@@ -20,7 +20,7 @@ export default defineConfig({
   preflight: true,
 
   // Where to look for your css declarations
-  include: ['./src/**/*.{ts,tsx}'],
+  include: ["./src/**/*.{ts,tsx}"],
 
   // Files to exclude
   exclude: [],
@@ -38,7 +38,7 @@ export default defineConfig({
       tokens: {
         colors: colors,
         durations: durations,
-        zIndex: zIndex
+        zIndex: zIndex,
       },
 
       semanticTokens: {
@@ -47,61 +47,61 @@ export default defineConfig({
             default: {
               value: {
                 _light: "{colors.gray.12}",
-                _dark: "{colors.gray.12}"
-              }
+                _dark: "{colors.gray.12}",
+              },
             },
 
             muted: {
               value: {
                 _light: "{colors.gray.11}",
-                _dark: "{colors.gray.11}"
-              }
+                _dark: "{colors.gray.11}",
+              },
             },
 
             subtle: {
               value: {
                 _light: "{colors.gray.10}",
-                _dark: "{colors.gray.10}"
-              }
-            }
+                _dark: "{colors.gray.10}",
+              },
+            },
           },
 
           border: {
             value: {
               _light: "{colors.gray.4}",
-              _dark: "{colors.gray.4}"
-            }
+              _dark: "{colors.gray.4}",
+            },
           },
 
           error: {
             value: {
               _light: "{colors.red.9}",
-              _dark: "{colors.red.9}"
-            }
+              _dark: "{colors.red.9}",
+            },
           },
 
           blue: blue,
           gray: mauve,
           red: red,
-          green: green
+          green: green,
         },
 
         shadows: shadows,
 
         radii: {
           l1: {
-            value: "{radii.xs}"
+            value: "{radii.xs}",
           },
 
           l2: {
-            value: "{radii.sm}"
+            value: "{radii.sm}",
           },
 
           l3: {
-            value: "{radii.md}"
-          }
-        }
-      }
+            value: "{radii.md}",
+          },
+        },
+      },
     },
   },
 
@@ -109,5 +109,5 @@ export default defineConfig({
   outdir: "styled-system",
   jsxFramework: "react",
   globalCss: globalCss,
-  conditions: conditions
+  conditions: conditions,
 });

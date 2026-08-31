@@ -1,3 +1,4 @@
+import { checkbox } from "./checkbox";
 import { field } from "./field";
 import { fieldset } from "./fieldset";
 import { input } from "./input";
@@ -16,6 +17,7 @@ export const recipes = {
   table,
   input,
   fieldset,
-  field
-}
-export const slotRecipes = {}
+  field,
+  checkbox,
+};
+export const slotRecipes = {};

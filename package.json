@@ -23,6 +23,8 @@
   "dependencies": {
     "@ark-ui/react": "^5.39.1",
     "@faker-js/faker": "^10.6.0",
+    "@hookform/resolvers": "^5.9.1",
+    "@standard-schema/spec": "^1.1.0",
     "@tanstack/match-sorter-utils": "latest",
     "@tanstack/query-core": "^5.102.8",
     "@tanstack/react-devtools": "latest",
@@ -41,7 +43,10 @@
     "lucide-react": "^1.37.0",
     "nitro": "3.0.260610-beta",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-hook-form": "^7.87.0",
+    "temporal-polyfill": "^1.0.4",
+    "valibot": "^1.4.2"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "latest",
