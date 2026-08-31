@@ -31,6 +31,7 @@ const config = defineConfig({
         extends: true,
         plugins: [],
         test: {
+          setupFiles: ["src/setupTest.ts"],
           name: "browser",
           browser: {
             enabled: true,
