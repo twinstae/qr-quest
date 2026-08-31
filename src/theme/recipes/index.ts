@@ -1,3 +1,5 @@
+import { badge } from "./badge";
+import { collapsible } from "./collapsible";
 import { checkbox } from "./checkbox";
 import { field } from "./field";
 import { fieldset } from "./fieldset";
@@ -19,5 +21,7 @@ export const recipes = {
   fieldset,
   field,
   checkbox,
+  collapsible,
+  badge
 };
 export const slotRecipes = {};

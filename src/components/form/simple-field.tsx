@@ -59,6 +59,7 @@ export function SimpleInput({
               aria-invalid={isError}
               aria-describedby={isError ? errorId : hint ? descriptionId : undefined}
               aria-errormessage={isError ? errorId : undefined}
+              {...props}
             />
             {hint && !isError && <Field.HelperText id={descriptionId}>{hint}</Field.HelperText>}
             {isError && errorMessage && (

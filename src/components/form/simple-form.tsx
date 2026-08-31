@@ -15,15 +15,17 @@ interface SimpleFormProps<Input, Output> extends Omit<React.ComponentProps<"form
   schema: StandardSchemaV1<Input, Output>;
   defaultValues: FieldValues;
   onSubmit: (values: Output) => Promise<void>;
+  reValidateMode?: "onBlur" | "onSubmit"
 }
 
 export function SimpleForm<Output>({
   schema,
   onSubmit,
   defaultValues,
+  reValidateMode,
   ...props
 }: SimpleFormProps<FieldValues, Output>) {
-  const methods = useForm({ defaultValues, resolver: standardSchemaResolver(schema) });
+  const methods = useForm({ defaultValues, resolver: standardSchemaResolver(schema), reValidateMode: reValidateMode ?? "onSubmit" });
 
   return (
     <FormProvider {...methods}>
