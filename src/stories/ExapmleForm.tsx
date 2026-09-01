@@ -13,7 +13,7 @@ export function ExapmleForm({
   initData: Partial<ValidDataInput>;
 }) {
   return (
-    <Card.Root className={css({ width: '400px'})}>
+    <Card.Root className={css({ width: "400px" })}>
       <Card.Header>
         <Card.Title>카드 제목이고요</Card.Title>
         <Card.Description>설명입니다</Card.Description>
@@ -26,7 +26,7 @@ export function ExapmleForm({
             name: "",
             consent: false,
             ...initData,
-          }}  
+          }}
           onSubmit={addData}
         >
           <SimpleInput name="name" label="이름" hint="힌트입니다만." />

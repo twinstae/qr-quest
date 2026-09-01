@@ -1,17 +1,17 @@
-import * as v from 'valibot';
+import * as v from "valibot";
 
-import { SimpleInput } from '@/components/form/simple-field'
-import { SimpleForm } from '@/components/form/simple-form'
-import { Button } from '@/components/ui/button.tsx'
-import { Badge } from '@/components/ui/badge.tsx'
-import * as Card from '@/components/ui/card.tsx'
-import * as Collapsible from '@/components/ui/collapsible.tsx'
+import { SimpleInput } from "@/components/form/simple-field";
+import { SimpleForm } from "@/components/form/simple-form";
+import { Button } from "@/components/ui/button.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import * as Card from "@/components/ui/card.tsx";
+import * as Collapsible from "@/components/ui/collapsible.tsx";
 
 export type Quest = {
   id: string;
   image?: {
-    src: string,
-    alt: string
+    src: string;
+    alt: string;
   };
   content: string;
   answer: string;
@@ -20,13 +20,16 @@ export type Quest = {
   hint: string;
 };
 
-export function QuestCardForm({ quest, onSubmit }: { quest: Quest, onSubmit: (result: {answer: string}) => Promise<void> }) {
+export function QuestCardForm({
+  quest,
+  onSubmit,
+}: {
+  quest: Quest;
+  onSubmit: (result: { answer: string }) => Promise<void>;
+}) {
   return (
     <Card.Root>
-      <img
-             src={quest.image.src}
-             alt={quest.image.alt}
-           />
+      {quest.image && <img src={quest.image.src} alt={quest.image.alt} />}
       <Card.Header>
         <Card.Title>{quest.content}</Card.Title>
         <Card.Description>
@@ -41,7 +44,7 @@ export function QuestCardForm({ quest, onSubmit }: { quest: Quest, onSubmit: (re
       <Card.Body>
         <SimpleForm
           schema={v.object({
-            answer: v.pipe(v.string(), v.minLength(1, "정답을 입력해주세요"))
+            answer: v.pipe(v.string(), v.minLength(1, "정답을 입력해주세요")),
           })}
           defaultValues={{
             __brand: "ValidData",
@@ -57,5 +60,5 @@ export function QuestCardForm({ quest, onSubmit }: { quest: Quest, onSubmit: (re
         </SimpleForm>
       </Card.Body>
     </Card.Root>
-  )
+  );
 }

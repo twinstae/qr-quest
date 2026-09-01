@@ -22,6 +22,6 @@ export const recipes = {
   field,
   checkbox,
   collapsible,
-  badge
+  badge,
 };
 export const slotRecipes = {};
