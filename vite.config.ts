@@ -33,6 +33,8 @@ const config = defineConfig({
         test: {
           setupFiles: ["src/setupTest.ts"],
           name: "browser",
+          include: ["src/**/*.test.{ts,tsx}"],
+          exclude: ["src/server/**"],
           browser: {
             enabled: true,
             headless: true,
@@ -43,6 +45,15 @@ const config = defineConfig({
               },
             ],
           },
+        },
+      },
+      {
+        extends: true,
+        plugins: [],
+        test: {
+          name: "server",
+          environment: "node",
+          include: ["src/server/**/*.test.ts"],
         },
       },
     ],
