@@ -30,6 +30,7 @@ export type QuestSummary = {
   id: string;
   content: string;
   image: { src: string; alt: string };
+  answer: string;
 };
 
 async function getQuestOrThrow(ctx: AppContext, id: string) {
@@ -60,7 +61,7 @@ export async function submitAnswer(
 
 export async function listQuestsInGroup(ctx: AppContext, groupId: string): Promise<QuestSummary[]> {
   const quests = await ctx.repo.quest.listByGroupId(groupId);
-  return quests.map(({ id, content, image }) => ({ id, content, image }));
+  return quests.map(({ id, content, image, answer }) => ({ id, content, image, answer }));
 }
 
 export async function createQuest(ctx: AppContext, input: CreateQuestInput): Promise<Quest> {

@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
+import { TEST_QUEST, TEST_QUEST_GROUP } from "../../domain/fixtures.ts";
 import { createTestDatabase } from "./test-helpers.ts";
 import { questGroups, quests } from "./schema.ts";
 
@@ -10,7 +11,7 @@ describe("schema", () => {
 
     const [group] = await db
       .insert(questGroups)
-      .values({ name: "Library Event 2026", description: "가을 도서관 행사" })
+      .values({ name: TEST_QUEST_GROUP.name, description: TEST_QUEST_GROUP.description })
       .returning();
     expect(group).toBeDefined();
     if (!group) throw new Error("unreachable");
@@ -19,13 +20,13 @@ describe("schema", () => {
       .insert(quests)
       .values({
         groupId: group.id,
-        content: "헌법논증이론의 저자는 누구일까요?",
-        imageSrc: "https://example.com/cover.jpg",
-        imageAlt: "헌법논증이론 표지",
-        answer: "이민열, 김도균",
-        alternatives: ["이한"],
-        placeholder: "ㅇㅇㅇ, ㅁㅁㅁ",
-        hint: "표지 안에 답이 있습니다",
+        content: TEST_QUEST.content,
+        imageSrc: TEST_QUEST.image.src,
+        imageAlt: TEST_QUEST.image.alt,
+        answer: TEST_QUEST.answer,
+        alternatives: TEST_QUEST.alternatives,
+        placeholder: TEST_QUEST.placeholder,
+        hint: TEST_QUEST.hint,
       })
       .returning();
     expect(quest).toBeDefined();
@@ -37,9 +38,9 @@ describe("schema", () => {
 
     expect(found).toMatchObject({
       groupId: group.id,
-      content: "헌법논증이론의 저자는 누구일까요?",
-      answer: "이민열, 김도균",
-      alternatives: ["이한"],
+      content: TEST_QUEST.content,
+      answer: TEST_QUEST.answer,
+      alternatives: TEST_QUEST.alternatives,
     });
   });
 });

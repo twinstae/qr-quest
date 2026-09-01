@@ -1,6 +1,7 @@
 import { memoryAdapter } from "better-auth/adapters/memory";
 import { describe, expect, it } from "vitest";
 
+import { TEST_ADMIN } from "../domain/fixtures.ts";
 import { createAuth } from "./auth.ts";
 
 function createTestAuth() {
@@ -11,27 +12,23 @@ describe("createAuth", () => {
   it("가입한 이메일/비밀번호로 로그인할 수 있다", async () => {
     const auth = createTestAuth();
 
-    await auth.api.signUpEmail({
-      body: { name: "Admin", email: "admin@example.com", password: "password1234" },
-    });
+    await auth.api.signUpEmail({ body: TEST_ADMIN });
 
     const signIn = await auth.api.signInEmail({
-      body: { email: "admin@example.com", password: "password1234" },
+      body: { email: TEST_ADMIN.email, password: TEST_ADMIN.password },
     });
 
-    expect(signIn.user.email).toBe("admin@example.com");
+    expect(signIn.user.email).toBe(TEST_ADMIN.email);
   });
 
   it("잘못된 비밀번호로는 로그인할 수 없다", async () => {
     const auth = createTestAuth();
 
-    await auth.api.signUpEmail({
-      body: { name: "Admin", email: "admin@example.com", password: "password1234" },
-    });
+    await auth.api.signUpEmail({ body: TEST_ADMIN });
 
     await expect(
       auth.api.signInEmail({
-        body: { email: "admin@example.com", password: "wrong-password" },
+        body: { email: TEST_ADMIN.email, password: "wrong-password" },
       }),
     ).rejects.toThrow();
   });
@@ -41,7 +38,7 @@ describe("createAuth", () => {
 
     await expect(
       auth.api.signInEmail({
-        body: { email: "nobody@example.com", password: "password1234" },
+        body: { email: "nobody@example.com", password: TEST_ADMIN.password },
       }),
     ).rejects.toThrow();
   });

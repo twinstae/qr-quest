@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { Quest } from "../../domain/quest.ts";
+import { questGroupInput, questInput, TEST_QUEST } from "../../domain/fixtures.ts";
 import { createTestDatabase } from "./test-helpers.ts";
 import { createDrizzleQuestGroupRepo } from "./DrizzleQuestGroupRepo.ts";
 import { createDrizzleQuestRepo } from "./DrizzleQuestRepo.ts";
@@ -8,20 +8,10 @@ import { createDrizzleQuestRepo } from "./DrizzleQuestRepo.ts";
 describe("createDrizzleQuestRepo", () => {
   it("create로 만든 퀘스트를 getById로 그대로 읽을 수 있다", async () => {
     await using db = await createTestDatabase();
-    const group = await createDrizzleQuestGroupRepo(db).create({ name: "Library Event 2026" });
+    const group = await createDrizzleQuestGroupRepo(db).create(questGroupInput());
     const repo = createDrizzleQuestRepo(db);
 
-    const input: Omit<Quest, "id"> = {
-      groupId: group.id,
-      content: "헌법논증이론의 저자는 누구일까요?",
-      image: { src: "https://example.com/cover.jpg", alt: "헌법논증이론 표지" },
-      answer: "이민열, 김도균",
-      alternatives: ["이한"],
-      placeholder: "ㅇㅇㅇ, ㅁㅁㅁ",
-      hint: "표지 안에 답이 있습니다",
-      reward: { text: "정답입니다!", image: undefined },
-    };
-
+    const input = questInput({ groupId: group.id });
     const quest = await repo.create(input);
     const found = await repo.getById(quest.id);
 
@@ -31,29 +21,13 @@ describe("createDrizzleQuestRepo", () => {
 
   it("reward 이미지가 있으면 getById 결과에도 포함된다", async () => {
     await using db = await createTestDatabase();
-    const group = await createDrizzleQuestGroupRepo(db).create({ name: "Library Event 2026" });
+    const group = await createDrizzleQuestGroupRepo(db).create(questGroupInput());
     const repo = createDrizzleQuestRepo(db);
 
-    const quest = await repo.create({
-      groupId: group.id,
-      content: "content",
-      image: { src: "https://example.com/cover.jpg", alt: "cover" },
-      answer: "answer",
-      alternatives: [],
-      placeholder: "placeholder",
-      hint: "hint",
-      reward: {
-        text: "reward text",
-        image: { src: "https://example.com/reward.jpg", alt: "reward" },
-      },
-    });
-
+    const quest = await repo.create(questInput({ groupId: group.id }));
     const found = await repo.getById(quest.id);
 
-    expect(found?.reward.image).toEqual({
-      src: "https://example.com/reward.jpg",
-      alt: "reward",
-    });
+    expect(found?.reward.image).toEqual(TEST_QUEST.reward.image);
   });
 
   it("존재하지 않는 id는 undefined를 반환한다", async () => {
@@ -70,23 +44,12 @@ describe("createDrizzleQuestRepo", () => {
     const groupRepo = createDrizzleQuestGroupRepo(db);
     const repo = createDrizzleQuestRepo(db);
 
-    const groupA = await groupRepo.create({ name: "그룹 A" });
-    const groupB = await groupRepo.create({ name: "그룹 B" });
+    const groupA = await groupRepo.create(questGroupInput({ name: "그룹 A" }));
+    const groupB = await groupRepo.create(questGroupInput({ name: "그룹 B" }));
 
-    const questInput = (groupId: string, content: string): Omit<Quest, "id"> => ({
-      groupId,
-      content,
-      image: { src: "https://example.com/cover.jpg", alt: "cover" },
-      answer: "answer",
-      alternatives: [],
-      placeholder: "placeholder",
-      hint: "hint",
-      reward: { text: undefined, image: undefined },
-    });
-
-    const questA1 = await repo.create(questInput(groupA.id, "A1"));
-    const questA2 = await repo.create(questInput(groupA.id, "A2"));
-    await repo.create(questInput(groupB.id, "B1"));
+    const questA1 = await repo.create(questInput({ groupId: groupA.id, content: "A1" }));
+    const questA2 = await repo.create(questInput({ groupId: groupA.id, content: "A2" }));
+    await repo.create(questInput({ groupId: groupB.id, content: "B1" }));
 
     const questsInA = await repo.listByGroupId(groupA.id);
 
@@ -96,41 +59,19 @@ describe("createDrizzleQuestRepo", () => {
 
   it("update로 변경한 내용이 getById에도 반영된다", async () => {
     await using db = await createTestDatabase();
-    const group = await createDrizzleQuestGroupRepo(db).create({ name: "Library Event 2026" });
+    const group = await createDrizzleQuestGroupRepo(db).create(questGroupInput());
     const repo = createDrizzleQuestRepo(db);
 
-    const quest = await repo.create({
-      groupId: group.id,
-      content: "원래 문제",
-      image: { src: "https://example.com/cover.jpg", alt: "cover" },
-      answer: "원래 정답",
-      alternatives: [],
-      placeholder: "placeholder",
-      hint: "hint",
-      reward: { text: undefined, image: undefined },
-    });
+    const quest = await repo.create(questInput({ groupId: group.id }));
 
-    const updated = await repo.update(quest.id, {
-      content: "수정된 문제",
-      image: quest.image,
-      answer: "수정된 정답",
-      alternatives: [],
-      placeholder: quest.placeholder,
-      hint: quest.hint,
-      reward: { text: "수정된 보상", image: undefined },
-    });
-
-    expect(updated).toEqual({
-      id: quest.id,
+    const { groupId: _groupId, ...updateFields } = questInput({
       groupId: group.id,
       content: "수정된 문제",
-      image: quest.image,
       answer: "수정된 정답",
-      alternatives: [],
-      placeholder: quest.placeholder,
-      hint: quest.hint,
-      reward: { text: "수정된 보상", image: undefined },
     });
+    const updated = await repo.update(quest.id, updateFields);
+
+    expect(updated).toEqual({ id: quest.id, groupId: group.id, ...updateFields });
 
     const found = await repo.getById(quest.id);
     expect(found).toEqual(updated);

@@ -44,7 +44,6 @@ export function QuestCardForm({
             answer: v.pipe(v.string(), v.minLength(1, "정답을 입력해주세요")),
           })}
           defaultValues={{
-            __brand: "ValidData",
             answer: "",
           }}
           onSubmit={onSubmit}

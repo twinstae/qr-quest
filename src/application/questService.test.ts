@@ -2,21 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { createFakeContext } from "../api/context.ts";
 import { NotExistError } from "../domain/errors.ts";
+import { TEST_QUEST } from "../domain/fixtures.ts";
 import type { Quest } from "../domain/quest.ts";
 import createFakeQuestRepo from "../persistence/FakeQuestRepo.ts";
 import { getQuestForDisplay, listQuestsInGroup, submitAnswer } from "./questService.ts";
-
-const QUEST: Quest = {
-  id: "quest-1",
-  groupId: "group-1",
-  content: "헌법논증이론의 저자는 누구일까요?",
-  image: { src: "https://example.com/cover.jpg", alt: "표지" },
-  answer: "이민열, 김도균",
-  alternatives: ["이한"],
-  placeholder: "ㅇㅇㅇ, ㅁㅁㅁ",
-  hint: "표지 안에 답이 있습니다",
-  reward: { text: "정답입니다!", image: undefined },
-};
 
 function contextWithQuest(quest: Quest) {
   return createFakeContext({ repo: { quest: createFakeQuestRepo({ [quest.id]: quest }) } });
@@ -24,15 +13,15 @@ function contextWithQuest(quest: Quest) {
 
 describe("getQuestForDisplay", () => {
   it("정답과 보상을 제외한 퀘스트 내용을 반환한다", async () => {
-    const ctx = contextWithQuest(QUEST);
+    const ctx = contextWithQuest(TEST_QUEST);
 
-    const display = await getQuestForDisplay(ctx, QUEST.id);
+    const display = await getQuestForDisplay(ctx, TEST_QUEST.id);
 
     expect(display).toEqual({
-      content: QUEST.content,
-      image: QUEST.image,
-      placeholder: QUEST.placeholder,
-      hint: QUEST.hint,
+      content: TEST_QUEST.content,
+      image: TEST_QUEST.image,
+      placeholder: TEST_QUEST.placeholder,
+      hint: TEST_QUEST.hint,
     });
   });
 
@@ -45,17 +34,17 @@ describe("getQuestForDisplay", () => {
 
 describe("submitAnswer", () => {
   it("정답을 제출하면 보상을 반환한다", async () => {
-    const ctx = contextWithQuest(QUEST);
+    const ctx = contextWithQuest(TEST_QUEST);
 
-    const result = await submitAnswer(ctx, QUEST.id, "  이민열, 김도균  ");
+    const result = await submitAnswer(ctx, TEST_QUEST.id, `  ${TEST_QUEST.answer}  `);
 
-    expect(result).toEqual({ correct: true, reward: QUEST.reward });
+    expect(result).toEqual({ correct: true, reward: TEST_QUEST.reward });
   });
 
   it("alternatives에 있는 값은 아직 정답으로 인정하지 않는다", async () => {
-    const ctx = contextWithQuest(QUEST);
+    const ctx = contextWithQuest(TEST_QUEST);
 
-    const result = await submitAnswer(ctx, QUEST.id, "이한");
+    const result = await submitAnswer(ctx, TEST_QUEST.id, TEST_QUEST.alternatives[0] ?? "");
 
     expect(result).toEqual({ correct: false });
   });
@@ -69,15 +58,17 @@ describe("submitAnswer", () => {
 
 describe("listQuestsInGroup", () => {
   it("정답을 제외한 요약 정보만 반환한다", async () => {
-    const ctx = contextWithQuest(QUEST);
+    const ctx = contextWithQuest(TEST_QUEST);
 
-    const summaries = await listQuestsInGroup(ctx, QUEST.groupId);
+    const summaries = await listQuestsInGroup(ctx, TEST_QUEST.groupId);
 
-    expect(summaries).toEqual([{ id: QUEST.id, content: QUEST.content, image: QUEST.image }]);
+    expect(summaries).toEqual([
+      { id: TEST_QUEST.id, content: TEST_QUEST.content, image: TEST_QUEST.image },
+    ]);
   });
 
   it("다른 그룹의 퀘스트는 포함하지 않는다", async () => {
-    const ctx = contextWithQuest(QUEST);
+    const ctx = contextWithQuest(TEST_QUEST);
 
     const summaries = await listQuestsInGroup(ctx, "other-group");
 

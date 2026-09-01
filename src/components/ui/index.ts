@@ -6,6 +6,7 @@ export * as Checkbox from "./checkbox";
 export * as Collapsible from "./collapsible";
 export * as Field from "./field";
 export * as Fieldset from "./fieldset";
+export * as FileUpload from "./file-upload";
 export { Group, type GroupProps } from "./group";
 export { IconButton, type IconButtonProps } from "./icon-button";
 export { Input, type InputProps } from "./input";

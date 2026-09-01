@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { ANOTHER_QUEST_GROUP, questGroupInput, TEST_QUEST_GROUP } from "../../domain/fixtures.ts";
 import { createTestDatabase } from "./test-helpers.ts";
 import { createDrizzleQuestGroupRepo } from "./DrizzleQuestGroupRepo.ts";
 
@@ -8,20 +9,16 @@ describe("createDrizzleQuestGroupRepo", () => {
     await using db = await createTestDatabase();
     const repo = createDrizzleQuestGroupRepo(db);
 
-    const group = await repo.create({ name: "Library Event 2026", description: "가을 행사" });
+    const group = await repo.create(questGroupInput());
 
-    expect(group).toEqual({
-      id: group.id,
-      name: "Library Event 2026",
-      description: "가을 행사",
-    });
+    expect(group).toEqual({ id: group.id, ...questGroupInput() });
   });
 
   it("설명 없이 그룹을 생성할 수 있다", async () => {
     await using db = await createTestDatabase();
     const repo = createDrizzleQuestGroupRepo(db);
 
-    const group = await repo.create({ name: "Library Event 2026" });
+    const group = await repo.create(questGroupInput({ description: undefined }));
 
     expect(group.description).toBeUndefined();
   });
@@ -30,8 +27,8 @@ describe("createDrizzleQuestGroupRepo", () => {
     await using db = await createTestDatabase();
     const repo = createDrizzleQuestGroupRepo(db);
 
-    const a = await repo.create({ name: "Library Event 2026" });
-    const b = await repo.create({ name: "Bookstore Event 2026" });
+    const a = await repo.create(questGroupInput({ name: TEST_QUEST_GROUP.name }));
+    const b = await repo.create(questGroupInput({ name: ANOTHER_QUEST_GROUP.name }));
 
     const groups = await repo.list();
 

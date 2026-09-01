@@ -24,7 +24,6 @@ function RouteComponent() {
       title="Quest 수정"
       submitLabel="저장"
       defaultValues={{
-        __brand: "ValidData",
         content: quest.content,
         image: quest.image,
         answer: quest.answer,

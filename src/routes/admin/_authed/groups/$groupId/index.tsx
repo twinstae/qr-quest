@@ -4,6 +4,9 @@ import { button } from "styled-system/recipes";
 import { QuestQrCodeDownload } from "@/components/domains/quest-qr-code.tsx";
 import * as Card from "@/components/ui/card.tsx";
 import { getApiClient } from "@/lib/api-client";
+import { styled } from "styled-system/jsx";
+import { css } from "styled-system/css";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/_authed/groups/$groupId/")({
   component: RouteComponent,
@@ -14,40 +17,63 @@ export const Route = createFileRoute("/admin/_authed/groups/$groupId/")({
   },
 });
 
+const CenterMain = styled("main", {
+  base: {
+    minHeight: "screen",
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
+
 function RouteComponent() {
   const { groupId } = Route.useParams();
   const { quests } = Route.useLoaderData();
 
   return (
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>그룹의 Quest 목록</Card.Title>
-      </Card.Header>
-      <Card.Body>
-        <Link to="/admin/groups/$groupId/quests/new" params={{ groupId }} className={button()}>
-          Quest 만들기
-        </Link>
-
-        {quests.length === 0 ? (
-          <p>아직 이 그룹에 Quest가 없습니다.</p>
-        ) : (
-          <ul>
-            {quests.map((quest) => (
-              <li key={quest.id}>
-                <img src={quest.image.src} alt={quest.image.alt} width={48} height={48} />
-                {quest.content}
-                <Link
-                  to="/admin/groups/$groupId/quests/$questId/edit"
-                  params={{ groupId, questId: quest.id }}
+    <CenterMain>
+      <Card.Root minWidth="400px" maxWidth="screen">
+        <Card.Header>
+          <Card.Title>그룹의 Quest 목록</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          {quests.length === 0 ? (
+            <p>아직 이 그룹에 Quest가 없습니다.</p>
+          ) : (
+            <ul className={css({ display: "flex", flexDirection: "column", gap: "16px" })}>
+              {quests.map((quest) => (
+                <li
+                  key={quest.id}
+                  className={css({ display: "flex", flexDirection: "column", gap: "16px" })}
                 >
-                  수정
+                  <img src={quest.image.src} alt={quest.image.alt} width={48} height={48} />
+                  질문 : {quest.content}
+                  정답 : {quest.answer}
+                  <Link
+                    to="/admin/groups/$groupId/quests/$questId/edit"
+                    params={{ groupId, questId: quest.id }}
+                    className={button({ variant: "solid", size: "sm" })}
+                  >
+                    수정
+                  </Link>
+                  <QuestQrCodeDownload questId={quest.id} />
+                </li>
+              ))}
+              <li>
+                <Link
+                  to="/admin/groups/$groupId/quests/new"
+                  params={{ groupId }}
+                  className={cn(button(), css({ width: "full" }))}
+                >
+                  Quest 만들기
                 </Link>
-                <QuestQrCodeDownload questId={quest.id} />
               </li>
-            ))}
-          </ul>
-        )}
-      </Card.Body>
-    </Card.Root>
+            </ul>
+          )}
+        </Card.Body>
+      </Card.Root>
+    </CenterMain>
   );
 }

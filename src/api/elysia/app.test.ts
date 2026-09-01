@@ -2,24 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { createFakeContext } from "../context.ts";
 import { createTestClient, signInAndGetCookie } from "../testHelpers.ts";
+import { ANOTHER_QUEST, TEST_ADMIN, TEST_QUEST } from "../../domain/fixtures.ts";
 import type { Quest } from "../../domain/quest.ts";
 import createFakeQuestRepo from "../../persistence/FakeQuestRepo.ts";
 import { createApp } from "./app.ts";
-
-const QUEST: Quest = {
-  id: "quest-1",
-  groupId: "group-1",
-  content: "헌법논증이론의 저자는 누구일까요?",
-  image: { src: "https://example.com/cover.jpg", alt: "표지" },
-  answer: "이민열, 김도균",
-  alternatives: ["이한"],
-  placeholder: "ㅇㅇㅇ, ㅁㅁㅁ",
-  hint: "표지 안에 답이 있습니다",
-  reward: {
-    text: "정답입니다!",
-    image: { src: "https://example.com/reward.jpg", alt: "보상" },
-  },
-};
 
 function appWithQuest(quest: Quest) {
   const ctx = createFakeContext({ repo: { quest: createFakeQuestRepo({ [quest.id]: quest }) } });
@@ -32,19 +18,34 @@ async function signedInClient(ctx = createFakeContext()) {
   return { ctx, app, client: createTestClient(app, { cookie }) };
 }
 
+// POST /api/quests와 PATCH /api/quests/:id의 요청 바디는 reward가 평탄화된
+// 별도 모양이라 도메인 Quest를 그대로 재사용할 수 없다 - 값만 가져온다.
+function toQuestRequestBody(quest: Quest) {
+  return {
+    groupId: quest.groupId,
+    content: quest.content,
+    image: quest.image,
+    answer: quest.answer,
+    placeholder: quest.placeholder,
+    hint: quest.hint,
+    rewardText: quest.reward.text,
+    rewardImage: quest.reward.image,
+  };
+}
+
 describe("GET /api/quests/:id", () => {
   it("퀘스트 내용을 반환하지만 정답은 노출하지 않는다", async () => {
-    const client = createTestClient(appWithQuest(QUEST));
+    const client = createTestClient(appWithQuest(TEST_QUEST));
 
-    const response = await client.get(`/api/quests/${QUEST.id}`);
+    const response = await client.get(`/api/quests/${TEST_QUEST.id}`);
     const payload = await response.json();
 
     expect(response.status).toBe(200);
     expect(payload).toEqual({
-      content: QUEST.content,
-      image: QUEST.image,
-      placeholder: QUEST.placeholder,
-      hint: QUEST.hint,
+      content: TEST_QUEST.content,
+      image: TEST_QUEST.image,
+      placeholder: TEST_QUEST.placeholder,
+      hint: TEST_QUEST.hint,
     });
     expect(payload.answer).toBeUndefined();
   });
@@ -60,22 +61,22 @@ describe("GET /api/quests/:id", () => {
 
 describe("POST /api/quests/:id/submit-answer", () => {
   it("정답을 맞추면 보상을 반환한다", async () => {
-    const client = createTestClient(appWithQuest(QUEST));
+    const client = createTestClient(appWithQuest(TEST_QUEST));
 
-    const response = await client.post(`/api/quests/${QUEST.id}/submit-answer`, {
-      answer: "  이민열, 김도균  ",
+    const response = await client.post(`/api/quests/${TEST_QUEST.id}/submit-answer`, {
+      answer: `  ${TEST_QUEST.answer}  `,
     });
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload).toEqual({ correct: true, reward: QUEST.reward });
+    expect(payload).toEqual({ correct: true, reward: TEST_QUEST.reward });
   });
 
   it("오답을 제출하면 오답 결과를 반환한다", async () => {
-    const client = createTestClient(appWithQuest(QUEST));
+    const client = createTestClient(appWithQuest(TEST_QUEST));
 
-    const response = await client.post(`/api/quests/${QUEST.id}/submit-answer`, {
-      answer: "이한",
+    const response = await client.post(`/api/quests/${TEST_QUEST.id}/submit-answer`, {
+      answer: TEST_QUEST.alternatives[0] ?? "",
     });
     const payload = await response.json();
 
@@ -88,21 +89,17 @@ describe("/api/auth/* (better-auth mount)", () => {
   it("POST /api/auth/sign-up/email로 가입하고 로그인할 수 있다", async () => {
     const client = createTestClient(createApp(createFakeContext()));
 
-    const signUpResponse = await client.post("/api/auth/sign-up/email", {
-      name: "Admin",
-      email: "admin@example.com",
-      password: "password1234",
-    });
+    const signUpResponse = await client.post("/api/auth/sign-up/email", TEST_ADMIN);
     expect(signUpResponse.status).toBe(200);
 
     const signInResponse = await client.post("/api/auth/sign-in/email", {
-      email: "admin@example.com",
-      password: "password1234",
+      email: TEST_ADMIN.email,
+      password: TEST_ADMIN.password,
     });
     const payload = await signInResponse.json();
 
     expect(signInResponse.status).toBe(200);
-    expect(payload.user.email).toBe("admin@example.com");
+    expect(payload.user.email).toBe(TEST_ADMIN.email);
   });
 });
 
@@ -141,22 +138,24 @@ describe("GET /api/groups/:id/quests", () => {
   it("세션이 없으면 401을 반환한다", async () => {
     const client = createTestClient(createApp(createFakeContext()));
 
-    const response = await client.get("/api/groups/group-1/quests");
+    const response = await client.get(`/api/groups/${TEST_QUEST.groupId}/quests`);
 
     expect(response.status).toBe(401);
   });
 
   it("로그인한 상태면 그룹의 퀘스트 요약을 반환한다 (정답 미포함)", async () => {
     const ctx = createFakeContext({
-      repo: { quest: createFakeQuestRepo({ [QUEST.id]: QUEST }) },
+      repo: { quest: createFakeQuestRepo({ [TEST_QUEST.id]: TEST_QUEST }) },
     });
     const { client } = await signedInClient(ctx);
 
-    const response = await client.get(`/api/groups/${QUEST.groupId}/quests`);
+    const response = await client.get(`/api/groups/${TEST_QUEST.groupId}/quests`);
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload).toEqual([{ id: QUEST.id, content: QUEST.content, image: QUEST.image }]);
+    expect(payload).toEqual([
+      { id: TEST_QUEST.id, content: TEST_QUEST.content, image: TEST_QUEST.image },
+    ]);
   });
 });
 
@@ -210,15 +209,7 @@ describe("POST /api/uploads/presign", () => {
 });
 
 describe("POST /api/quests", () => {
-  const NEW_QUEST_BODY = {
-    groupId: "group-1",
-    content: "새 퀘스트",
-    image: { src: "https://example.com/cover.jpg", alt: "표지" },
-    answer: "정답",
-    placeholder: "placeholder",
-    hint: "hint",
-    rewardText: "정답입니다!",
-  };
+  const NEW_QUEST_BODY = toQuestRequestBody(ANOTHER_QUEST);
 
   it("세션이 없으면 401을 반환한다", async () => {
     const client = createTestClient(createApp(createFakeContext()));
@@ -265,58 +256,51 @@ describe("POST /api/quests", () => {
 
 describe("GET /api/quests/:id/edit", () => {
   it("세션이 없으면 401을 반환한다", async () => {
-    const client = createTestClient(appWithQuest(QUEST));
+    const client = createTestClient(appWithQuest(TEST_QUEST));
 
-    const response = await client.get(`/api/quests/${QUEST.id}/edit`);
+    const response = await client.get(`/api/quests/${TEST_QUEST.id}/edit`);
 
     expect(response.status).toBe(401);
   });
 
   it("로그인한 상태면 정답/보상을 포함한 전체 퀘스트를 반환한다", async () => {
     const ctx = createFakeContext({
-      repo: { quest: createFakeQuestRepo({ [QUEST.id]: QUEST }) },
+      repo: { quest: createFakeQuestRepo({ [TEST_QUEST.id]: TEST_QUEST }) },
     });
     const { client } = await signedInClient(ctx);
 
-    const response = await client.get(`/api/quests/${QUEST.id}/edit`);
+    const response = await client.get(`/api/quests/${TEST_QUEST.id}/edit`);
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload).toEqual(QUEST);
+    expect(payload).toEqual(TEST_QUEST);
   });
 });
 
 describe("PATCH /api/quests/:id", () => {
-  const UPDATE_BODY = {
-    content: "수정된 문제",
-    image: { src: "https://example.com/new-cover.jpg", alt: "새 표지" },
-    answer: "수정된 정답",
-    placeholder: "새 placeholder",
-    hint: "새 힌트",
-    rewardText: "수정된 보상",
-  };
+  const UPDATE_BODY = toQuestRequestBody(ANOTHER_QUEST);
 
   it("세션이 없으면 401을 반환한다", async () => {
-    const client = createTestClient(appWithQuest(QUEST));
+    const client = createTestClient(appWithQuest(TEST_QUEST));
 
-    const response = await client.patch(`/api/quests/${QUEST.id}`, UPDATE_BODY);
+    const response = await client.patch(`/api/quests/${TEST_QUEST.id}`, UPDATE_BODY);
 
     expect(response.status).toBe(401);
   });
 
   it("로그인한 상태면 수정하고, 새 정답으로만 풀 수 있다", async () => {
     const ctx = createFakeContext({
-      repo: { quest: createFakeQuestRepo({ [QUEST.id]: QUEST }) },
+      repo: { quest: createFakeQuestRepo({ [TEST_QUEST.id]: TEST_QUEST }) },
     });
     const { client } = await signedInClient(ctx);
 
-    const updateResponse = await client.patch(`/api/quests/${QUEST.id}`, UPDATE_BODY);
+    const updateResponse = await client.patch(`/api/quests/${TEST_QUEST.id}`, UPDATE_BODY);
     const updated = await updateResponse.json();
 
     expect(updateResponse.status).toBe(200);
     expect(updated).toEqual({
-      id: QUEST.id,
-      groupId: QUEST.groupId,
+      id: TEST_QUEST.id,
+      groupId: TEST_QUEST.groupId,
       content: UPDATE_BODY.content,
       image: UPDATE_BODY.image,
       answer: UPDATE_BODY.answer,
@@ -327,13 +311,13 @@ describe("PATCH /api/quests/:id", () => {
     });
 
     // 옛날 정답은 더 이상 통하지 않는다
-    const oldAnswerResponse = await client.post(`/api/quests/${QUEST.id}/submit-answer`, {
-      answer: QUEST.answer,
+    const oldAnswerResponse = await client.post(`/api/quests/${TEST_QUEST.id}/submit-answer`, {
+      answer: TEST_QUEST.answer,
     });
     expect(await oldAnswerResponse.json()).toEqual({ correct: false });
 
     // 새 정답으로 풀 수 있다
-    const newAnswerResponse = await client.post(`/api/quests/${QUEST.id}/submit-answer`, {
+    const newAnswerResponse = await client.post(`/api/quests/${TEST_QUEST.id}/submit-answer`, {
       answer: UPDATE_BODY.answer,
     });
     expect(await newAnswerResponse.json()).toEqual({

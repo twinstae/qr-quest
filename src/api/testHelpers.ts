@@ -1,16 +1,13 @@
+import { TEST_ADMIN } from "../domain/fixtures.ts";
 import type { AppContext } from "./context.ts";
 
 export async function signInAndGetCookie(
   ctx: AppContext,
-  credentials: { name?: string; email: string; password: string } = {
-    name: "Admin",
-    email: "admin@example.com",
-    password: "password1234",
-  },
+  credentials: { name?: string; email: string; password: string } = TEST_ADMIN,
 ): Promise<string> {
   await ctx.auth.api.signUpEmail({
     body: {
-      name: credentials.name ?? "Admin",
+      name: credentials.name ?? TEST_ADMIN.name,
       email: credentials.email,
       password: credentials.password,
     },

@@ -8,225 +8,231 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as AdminAuthedRouteImport } from "./routes/admin/_authed";
-import { Route as AdminLoginRouteImport } from "./routes/admin/login";
-import { Route as ApiSplatRouteImport } from "./routes/api/$";
-import { Route as QuestQuestIdRouteImport } from "./routes/quest/$questId";
-import { Route as AdminAuthedGroupsIndexRouteImport } from "./routes/admin/_authed/groups/index";
-import { Route as AdminAuthedGroupsGroupIdIndexRouteImport } from "./routes/admin/_authed/groups/$groupId/index";
-import { Route as AdminAuthedGroupsGroupIdQuestsNewRouteImport } from "./routes/admin/_authed/groups/$groupId/quests/new";
-import { Route as AdminAuthedGroupsGroupIdQuestsQuestIdEditRouteImport } from "./routes/admin/_authed/groups/$groupId/quests/$questId/edit";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminAuthedRouteImport } from './routes/admin/_authed'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as ApiSplatRouteImport } from './routes/api/$'
+import { Route as QuestQuestIdRouteImport } from './routes/quest/$questId'
+import { Route as AdminAuthedGroupsIndexRouteImport } from './routes/admin/_authed/groups/index'
+import { Route as AdminAuthedGroupsGroupIdIndexRouteImport } from './routes/admin/_authed/groups/$groupId/index'
+import { Route as AdminAuthedGroupsGroupIdQuestsNewRouteImport } from './routes/admin/_authed/groups/$groupId/quests/new'
+import { Route as AdminAuthedGroupsGroupIdQuestsQuestIdEditRouteImport } from './routes/admin/_authed/groups/$groupId/quests/$questId/edit'
 
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AdminAuthedRoute = AdminAuthedRouteImport.update({
-  id: "/admin/_authed",
-  path: "/admin",
+  id: '/admin/_authed',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
-  id: "/admin/login",
-  path: "/admin/login",
+  id: '/admin/login',
+  path: '/admin/login',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiSplatRoute = ApiSplatRouteImport.update({
-  id: "/api/$",
-  path: "/api/$",
+  id: '/api/$',
+  path: '/api/$',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const QuestQuestIdRoute = QuestQuestIdRouteImport.update({
-  id: "/quest/$questId",
-  path: "/quest/$questId",
+  id: '/quest/$questId',
+  path: '/quest/$questId',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AdminAuthedGroupsIndexRoute = AdminAuthedGroupsIndexRouteImport.update({
-  id: "/groups/",
-  path: "/groups/",
+  id: '/groups/',
+  path: '/groups/',
   getParentRoute: () => AdminAuthedRoute,
-} as any);
-const AdminAuthedGroupsGroupIdIndexRoute = AdminAuthedGroupsGroupIdIndexRouteImport.update({
-  id: "/groups/$groupId/",
-  path: "/groups/$groupId/",
-  getParentRoute: () => AdminAuthedRoute,
-} as any);
-const AdminAuthedGroupsGroupIdQuestsNewRoute = AdminAuthedGroupsGroupIdQuestsNewRouteImport.update({
-  id: "/groups/$groupId/quests/new",
-  path: "/groups/$groupId/quests/new",
-  getParentRoute: () => AdminAuthedRoute,
-} as any);
+} as any)
+const AdminAuthedGroupsGroupIdIndexRoute =
+  AdminAuthedGroupsGroupIdIndexRouteImport.update({
+    id: '/groups/$groupId/',
+    path: '/groups/$groupId/',
+    getParentRoute: () => AdminAuthedRoute,
+  } as any)
+const AdminAuthedGroupsGroupIdQuestsNewRoute =
+  AdminAuthedGroupsGroupIdQuestsNewRouteImport.update({
+    id: '/groups/$groupId/quests/new',
+    path: '/groups/$groupId/quests/new',
+    getParentRoute: () => AdminAuthedRoute,
+  } as any)
 const AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute =
   AdminAuthedGroupsGroupIdQuestsQuestIdEditRouteImport.update({
-    id: "/groups/$groupId/quests/$questId/edit",
-    path: "/groups/$groupId/quests/$questId/edit",
+    id: '/groups/$groupId/quests/$questId/edit',
+    path: '/groups/$groupId/quests/$questId/edit',
     getParentRoute: () => AdminAuthedRoute,
-  } as any);
+  } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/admin": typeof AdminAuthedRouteWithChildren;
-  "/admin/login": typeof AdminLoginRoute;
-  "/api/$": typeof ApiSplatRoute;
-  "/quest/$questId": typeof QuestQuestIdRoute;
-  "/admin/groups/": typeof AdminAuthedGroupsIndexRoute;
-  "/admin/groups/$groupId/": typeof AdminAuthedGroupsGroupIdIndexRoute;
-  "/admin/groups/$groupId/quests/new": typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
-  "/admin/groups/$groupId/quests/$questId/edit": typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute;
+  '/': typeof IndexRoute
+  '/admin': typeof AdminAuthedRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/api/$': typeof ApiSplatRoute
+  '/quest/$questId': typeof QuestQuestIdRoute
+  '/admin/groups/': typeof AdminAuthedGroupsIndexRoute
+  '/admin/groups/$groupId/': typeof AdminAuthedGroupsGroupIdIndexRoute
+  '/admin/groups/$groupId/quests/new': typeof AdminAuthedGroupsGroupIdQuestsNewRoute
+  '/admin/groups/$groupId/quests/$questId/edit': typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/admin": typeof AdminAuthedRouteWithChildren;
-  "/admin/login": typeof AdminLoginRoute;
-  "/api/$": typeof ApiSplatRoute;
-  "/quest/$questId": typeof QuestQuestIdRoute;
-  "/admin/groups": typeof AdminAuthedGroupsIndexRoute;
-  "/admin/groups/$groupId": typeof AdminAuthedGroupsGroupIdIndexRoute;
-  "/admin/groups/$groupId/quests/new": typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
-  "/admin/groups/$groupId/quests/$questId/edit": typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute;
+  '/': typeof IndexRoute
+  '/admin': typeof AdminAuthedRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/api/$': typeof ApiSplatRoute
+  '/quest/$questId': typeof QuestQuestIdRoute
+  '/admin/groups': typeof AdminAuthedGroupsIndexRoute
+  '/admin/groups/$groupId': typeof AdminAuthedGroupsGroupIdIndexRoute
+  '/admin/groups/$groupId/quests/new': typeof AdminAuthedGroupsGroupIdQuestsNewRoute
+  '/admin/groups/$groupId/quests/$questId/edit': typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/admin/_authed": typeof AdminAuthedRouteWithChildren;
-  "/admin/login": typeof AdminLoginRoute;
-  "/api/$": typeof ApiSplatRoute;
-  "/quest/$questId": typeof QuestQuestIdRoute;
-  "/admin/_authed/groups/": typeof AdminAuthedGroupsIndexRoute;
-  "/admin/_authed/groups/$groupId/": typeof AdminAuthedGroupsGroupIdIndexRoute;
-  "/admin/_authed/groups/$groupId/quests/new": typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
-  "/admin/_authed/groups/$groupId/quests/$questId/edit": typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/admin/_authed': typeof AdminAuthedRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/api/$': typeof ApiSplatRoute
+  '/quest/$questId': typeof QuestQuestIdRoute
+  '/admin/_authed/groups/': typeof AdminAuthedGroupsIndexRoute
+  '/admin/_authed/groups/$groupId/': typeof AdminAuthedGroupsGroupIdIndexRoute
+  '/admin/_authed/groups/$groupId/quests/new': typeof AdminAuthedGroupsGroupIdQuestsNewRoute
+  '/admin/_authed/groups/$groupId/quests/$questId/edit': typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/admin"
-    | "/admin/login"
-    | "/api/$"
-    | "/quest/$questId"
-    | "/admin/groups/"
-    | "/admin/groups/$groupId/"
-    | "/admin/groups/$groupId/quests/new"
-    | "/admin/groups/$groupId/quests/$questId/edit";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/admin'
+    | '/admin/login'
+    | '/api/$'
+    | '/quest/$questId'
+    | '/admin/groups/'
+    | '/admin/groups/$groupId/'
+    | '/admin/groups/$groupId/quests/new'
+    | '/admin/groups/$groupId/quests/$questId/edit'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/admin"
-    | "/admin/login"
-    | "/api/$"
-    | "/quest/$questId"
-    | "/admin/groups"
-    | "/admin/groups/$groupId"
-    | "/admin/groups/$groupId/quests/new"
-    | "/admin/groups/$groupId/quests/$questId/edit";
+    | '/'
+    | '/admin'
+    | '/admin/login'
+    | '/api/$'
+    | '/quest/$questId'
+    | '/admin/groups'
+    | '/admin/groups/$groupId'
+    | '/admin/groups/$groupId/quests/new'
+    | '/admin/groups/$groupId/quests/$questId/edit'
   id:
-    | "__root__"
-    | "/"
-    | "/admin/_authed"
-    | "/admin/login"
-    | "/api/$"
-    | "/quest/$questId"
-    | "/admin/_authed/groups/"
-    | "/admin/_authed/groups/$groupId/"
-    | "/admin/_authed/groups/$groupId/quests/new"
-    | "/admin/_authed/groups/$groupId/quests/$questId/edit";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/admin/_authed'
+    | '/admin/login'
+    | '/api/$'
+    | '/quest/$questId'
+    | '/admin/_authed/groups/'
+    | '/admin/_authed/groups/$groupId/'
+    | '/admin/_authed/groups/$groupId/quests/new'
+    | '/admin/_authed/groups/$groupId/quests/$questId/edit'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AdminAuthedRoute: typeof AdminAuthedRouteWithChildren;
-  AdminLoginRoute: typeof AdminLoginRoute;
-  ApiSplatRoute: typeof ApiSplatRoute;
-  QuestQuestIdRoute: typeof QuestQuestIdRoute;
+  IndexRoute: typeof IndexRoute
+  AdminAuthedRoute: typeof AdminAuthedRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
+  ApiSplatRoute: typeof ApiSplatRoute
+  QuestQuestIdRoute: typeof QuestQuestIdRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/admin/_authed": {
-      id: "/admin/_authed";
-      path: "/admin";
-      fullPath: "/admin";
-      preLoaderRoute: typeof AdminAuthedRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/admin/login": {
-      id: "/admin/login";
-      path: "/admin/login";
-      fullPath: "/admin/login";
-      preLoaderRoute: typeof AdminLoginRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/$": {
-      id: "/api/$";
-      path: "/api/$";
-      fullPath: "/api/$";
-      preLoaderRoute: typeof ApiSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/quest/$questId": {
-      id: "/quest/$questId";
-      path: "/quest/$questId";
-      fullPath: "/quest/$questId";
-      preLoaderRoute: typeof QuestQuestIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/admin/_authed/groups/": {
-      id: "/admin/_authed/groups/";
-      path: "/groups";
-      fullPath: "/admin/groups/";
-      preLoaderRoute: typeof AdminAuthedGroupsIndexRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
-    "/admin/_authed/groups/$groupId/": {
-      id: "/admin/_authed/groups/$groupId/";
-      path: "/groups/$groupId";
-      fullPath: "/admin/groups/$groupId/";
-      preLoaderRoute: typeof AdminAuthedGroupsGroupIdIndexRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
-    "/admin/_authed/groups/$groupId/quests/new": {
-      id: "/admin/_authed/groups/$groupId/quests/new";
-      path: "/groups/$groupId/quests/new";
-      fullPath: "/admin/groups/$groupId/quests/new";
-      preLoaderRoute: typeof AdminAuthedGroupsGroupIdQuestsNewRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
-    "/admin/_authed/groups/$groupId/quests/$questId/edit": {
-      id: "/admin/_authed/groups/$groupId/quests/$questId/edit";
-      path: "/groups/$groupId/quests/$questId/edit";
-      fullPath: "/admin/groups/$groupId/quests/$questId/edit";
-      preLoaderRoute: typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/_authed': {
+      id: '/admin/_authed'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminAuthedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/$': {
+      id: '/api/$'
+      path: '/api/$'
+      fullPath: '/api/$'
+      preLoaderRoute: typeof ApiSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quest/$questId': {
+      id: '/quest/$questId'
+      path: '/quest/$questId'
+      fullPath: '/quest/$questId'
+      preLoaderRoute: typeof QuestQuestIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/_authed/groups/': {
+      id: '/admin/_authed/groups/'
+      path: '/groups'
+      fullPath: '/admin/groups/'
+      preLoaderRoute: typeof AdminAuthedGroupsIndexRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
+    '/admin/_authed/groups/$groupId/': {
+      id: '/admin/_authed/groups/$groupId/'
+      path: '/groups/$groupId'
+      fullPath: '/admin/groups/$groupId/'
+      preLoaderRoute: typeof AdminAuthedGroupsGroupIdIndexRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
+    '/admin/_authed/groups/$groupId/quests/new': {
+      id: '/admin/_authed/groups/$groupId/quests/new'
+      path: '/groups/$groupId/quests/new'
+      fullPath: '/admin/groups/$groupId/quests/new'
+      preLoaderRoute: typeof AdminAuthedGroupsGroupIdQuestsNewRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
+    '/admin/_authed/groups/$groupId/quests/$questId/edit': {
+      id: '/admin/_authed/groups/$groupId/quests/$questId/edit'
+      path: '/groups/$groupId/quests/$questId/edit'
+      fullPath: '/admin/groups/$groupId/quests/$questId/edit'
+      preLoaderRoute: typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
   }
 }
 
 interface AdminAuthedRouteChildren {
-  AdminAuthedGroupsIndexRoute: typeof AdminAuthedGroupsIndexRoute;
-  AdminAuthedGroupsGroupIdIndexRoute: typeof AdminAuthedGroupsGroupIdIndexRoute;
-  AdminAuthedGroupsGroupIdQuestsNewRoute: typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
-  AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute: typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute;
+  AdminAuthedGroupsIndexRoute: typeof AdminAuthedGroupsIndexRoute
+  AdminAuthedGroupsGroupIdIndexRoute: typeof AdminAuthedGroupsGroupIdIndexRoute
+  AdminAuthedGroupsGroupIdQuestsNewRoute: typeof AdminAuthedGroupsGroupIdQuestsNewRoute
+  AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute: typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute
 }
 
 const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
   AdminAuthedGroupsIndexRoute: AdminAuthedGroupsIndexRoute,
   AdminAuthedGroupsGroupIdIndexRoute: AdminAuthedGroupsGroupIdIndexRoute,
-  AdminAuthedGroupsGroupIdQuestsNewRoute: AdminAuthedGroupsGroupIdQuestsNewRoute,
-  AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute: AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute,
-};
+  AdminAuthedGroupsGroupIdQuestsNewRoute:
+    AdminAuthedGroupsGroupIdQuestsNewRoute,
+  AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute:
+    AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute,
+}
 
-const AdminAuthedRouteWithChildren = AdminAuthedRoute._addFileChildren(AdminAuthedRouteChildren);
+const AdminAuthedRouteWithChildren = AdminAuthedRoute._addFileChildren(
+  AdminAuthedRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -234,16 +240,16 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   ApiSplatRoute: ApiSplatRoute,
   QuestQuestIdRoute: QuestQuestIdRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }

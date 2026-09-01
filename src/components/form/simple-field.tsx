@@ -1,10 +1,15 @@
-import { useId, useState, type ChangeEvent, type ComponentProps } from "react";
+import { useId, type ChangeEvent, type ComponentProps } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 import { Input } from "@/components/ui/input.tsx";
 import * as Field from "@/components/ui/field.tsx";
 import * as Checkbox from "@/components/ui/checkbox.tsx";
 import { getApiClient } from "@/lib/api-client.ts";
+import * as FileUpload from "@/components/ui/file-upload.tsx";
+import { UploadIcon, XIcon } from "lucide-react";
+import { IconButton } from "../ui/icon-button";
+import { useFileUploadContext } from "@ark-ui/react/file-upload";
+import { css } from "styled-system/css";
 
 // export function SimpleDatePicker({ name, label }: { name: string; label: string }) {
 //   const { control } = useFormContext();
@@ -125,6 +130,33 @@ export function SimpleCheckbox({
 
 export type SimpleImageValue = { src: string; alt: string };
 
+const FileUploadList = () => {
+  const fileUpload = useFileUploadContext();
+  const files = fileUpload.acceptedFiles;
+  if (files.length === 0)
+    return (
+      <FileUpload.Dropzone className={css({ minHeight: "160px" })}>
+        <UploadIcon />
+        <p>이미지를 업로드하세요</p>
+      </FileUpload.Dropzone>
+    );
+
+  return (
+    <FileUpload.ItemGroup>
+      {files.map((file) => (
+        <FileUpload.Item file={file} key={file.name} p="0.5" w="fit-content">
+          <FileUpload.ItemPreviewImage />
+          <FileUpload.ItemDeleteTrigger asChild>
+            <IconButton size="2xs" borderRadius="full" pos="absolute" top="-2" right="-2">
+              <XIcon />
+            </IconButton>
+          </FileUpload.ItemDeleteTrigger>
+        </FileUpload.Item>
+      ))}
+    </FileUpload.ItemGroup>
+  );
+};
+
 // 업로드만 지원한다 (외부 URL 붙여넣기 없음) — ticket 04 결정 사항.
 export function SimpleImageUpload({
   name,
@@ -138,7 +170,6 @@ export function SimpleImageUpload({
   required?: boolean;
 }) {
   const { control } = useFormContext();
-  const [status, setStatus] = useState<"idle" | "uploading" | "error">("idle");
 
   const descriptionId = useId();
   const errorId = useId();
@@ -148,20 +179,17 @@ export function SimpleImageUpload({
       render={({ field, fieldState }) => {
         const isError = !!fieldState.error || status === "error";
         const errorMessage = fieldState.error?.root?.message ?? fieldState.error?.message;
-        const value = field.value as SimpleImageValue | undefined;
 
         async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
           const file = event.target.files?.[0];
           if (!file) return;
 
-          setStatus("uploading");
           const client = getApiClient();
           const { data: presigned } = await client.uploads.presign.post({
             filename: file.name,
             contentType: file.type,
           });
           if (!presigned) {
-            setStatus("error");
             return;
           }
 
@@ -171,12 +199,10 @@ export function SimpleImageUpload({
             body: file,
           });
           if (!uploadResponse.ok) {
-            setStatus("error");
             return;
           }
 
           field.onChange({ src: presigned.publicUrl, alt: file.name } satisfies SimpleImageValue);
-          setStatus("idle");
         }
 
         return (
@@ -184,20 +210,18 @@ export function SimpleImageUpload({
             <Field.Label>
               {label} {required && <Field.RequiredIndicator />}
             </Field.Label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              aria-invalid={isError}
-              aria-describedby={isError ? errorId : hint ? descriptionId : undefined}
-              aria-errormessage={isError ? errorId : undefined}
-            />
-            {status === "uploading" && <p>업로드 중...</p>}
-            {value && <img src={value.src} alt={value.alt} width={96} height={96} />}
-            {hint && !isError && <Field.HelperText id={descriptionId}>{hint}</Field.HelperText>}
+            <FileUpload.Root>
+              <FileUpload.HiddenInput
+                onChange={handleFileChange}
+                aria-invalid={isError}
+                aria-describedby={isError ? errorId : hint ? descriptionId : undefined}
+                aria-errormessage={isError ? errorId : undefined}
+              />
+              <FileUploadList />
+            </FileUpload.Root>
             {isError && (
               <Field.ErrorText id={errorId} role="alert">
-                {status === "error" ? "업로드에 실패했습니다" : errorMessage}
+                {errorMessage}
               </Field.ErrorText>
             )}
           </Field.Root>

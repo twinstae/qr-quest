@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button.tsx";
 import * as Card from "@/components/ui/card.tsx";
 
 const ImageValueSchema = v.object({
-  src: v.pipe(v.string(), v.minLength(1, "이미지를 업로드해주세요")),
+  src: v.pipe(v.string()),
   alt: v.string(),
 });
 
@@ -21,9 +21,7 @@ const QuestEditorSchema = v.object({
 });
 
 export type QuestEditorValues = v.InferOutput<typeof QuestEditorSchema>;
-export type QuestEditorDefaultValues = v.InferInput<typeof QuestEditorSchema> & {
-  __brand: "ValidData";
-};
+export type QuestEditorDefaultValues = v.InferInput<typeof QuestEditorSchema>;
 
 export function QuestEditorForm({
   title,
@@ -37,7 +35,7 @@ export function QuestEditorForm({
   onSubmit: (values: QuestEditorValues) => Promise<void>;
 }) {
   return (
-    <Card.Root>
+    <Card.Root width="400px" maxWidth="screen">
       <Card.Header>
         <Card.Title>{title}</Card.Title>
       </Card.Header>

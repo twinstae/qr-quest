@@ -1,3 +1,4 @@
+import { fileUpload } from "./file-upload";
 import { badge } from "./badge";
 import { collapsible } from "./collapsible";
 import { checkbox } from "./checkbox";
@@ -23,5 +24,6 @@ export const recipes = {
   checkbox,
   collapsible,
   badge,
+  fileUpload,
 };
 export const slotRecipes = {};

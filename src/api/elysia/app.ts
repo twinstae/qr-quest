@@ -99,6 +99,7 @@ export function createApp(ctx: AppContext) {
           id: t.String(),
           content: t.String(),
           image: ImageSchema,
+          answer: t.String(),
         }),
       ),
     })

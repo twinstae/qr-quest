@@ -27,8 +27,8 @@ interface ButtonLoadingProps {
   spinnerPlacement?: "start" | "end" | undefined;
 }
 
-type BaseButtonProps = ComponentProps<"button">;
 const BaseButton = styled("button", button);
+type BaseButtonProps = ComponentProps<typeof BaseButton>;
 
 export interface ButtonProps extends BaseButtonProps, ButtonLoadingProps {}
 
