@@ -191,3 +191,63 @@ describe("GET /api/groups/:id/quests", () => {
     expect(payload).toEqual([{ id: QUEST.id, content: QUEST.content, image: QUEST.image }]);
   });
 });
+
+describe("POST /api/uploads/presign", () => {
+  it("세션이 없으면 401을 반환한다", async () => {
+    const app = createApp(createFakeContext());
+
+    const response = await app.handle(
+      new Request("http://localhost/api/uploads/presign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: "cover.jpg", contentType: "image/jpeg" }),
+      }),
+    );
+
+    expect(response.status).toBe(401);
+  });
+
+  it("이미지 파일이면 업로드 URL을 반환한다", async () => {
+    const ctx = createFakeContext();
+    const cookie = await signInAndGetCookie(ctx);
+    const app = createApp(ctx);
+
+    const response = await app.handle(
+      new Request("http://localhost/api/uploads/presign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie },
+        body: JSON.stringify({ filename: "cover.jpg", contentType: "image/jpeg" }),
+      }),
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.uploadUrl).toContain("cover.jpg");
+    expect(payload.publicUrl).toContain("cover.jpg");
+  });
+
+  it("이미지가 아닌 파일은 스토리지를 호출하지 않고 거부한다", async () => {
+    let presignCalls = 0;
+    const ctx = createFakeContext({
+      imageStorage: {
+        async presignUpload() {
+          presignCalls++;
+          return { uploadUrl: "unused", publicUrl: "unused" };
+        },
+      },
+    });
+    const cookie = await signInAndGetCookie(ctx);
+    const app = createApp(ctx);
+
+    const response = await app.handle(
+      new Request("http://localhost/api/uploads/presign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie },
+        body: JSON.stringify({ filename: "doc.pdf", contentType: "application/pdf" }),
+      }),
+    );
+
+    expect(response.status).not.toBe(200);
+    expect(presignCalls).toBe(0);
+  });
+});

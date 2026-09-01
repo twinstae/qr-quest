@@ -6,6 +6,7 @@ import {
   listQuestsInGroup,
   submitAnswer,
 } from "../../application/questService.ts";
+import { presignUpload } from "../../application/uploadService.ts";
 import { NotExistError } from "../../domain/errors.ts";
 import type { AppContext } from "../context.ts";
 import { createAuthGuard } from "./authGuard.ts";
@@ -70,6 +71,14 @@ export function createApp(ctx: AppContext) {
           image: t.Object({ src: t.String(), alt: t.String() }),
         }),
       ),
+    })
+    .post("/uploads/presign", ({ body }) => presignUpload(ctx, body), {
+      auth: true,
+      body: t.Object({
+        filename: t.String(),
+        contentType: t.String({ pattern: "^image/" }),
+      }),
+      response: t.Object({ uploadUrl: t.String(), publicUrl: t.String() }),
     });
 }
 
