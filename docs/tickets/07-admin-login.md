@@ -1,7 +1,37 @@
 # 07. admin 은 passkey로 로그인할 수 있다
 
-Status: Not started (v1 scope is narrower than the title — see below)
+Status: Email+password v1 done and verified end-to-end via `bun run dev` + curl
+(sign-up, sign-in, session cookie, get-session). Passkey itself (the PLAN.md item's
+literal title) is still not started — left unchecked in PLAN.md until that lands.
 PLAN.md item: 7
+
+## What was actually built (v1 scope note)
+
+- `src/api/auth.ts` — `createAuth(database)` factory over better-auth, generic over
+  the adapter (mirrors the `createDrizzleXRepo`/`createFakeXRepo` pattern: real usage
+  passes `drizzleAdapter`, tests pass `memoryAdapter` — no hand-rolled fake auth, since
+  password hashing/session correctness is exactly what you don't want to reimplement).
+- Mounted at `/api/auth/*` via Elysia's `.mount(ctx.auth.handler)` — **note**: `.mount()`
+  forwards the full original request path, it does not strip the enclosing `prefix`.
+  better-auth's `basePath` must therefore be `"/api/auth"` (matching the real path), not
+  `"/auth"` — got this wrong on the first pass, caught by an end-to-end curl test.
+- `src/persistence/drizzle/authSchema.ts` — better-auth's `user`/`session`/`account`/
+  `verification` tables. **Not fully CLI-generated as originally planned**: the
+  published `@better-auth/cli` (tops out around 1.5.0-beta) is behind our installed
+  `better-auth@1.7.2` core, and generated a schema missing the `account.issuer` column
+  (+ its unique `issuer+accountId` index) that 1.7.x's core requires. Generated the
+  bulk via CLI, then hand-patched against `@better-auth/core`'s `get-tables.mjs` (the
+  actual runtime source of truth) to close the gap. Re-verify against that file if
+  bumping `better-auth` versions.
+- `src/api/seed-admin.ts` (`bun run seed:admin`, needs `ADMIN_EMAIL`/`ADMIN_PASSWORD`
+  env vars) — calls `auth.api.signUpEmail` directly, not a hand-rolled DB insert.
+- `src/lib/auth-client.ts` (`better-auth/react`'s `createAuthClient`) + `/admin/login`
+  page using it.
+- **Deferred to [06](06-select-quest-group.md)**: the `/admin` layout route's
+  `beforeLoad` session guard. There's no protected admin content yet to verify a guard
+  against, so building it now would be unverifiable. When 06 adds `/admin/groups`,
+  wrap it in a route that checks `authClient.getSession()` and redirects to
+  `/admin/login` if absent.
 
 ## Why
 

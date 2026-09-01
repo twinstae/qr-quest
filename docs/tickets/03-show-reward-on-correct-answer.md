@@ -30,7 +30,7 @@ from here on, not just this one:
   resource management) instead of manual `afterEach` cleanup bookkeeping.
 
 Known rough edge: a file-based PGLite instance (`pglite://...`) left unclosed leaves a
-stale `postmaster.pid` lock that hangs the *next* process indefinitely (no timeout, no
+stale `postmaster.pid` lock that hangs the _next_ process indefinitely (no timeout, no
 staleness check). `migrate.ts` now closes its client; any one-off script against
 `.data/dev` should do the same or you'll need to manually remove the lock file.
 

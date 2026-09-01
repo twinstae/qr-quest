@@ -84,3 +84,34 @@ describe("POST /api/quests/:id/submit-answer", () => {
     expect(payload).toEqual({ correct: false });
   });
 });
+
+describe("/api/auth/* (better-auth mount)", () => {
+  it("POST /api/auth/sign-up/email로 가입하고 로그인할 수 있다", async () => {
+    const app = createApp(createFakeContext());
+
+    const signUpResponse = await app.handle(
+      new Request("http://localhost/api/auth/sign-up/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Admin",
+          email: "admin@example.com",
+          password: "password1234",
+        }),
+      }),
+    );
+    expect(signUpResponse.status).toBe(200);
+
+    const signInResponse = await app.handle(
+      new Request("http://localhost/api/auth/sign-in/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "admin@example.com", password: "password1234" }),
+      }),
+    );
+    const payload = await signInResponse.json();
+
+    expect(signInResponse.status).toBe(200);
+    expect(payload.user.email).toBe("admin@example.com");
+  });
+});

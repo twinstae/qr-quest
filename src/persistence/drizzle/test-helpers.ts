@@ -2,7 +2,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle, type PgliteDatabase } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 
-import * as schema from "./schema.ts";
+import * as schema from "./fullSchema.ts";
 
 const migrationsFolder = new URL("./migrations", import.meta.url).pathname;
 

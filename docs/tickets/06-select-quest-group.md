@@ -20,7 +20,11 @@ group's quest list.
   - Lists quests with links/actions to create ([04](04-create-quest.md)), update
     ([05](05-update-quest.md)), and download QR ([01](01-qr-code-generation.md)).
 - Both routes sit under an `/admin` layout route (`src/routes/admin/route.tsx` or
-  similar) that will carry the auth guard from [07](07-admin-login.md).
+  similar) carrying a `beforeLoad` guard: check `authClient.getSession()`
+  (`src/lib/auth-client.ts`, from [07](07-admin-login.md)) and redirect to
+  `/admin/login` if there's no session. [07](07-admin-login.md) built the login page
+  and backend but explicitly deferred this guard here, since it couldn't be verified
+  against any real protected content until now.
 
 ## Explicitly deferred (v1 scope: create + list only)
 

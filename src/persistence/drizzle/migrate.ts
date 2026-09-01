@@ -7,7 +7,7 @@ import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
 import { migrate as migratePostgres } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
-import * as schema from "./schema.ts";
+import * as schema from "./fullSchema.ts";
 
 const migrationsFolder = new URL("./migrations", import.meta.url).pathname;
 

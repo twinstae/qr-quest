@@ -5,7 +5,7 @@ import { drizzle as drizzlePglite, type PgliteDatabase } from "drizzle-orm/pglit
 import { drizzle as drizzlePostgres, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import * as schema from "./schema.ts";
+import * as schema from "./fullSchema.ts";
 
 export type Database = PgliteDatabase<typeof schema> | PostgresJsDatabase<typeof schema>;
 

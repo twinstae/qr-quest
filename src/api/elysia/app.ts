@@ -6,6 +6,7 @@ import type { AppContext } from "../context.ts";
 
 export function createApp(ctx: AppContext) {
   return new Elysia({ prefix: "/api" })
+    .mount(ctx.auth.handler)
     .error({ NotExistError })
     .onError(({ code }) => {
       if (code === "NotExistError") return status("Not Found");

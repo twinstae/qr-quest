@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as IndexRouteImport } from "./routes/index";
+import { Route as AdminLoginRouteImport } from "./routes/admin/login";
 import { Route as ApiSplatRouteImport } from "./routes/api/$";
 import { Route as QuestQuestIdRouteImport } from "./routes/quest/$questId";
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
   path: "/",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: "/admin/login",
+  path: "/admin/login",
   getParentRoute: () => rootRouteImport,
 } as any);
 const ApiSplatRoute = ApiSplatRouteImport.update({
@@ -31,30 +37,34 @@ const QuestQuestIdRoute = QuestQuestIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/admin/login": typeof AdminLoginRoute;
   "/api/$": typeof ApiSplatRoute;
   "/quest/$questId": typeof QuestQuestIdRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
+  "/admin/login": typeof AdminLoginRoute;
   "/api/$": typeof ApiSplatRoute;
   "/quest/$questId": typeof QuestQuestIdRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
+  "/admin/login": typeof AdminLoginRoute;
   "/api/$": typeof ApiSplatRoute;
   "/quest/$questId": typeof QuestQuestIdRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/api/$" | "/quest/$questId";
+  fullPaths: "/" | "/admin/login" | "/api/$" | "/quest/$questId";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/api/$" | "/quest/$questId";
-  id: "__root__" | "/" | "/api/$" | "/quest/$questId";
+  to: "/" | "/admin/login" | "/api/$" | "/quest/$questId";
+  id: "__root__" | "/" | "/admin/login" | "/api/$" | "/quest/$questId";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  AdminLoginRoute: typeof AdminLoginRoute;
   ApiSplatRoute: typeof ApiSplatRoute;
   QuestQuestIdRoute: typeof QuestQuestIdRoute;
 }
@@ -66,6 +76,13 @@ declare module "@tanstack/react-router" {
       path: "/";
       fullPath: "/";
       preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/admin/login": {
+      id: "/admin/login";
+      path: "/admin/login";
+      fullPath: "/admin/login";
+      preLoaderRoute: typeof AdminLoginRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/api/$": {
@@ -87,6 +104,7 @@ declare module "@tanstack/react-router" {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminLoginRoute: AdminLoginRoute,
   ApiSplatRoute: ApiSplatRoute,
   QuestQuestIdRoute: QuestQuestIdRoute,
 };
