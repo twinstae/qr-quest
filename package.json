@@ -2,9 +2,6 @@
   "name": "qr-quest",
   "private": true,
   "type": "module",
-  "imports": {
-    "@/*": "./src/*"
-  },
   "scripts": {
     "prepare": "panda codegen",
     "dev": "vite dev --port 3000",
@@ -13,7 +10,7 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsgoconfig.json",
     "test": "vitest",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
