@@ -1,7 +1,16 @@
 # 04-3. 이미지 업로드 폼 필드
 
-Status: Not started
+Status: Done. Typechecks/lints/compiles against the existing `SimpleForm` machinery.
+Not click-tested in a real browser (no browser automation available this session,
+same limitation as prior UI tickets) — will get indirect coverage once
+[04-5](04-5-create-quest-page.md) actually renders it on a page reachable via
+`bun run dev`.
 Part of: [04](04-create-quest.md)
+
+`SimpleImageUpload`'s field value is `{ src: string; alt: string }`. `alt` isn't a
+separate user-editable input for MVP — it's set to the uploaded file's name
+automatically. Accessibility-conscious custom alt text is a fine future addition,
+not blocking here.
 
 ## Scope
 

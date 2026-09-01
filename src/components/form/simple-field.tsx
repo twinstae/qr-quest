@@ -1,9 +1,10 @@
-import { useId, type ComponentProps } from "react";
+import { useId, useState, type ChangeEvent, type ComponentProps } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 import { Input } from "@/components/ui/input.tsx";
 import * as Field from "@/components/ui/field.tsx";
 import * as Checkbox from "@/components/ui/checkbox.tsx";
+import { getApiClient } from "@/lib/api-client.ts";
 
 // export function SimpleDatePicker({ name, label }: { name: string; label: string }) {
 //   const { control } = useFormContext();
@@ -111,6 +112,92 @@ export function SimpleCheckbox({
             {isError && errorMessage && (
               <Field.ErrorText id={errorId} role="alert" aria-label={errorMessage}>
                 {errorMessage}
+              </Field.ErrorText>
+            )}
+          </Field.Root>
+        );
+      }}
+      control={control}
+      name={name}
+    />
+  );
+}
+
+export type SimpleImageValue = { src: string; alt: string };
+
+// 업로드만 지원한다 (외부 URL 붙여넣기 없음) — ticket 04 결정 사항.
+export function SimpleImageUpload({
+  name,
+  label,
+  hint,
+  required,
+}: {
+  name: string;
+  label: string;
+  hint?: string;
+  required?: boolean;
+}) {
+  const { control } = useFormContext();
+  const [status, setStatus] = useState<"idle" | "uploading" | "error">("idle");
+
+  const descriptionId = useId();
+  const errorId = useId();
+
+  return (
+    <Controller
+      render={({ field, fieldState }) => {
+        const isError = !!fieldState.error || status === "error";
+        const errorMessage = fieldState.error?.root?.message ?? fieldState.error?.message;
+        const value = field.value as SimpleImageValue | undefined;
+
+        async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
+          const file = event.target.files?.[0];
+          if (!file) return;
+
+          setStatus("uploading");
+          const client = getApiClient();
+          const { data: presigned } = await client.uploads.presign.post({
+            filename: file.name,
+            contentType: file.type,
+          });
+          if (!presigned) {
+            setStatus("error");
+            return;
+          }
+
+          const uploadResponse = await fetch(presigned.uploadUrl, {
+            method: "PUT",
+            headers: { "Content-Type": file.type },
+            body: file,
+          });
+          if (!uploadResponse.ok) {
+            setStatus("error");
+            return;
+          }
+
+          field.onChange({ src: presigned.publicUrl, alt: file.name } satisfies SimpleImageValue);
+          setStatus("idle");
+        }
+
+        return (
+          <Field.Root>
+            <Field.Label>
+              {label} {required && <Field.RequiredIndicator />}
+            </Field.Label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              aria-invalid={isError}
+              aria-describedby={isError ? errorId : hint ? descriptionId : undefined}
+              aria-errormessage={isError ? errorId : undefined}
+            />
+            {status === "uploading" && <p>업로드 중...</p>}
+            {value && <img src={value.src} alt={value.alt} width={96} height={96} />}
+            {hint && !isError && <Field.HelperText id={descriptionId}>{hint}</Field.HelperText>}
+            {isError && (
+              <Field.ErrorText id={errorId} role="alert">
+                {status === "error" ? "업로드에 실패했습니다" : errorMessage}
               </Field.ErrorText>
             )}
           </Field.Root>
