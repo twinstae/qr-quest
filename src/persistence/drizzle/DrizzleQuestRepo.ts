@@ -52,6 +52,10 @@ export function createDrizzleQuestRepo(db: Database): QuestRepo {
       if (!row) throw new Error("insert did not return a row");
       return toDomain(row);
     },
+    async listByGroupId(groupId) {
+      const rows = await db.query.quests.findMany({ where: eq(quests.groupId, groupId) });
+      return rows.map(toDomain);
+    },
   } satisfies QuestRepo;
 }
 

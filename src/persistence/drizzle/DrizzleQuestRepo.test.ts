@@ -64,4 +64,33 @@ describe("createDrizzleQuestRepo", () => {
 
     expect(quest).toBeUndefined();
   });
+
+  it("listByGroupId는 해당 그룹의 퀘스트만 반환한다", async () => {
+    await using db = await createTestDatabase();
+    const groupRepo = createDrizzleQuestGroupRepo(db);
+    const repo = createDrizzleQuestRepo(db);
+
+    const groupA = await groupRepo.create({ name: "그룹 A" });
+    const groupB = await groupRepo.create({ name: "그룹 B" });
+
+    const questInput = (groupId: string, content: string): Omit<Quest, "id"> => ({
+      groupId,
+      content,
+      image: { src: "https://example.com/cover.jpg", alt: "cover" },
+      answer: "answer",
+      alternatives: [],
+      placeholder: "placeholder",
+      hint: "hint",
+      reward: { text: undefined, image: undefined },
+    });
+
+    const questA1 = await repo.create(questInput(groupA.id, "A1"));
+    const questA2 = await repo.create(questInput(groupA.id, "A2"));
+    await repo.create(questInput(groupB.id, "B1"));
+
+    const questsInA = await repo.listByGroupId(groupA.id);
+
+    expect(questsInA).toEqual(expect.arrayContaining([questA1, questA2]));
+    expect(questsInA).toHaveLength(2);
+  });
 });

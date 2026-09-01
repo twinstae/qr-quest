@@ -1,7 +1,11 @@
 import { Elysia, status, t } from "elysia";
 
 import { createGroup, listGroups } from "../../application/questGroupService.ts";
-import { getQuestForDisplay, submitAnswer } from "../../application/questService.ts";
+import {
+  getQuestForDisplay,
+  listQuestsInGroup,
+  submitAnswer,
+} from "../../application/questService.ts";
 import { NotExistError } from "../../domain/errors.ts";
 import type { AppContext } from "../context.ts";
 import { createAuthGuard } from "./authGuard.ts";
@@ -55,6 +59,17 @@ export function createApp(ctx: AppContext) {
       auth: true,
       body: t.Object({ name: t.String(), description: t.Optional(t.String()) }),
       response: QuestGroupSchema,
+    })
+    .get("/groups/:id/quests", ({ params }) => listQuestsInGroup(ctx, params.id), {
+      auth: true,
+      params: t.Object({ id: t.String() }),
+      response: t.Array(
+        t.Object({
+          id: t.String(),
+          content: t.String(),
+          image: t.Object({ src: t.String(), alt: t.String() }),
+        }),
+      ),
     });
 }
 

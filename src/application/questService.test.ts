@@ -4,7 +4,7 @@ import { createFakeContext } from "../api/context.ts";
 import { NotExistError } from "../domain/errors.ts";
 import type { Quest } from "../domain/quest.ts";
 import createFakeQuestRepo from "../persistence/FakeQuestRepo.ts";
-import { getQuestForDisplay, submitAnswer } from "./questService.ts";
+import { getQuestForDisplay, listQuestsInGroup, submitAnswer } from "./questService.ts";
 
 const QUEST: Quest = {
   id: "quest-1",
@@ -64,5 +64,23 @@ describe("submitAnswer", () => {
     const ctx = createFakeContext();
 
     await expect(submitAnswer(ctx, "missing", "anything")).rejects.toThrow(NotExistError);
+  });
+});
+
+describe("listQuestsInGroup", () => {
+  it("정답을 제외한 요약 정보만 반환한다", async () => {
+    const ctx = contextWithQuest(QUEST);
+
+    const summaries = await listQuestsInGroup(ctx, QUEST.groupId);
+
+    expect(summaries).toEqual([{ id: QUEST.id, content: QUEST.content, image: QUEST.image }]);
+  });
+
+  it("다른 그룹의 퀘스트는 포함하지 않는다", async () => {
+    const ctx = contextWithQuest(QUEST);
+
+    const summaries = await listQuestsInGroup(ctx, "other-group");
+
+    expect(summaries).toEqual([]);
   });
 });

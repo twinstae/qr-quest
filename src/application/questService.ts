@@ -13,6 +13,12 @@ export type SubmitAnswerResult =
   | { correct: false }
   | { correct: true; reward: { text?: string; image?: { src: string; alt: string } } };
 
+export type QuestSummary = {
+  id: string;
+  content: string;
+  image: { src: string; alt: string };
+};
+
 async function getQuestOrThrow(ctx: AppContext, id: string) {
   const quest = await ctx.repo.quest.getById(id);
   if (!quest) throw new NotExistError(`Quest id=${id} not found`);
@@ -37,4 +43,9 @@ export async function submitAnswer(
   const quest = await getQuestOrThrow(ctx, id);
   if (!isCorrectAnswer(quest, answer)) return { correct: false };
   return { correct: true, reward: quest.reward };
+}
+
+export async function listQuestsInGroup(ctx: AppContext, groupId: string): Promise<QuestSummary[]> {
+  const quests = await ctx.repo.quest.listByGroupId(groupId);
+  return quests.map(({ id, content, image }) => ({ id, content, image }));
 }

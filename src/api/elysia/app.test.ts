@@ -163,3 +163,31 @@ describe("/api/groups", () => {
     expect(groups).toContainEqual(created);
   });
 });
+
+describe("GET /api/groups/:id/quests", () => {
+  it("세션이 없으면 401을 반환한다", async () => {
+    const app = createApp(createFakeContext());
+
+    const response = await app.handle(new Request("http://localhost/api/groups/group-1/quests"));
+
+    expect(response.status).toBe(401);
+  });
+
+  it("로그인한 상태면 그룹의 퀘스트 요약을 반환한다 (정답 미포함)", async () => {
+    const ctx = createFakeContext({
+      repo: { quest: createFakeQuestRepo({ [QUEST.id]: QUEST }) },
+    });
+    const cookie = await signInAndGetCookie(ctx);
+    const app = createApp(ctx);
+
+    const response = await app.handle(
+      new Request(`http://localhost/api/groups/${QUEST.groupId}/quests`, {
+        headers: { cookie },
+      }),
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toEqual([{ id: QUEST.id, content: QUEST.content, image: QUEST.image }]);
+  });
+});
