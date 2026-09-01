@@ -10,6 +10,9 @@ export function createFakeQuestGroupRepo(initState: Record<string, QuestGroup>):
       state.set(group.id, group);
       return group;
     },
+    async list() {
+      return [...state.values()];
+    },
   } satisfies QuestGroupRepo;
 }
 

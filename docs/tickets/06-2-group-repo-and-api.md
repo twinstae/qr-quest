@@ -1,7 +1,14 @@
 # 06-2. QuestGroupRepo.list + POST/GET /api/groups
 
-Status: Not started
+Status: Done. Verified end-to-end via `bun run dev` + curl (401 without session,
+create + list working with one).
 Part of: [06](06-select-quest-group.md)
+
+`createFakeContext`'s `override` now deep-merges `repo` (`...override.repo` instead
+of replacing the whole `repo` object) — needed once `repo` had two keys, since
+existing call sites only override `quest` and expect `questGroup` to still get its
+default. Same pattern will apply for any future repo addition, no further changes
+needed there.
 
 ## Why
 

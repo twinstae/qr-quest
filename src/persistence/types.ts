@@ -8,4 +8,5 @@ export interface QuestRepo {
 
 export interface QuestGroupRepo {
   create(input: Omit<QuestGroup, "id">): Promise<QuestGroup>;
+  list(): Promise<QuestGroup[]>;
 }

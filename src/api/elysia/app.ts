@@ -1,9 +1,16 @@
 import { Elysia, status, t } from "elysia";
 
+import { createGroup, listGroups } from "../../application/questGroupService.ts";
 import { getQuestForDisplay, submitAnswer } from "../../application/questService.ts";
 import { NotExistError } from "../../domain/errors.ts";
 import type { AppContext } from "../context.ts";
 import { createAuthGuard } from "./authGuard.ts";
+
+const QuestGroupSchema = t.Object({
+  id: t.String(),
+  name: t.String(),
+  description: t.Optional(t.String()),
+});
 
 export function createApp(ctx: AppContext) {
   return new Elysia({ prefix: "/api" })
@@ -39,7 +46,16 @@ export function createApp(ctx: AppContext) {
           }),
         ]),
       },
-    );
+    )
+    .get("/groups", () => listGroups(ctx), {
+      auth: true,
+      response: t.Array(QuestGroupSchema),
+    })
+    .post("/groups", ({ body }) => createGroup(ctx, body), {
+      auth: true,
+      body: t.Object({ name: t.String(), description: t.Optional(t.String()) }),
+      response: QuestGroupSchema,
+    });
 }
 
 export type App = ReturnType<typeof createApp>;

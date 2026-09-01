@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createFakeContext } from "../context.ts";
+import { signInAndGetCookie } from "../testHelpers.ts";
 import type { Quest } from "../../domain/quest.ts";
 import createFakeQuestRepo from "../../persistence/FakeQuestRepo.ts";
 import { createApp } from "./app.ts";
@@ -113,5 +114,52 @@ describe("/api/auth/* (better-auth mount)", () => {
 
     expect(signInResponse.status).toBe(200);
     expect(payload.user.email).toBe("admin@example.com");
+  });
+});
+
+describe("/api/groups", () => {
+  it("세션이 없으면 401을 반환한다", async () => {
+    const app = createApp(createFakeContext());
+
+    const getResponse = await app.handle(new Request("http://localhost/api/groups"));
+    expect(getResponse.status).toBe(401);
+
+    const postResponse = await app.handle(
+      new Request("http://localhost/api/groups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Library Event 2026" }),
+      }),
+    );
+    expect(postResponse.status).toBe(401);
+  });
+
+  it("로그인한 상태면 그룹을 생성하고 목록을 조회할 수 있다", async () => {
+    const ctx = createFakeContext();
+    const cookie = await signInAndGetCookie(ctx);
+    const app = createApp(ctx);
+
+    const createResponse = await app.handle(
+      new Request("http://localhost/api/groups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie },
+        body: JSON.stringify({ name: "Library Event 2026", description: "가을 행사" }),
+      }),
+    );
+    const created = await createResponse.json();
+    expect(createResponse.status).toBe(200);
+    expect(created).toEqual({
+      id: created.id,
+      name: "Library Event 2026",
+      description: "가을 행사",
+    });
+
+    const listResponse = await app.handle(
+      new Request("http://localhost/api/groups", { headers: { cookie } }),
+    );
+    const groups = await listResponse.json();
+
+    expect(listResponse.status).toBe(200);
+    expect(groups).toContainEqual(created);
   });
 });

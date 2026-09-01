@@ -17,7 +17,7 @@ Part of: [06](06-select-quest-group.md)
   `_` prefix convention: contributes no URL segment, just wraps children).
   `beforeLoad` redirects to `/admin/login` if there's no session. Registers at
   `fullPath: "/admin"`, so visiting bare `/admin` already exercises it.
-  `src/routes/admin/login.tsx` stays a sibling *outside* `_authed`, so it's never
+  `src/routes/admin/login.tsx` stays a sibling _outside_ `_authed`, so it's never
   wrapped by its own guard.
 
 ## Bug caught during end-to-end verification (not visible in unit tests)
@@ -30,6 +30,7 @@ URL against. Same class of problem `getApiClient` (ticket 03) already solved wit
 `createIsomorphicFn`.
 
 Fix: `src/lib/auth-client.ts` now exports `getCurrentSession`, isomorphic:
+
 - `.server()`: calls `auth.api.getSession({ headers: getRequest().headers })` directly
   (no HTTP round-trip — `getRequest`/`getRequest().headers` from
   `@tanstack/react-start/server`), using the real incoming request's cookies.

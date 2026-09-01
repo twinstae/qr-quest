@@ -1,6 +1,7 @@
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 import { createDatabase } from "../../persistence/drizzle/client.ts";
+import createDrizzleQuestGroupRepo from "../../persistence/drizzle/DrizzleQuestGroupRepo.ts";
 import createDrizzleQuestRepo from "../../persistence/drizzle/DrizzleQuestRepo.ts";
 import { createAuth } from "../auth.ts";
 import type { AppContext } from "../context.ts";
@@ -12,6 +13,7 @@ const db = createDatabase(databaseUrl);
 const ctx: AppContext = {
   repo: {
     quest: createDrizzleQuestRepo(db),
+    questGroup: createDrizzleQuestGroupRepo(db),
   },
   auth: createAuth(drizzleAdapter(db, { provider: "pg" })),
 };
