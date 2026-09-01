@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 
 import { Button } from "@/components/ui/button.tsx";
+import { Group } from "@/components/ui/group.tsx";
 import { QrCode } from "lucide-react";
 
 function triggerDownload(filename: string, href: string) {
@@ -34,7 +35,7 @@ export function QuestQrCodeDownload({ questId }: { questId: string }) {
   }
 
   return (
-    <span>
+    <Group attached>
       <QRCodeSVG ref={svgRef} value={url} size={128} title={url} style={{ display: "none" }} />
       <QRCodeCanvas
         ref={canvasRef}
@@ -43,12 +44,12 @@ export function QuestQrCodeDownload({ questId }: { questId: string }) {
         title={url}
         style={{ display: "none" }}
       />
-      <Button type="button" variant="surface" size="sm" onClick={downloadSvg}>
-        <QrCode /> SVG 다운로드
+      <Button type="button" variant="outline" size="xs" onClick={downloadSvg}>
+        <QrCode /> SVG
       </Button>
-      <Button type="button" variant="surface" size="sm" onClick={downloadPng}>
-        <QrCode /> PNG 다운로드
+      <Button type="button" variant="outline" size="xs" onClick={downloadPng}>
+        <QrCode /> PNG
       </Button>
-    </span>
+    </Group>
   );
 }

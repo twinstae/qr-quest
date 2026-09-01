@@ -19,6 +19,14 @@ const CenterMain = styled("main", {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    px: "4",
+  },
+});
+
+const ErrorText = styled("p", {
+  base: {
+    color: "error",
+    textStyle: "sm",
   },
 });
 
@@ -28,9 +36,9 @@ function RouteComponent() {
 
   return (
     <CenterMain>
-      <Card.Root minWidth="400px" maxWidth="screen">
+      <Card.Root variant="elevated" width="full" maxWidth="sm">
         <Card.Header>
-          <Card.Title>관리자 로그인</Card.Title>
+          <Card.Title textStyle="xl">관리자 로그인</Card.Title>
         </Card.Header>
         <Card.Body>
           <SimpleForm
@@ -51,11 +59,11 @@ function RouteComponent() {
           >
             <SimpleInput name="email" label="이메일" placeholder="admin@example.com" />
             <SimpleInput name="password" label="비밀번호" type="password" />
-            <Button type="submit" color="primary" className="mt-2">
+            {error && <ErrorText role="alert">{error}</ErrorText>}
+            <Button type="submit" width="full">
               로그인
             </Button>
           </SimpleForm>
-          {error && <p>{error}</p>}
         </Card.Body>
       </Card.Root>
     </CenterMain>

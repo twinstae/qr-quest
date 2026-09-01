@@ -63,7 +63,12 @@ describe("listQuestsInGroup", () => {
     const summaries = await listQuestsInGroup(ctx, TEST_QUEST.groupId);
 
     expect(summaries).toEqual([
-      { id: TEST_QUEST.id, content: TEST_QUEST.content, image: TEST_QUEST.image },
+      {
+        id: TEST_QUEST.id,
+        content: TEST_QUEST.content,
+        image: TEST_QUEST.image,
+        answer: TEST_QUEST.answer,
+      },
     ]);
   });
 

@@ -154,7 +154,12 @@ describe("GET /api/groups/:id/quests", () => {
 
     expect(response.status).toBe(200);
     expect(payload).toEqual([
-      { id: TEST_QUEST.id, content: TEST_QUEST.content, image: TEST_QUEST.image },
+      {
+        id: TEST_QUEST.id,
+        content: TEST_QUEST.content,
+        image: TEST_QUEST.image,
+        answer: TEST_QUEST.answer,
+      },
     ]);
   });
 });

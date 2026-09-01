@@ -1,13 +1,11 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import * as v from "valibot";
+import { createFileRoute } from "@tanstack/react-router";
+import { FolderPlus } from "lucide-react";
 
-import { SimpleInput } from "@/components/form/simple-field";
-import { SimpleForm } from "@/components/form/simple-form";
-import { Button } from "@/components/ui/button.tsx";
-import * as Card from "@/components/ui/card.tsx";
+import { CreateGroupDialog } from "@/components/domains/group-form-dialog.tsx";
+import { EmptyState } from "@/components/domains/empty-state.tsx";
+import { GroupListItem } from "@/components/domains/group-list-item.tsx";
 import { getApiClient } from "@/lib/api-client";
-import { styled } from "styled-system/jsx";
-import { button } from "styled-system/recipes";
+import { Flex, Grid, styled } from "styled-system/jsx";
 
 export const Route = createFileRoute("/admin/_authed/groups/")({
   component: RouteComponent,
@@ -18,72 +16,47 @@ export const Route = createFileRoute("/admin/_authed/groups/")({
   },
 });
 
-const CenterMain = styled("main", {
+const Main = styled("main", {
   base: {
-    minHeight: "screen",
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    justifyContent: "center",
-    alignItems: "center",
+    maxWidth: "5xl",
+    marginX: "auto",
+    width: "full",
+    px: "6",
+    py: "10",
+  },
+});
+
+const PageTitle = styled("h1", {
+  base: {
+    textStyle: "2xl",
+    fontWeight: "bold",
   },
 });
 
 function RouteComponent() {
   const { groups } = Route.useLoaderData();
-  const router = useRouter();
 
   return (
-    <CenterMain>
-      <Card.Root minWidth="400px" maxWidth="screen">
-        <Card.Header>
-          <Card.Title>Quest 그룹</Card.Title>
-        </Card.Header>
-        <Card.Body>
-          <ul>
-            {groups.map((group) => (
-              <li key={group.id}>
-                <Link
-                  to="/admin/groups/$groupId"
-                  params={{ groupId: group.id }}
-                  className={button({ variant: "surface" })}
-                >
-                  {group.name}
-                  {group.description && <span> — {group.description}</span>} →
-                </Link>
-              </li>
-            ))}
+    <Main>
+      <Flex justify="space-between" align="center" gap="4" mb="8">
+        <PageTitle>Quest 그룹</PageTitle>
+        <CreateGroupDialog />
+      </Flex>
 
-            {groups.length === 0 && <li>아직 만들어진 그룹이 없습니다.</li>}
-          </ul>
-        </Card.Body>
-      </Card.Root>
-
-      <Card.Root minWidth="400px" maxWidth="screen">
-        <Card.Header>
-          <Card.Title>그룹 추가</Card.Title>
-        </Card.Header>
-        <Card.Body>
-          <SimpleForm
-            schema={v.object({
-              name: v.pipe(v.string(), v.minLength(1, "그룹 이름을 입력해주세요")),
-              description: v.string(),
-            })}
-            defaultValues={{ name: "", description: "" }}
-            onSubmit={async ({ name, description }) => {
-              const client = getApiClient();
-              await client.groups.post({ name, description: description || undefined });
-              await router.invalidate();
-            }}
-          >
-            <SimpleInput name="name" label="그룹 이름" placeholder="Library Event 2026" />
-            <SimpleInput name="description" label="설명 (선택)" />
-            <Button type="submit" color="primary" className="mt-2">
-              그룹 만들기
-            </Button>
-          </SimpleForm>
-        </Card.Body>
-      </Card.Root>
-    </CenterMain>
+      {groups.length === 0 ? (
+        <EmptyState
+          icon={<FolderPlus />}
+          title="아직 만들어진 그룹이 없어요"
+          description="그룹은 이벤트 단위로 Quest를 묶는 단위예요. 먼저 그룹을 하나 만들어보세요."
+          action={<CreateGroupDialog />}
+        />
+      ) : (
+        <Grid columns={{ base: 1, sm: 2, lg: 3 }} gap="4">
+          {groups.map((group) => (
+            <GroupListItem key={group.id} group={group} />
+          ))}
+        </Grid>
+      )}
+    </Main>
   );
 }

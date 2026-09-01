@@ -31,14 +31,11 @@ export function SimpleForm<Output>({
     reValidateMode: reValidateMode ?? "onSubmit",
   });
 
-  const values = methods.watch();
   return (
     <FormProvider {...methods}>
       <FormBase onSubmit={methods.handleSubmit(onSubmit)} {...props}>
         {props.children}
       </FormBase>
-
-      {JSON.stringify(values)}
     </FormProvider>
   );
 }

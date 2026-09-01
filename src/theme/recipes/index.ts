@@ -2,6 +2,7 @@ import { fileUpload } from "./file-upload";
 import { badge } from "./badge";
 import { collapsible } from "./collapsible";
 import { checkbox } from "./checkbox";
+import { dialog } from "./dialog";
 import { field } from "./field";
 import { fieldset } from "./fieldset";
 import { input } from "./input";
@@ -17,6 +18,7 @@ export const recipes = {
   absoluteCenter,
   spinner,
   card,
+  dialog,
   table,
   input,
   fieldset,

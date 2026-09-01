@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { button } from "styled-system/recipes";
+import { ArrowLeft, MapPinPlus } from "lucide-react";
 
-import { QuestQrCodeDownload } from "@/components/domains/quest-qr-code.tsx";
-import * as Card from "@/components/ui/card.tsx";
+import { CreateQuestDialog } from "@/components/domains/quest-form-dialog.tsx";
+import { EmptyState } from "@/components/domains/empty-state.tsx";
+import { QuestListItem } from "@/components/domains/quest-list-item.tsx";
 import { getApiClient } from "@/lib/api-client";
-import { styled } from "styled-system/jsx";
 import { css } from "styled-system/css";
-import { cn } from "@/lib/utils";
+import { Flex, Grid, styled } from "styled-system/jsx";
 
 export const Route = createFileRoute("/admin/_authed/groups/$groupId/")({
   component: RouteComponent,
@@ -17,14 +17,32 @@ export const Route = createFileRoute("/admin/_authed/groups/$groupId/")({
   },
 });
 
-const CenterMain = styled("main", {
+const Main = styled("main", {
   base: {
-    minHeight: "screen",
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    justifyContent: "center",
+    maxWidth: "5xl",
+    marginX: "auto",
+    width: "full",
+    px: "6",
+    py: "10",
+  },
+});
+
+const BackLink = styled(Link, {
+  base: {
+    display: "inline-flex",
     alignItems: "center",
+    gap: "1",
+    color: "fg.muted",
+    textStyle: "sm",
+    mb: "3",
+    _hover: { color: "fg.default" },
+  },
+});
+
+const PageTitle = styled("h1", {
+  base: {
+    textStyle: "2xl",
+    fontWeight: "bold",
   },
 });
 
@@ -33,47 +51,30 @@ function RouteComponent() {
   const { quests } = Route.useLoaderData();
 
   return (
-    <CenterMain>
-      <Card.Root minWidth="400px" maxWidth="screen">
-        <Card.Header>
-          <Card.Title>그룹의 Quest 목록</Card.Title>
-        </Card.Header>
-        <Card.Body>
-          {quests.length === 0 ? (
-            <p>아직 이 그룹에 Quest가 없습니다.</p>
-          ) : (
-            <ul className={css({ display: "flex", flexDirection: "column", gap: "16px" })}>
-              {quests.map((quest) => (
-                <li
-                  key={quest.id}
-                  className={css({ display: "flex", flexDirection: "column", gap: "16px" })}
-                >
-                  <img src={quest.image.src} alt={quest.image.alt} width={48} height={48} />
-                  질문 : {quest.content}
-                  정답 : {quest.answer}
-                  <Link
-                    to="/admin/groups/$groupId/quests/$questId/edit"
-                    params={{ groupId, questId: quest.id }}
-                    className={button({ variant: "solid", size: "sm" })}
-                  >
-                    수정
-                  </Link>
-                  <QuestQrCodeDownload questId={quest.id} />
-                </li>
-              ))}
-              <li>
-                <Link
-                  to="/admin/groups/$groupId/quests/new"
-                  params={{ groupId }}
-                  className={cn(button(), css({ width: "full" }))}
-                >
-                  Quest 만들기
-                </Link>
-              </li>
-            </ul>
-          )}
-        </Card.Body>
-      </Card.Root>
-    </CenterMain>
+    <Main>
+      <BackLink to="/admin/groups">
+        <ArrowLeft className={css({ boxSize: "4" })} /> 그룹 목록
+      </BackLink>
+
+      <Flex justify="space-between" align="center" gap="4" mb="8">
+        <PageTitle>Quest 목록</PageTitle>
+        <CreateQuestDialog groupId={groupId} />
+      </Flex>
+
+      {quests.length === 0 ? (
+        <EmptyState
+          icon={<MapPinPlus />}
+          title="아직 이 그룹에 Quest가 없어요"
+          description="Quest를 추가하면 QR 코드를 내려받아 현장에 배치할 수 있어요."
+          action={<CreateQuestDialog groupId={groupId} />}
+        />
+      ) : (
+        <Grid columns={{ base: 1, sm: 2, lg: 3 }} gap="4">
+          {quests.map((quest) => (
+            <QuestListItem key={quest.id} quest={quest} />
+          ))}
+        </Grid>
+      )}
+    </Main>
   );
 }
