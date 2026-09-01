@@ -1,7 +1,6 @@
 # 06. Quest 그룹 목록에서 그룹을 선택할 수 있다
 
-Status: Split into mini-tickets below (in build order). This file is the overview;
-each mini-ticket gets its own RED → GREEN → REFACTOR → commit cycle.
+Status: Done — all 5 mini-tickets complete and verified end-to-end.
 PLAN.md item: 6
 
 ## Why

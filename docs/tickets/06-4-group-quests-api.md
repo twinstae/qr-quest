@@ -13,7 +13,7 @@ Part of: [06](06-select-quest-group.md)
 
 Killing `bun run dev` with `pkill` (SIGTERM) doesn't let PGLite release its
 `postmaster.pid` lock cleanly — already known (ticket 03). New this time: after
-manually deleting that stale lock file and reopening the *same* data directory from a
+manually deleting that stale lock file and reopening the _same_ data directory from a
 one-off script, PGLite hung indefinitely with no other process holding it (not a lock
 contention case — confirmed via `ps aux` that nothing else was touching `.data/dev`).
 Root cause not diagnosed. Workaround: `rm -rf .data` and re-migrate fresh rather than

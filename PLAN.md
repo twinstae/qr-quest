@@ -3,7 +3,7 @@
 3. [x] 답을 맞추면 뭔가를 보여준다 ([ticket](docs/tickets/03-show-reward-on-correct-answer.md))
 4. [ ] Quest를 생성할 수 있다 ([ticket](docs/tickets/04-create-quest.md))
 5. [ ] Quest를 수정할 수 있다 ([ticket](docs/tickets/05-update-quest.md))
-6. [ ] Quest 그룹 목록에서 그룹을 선택할 수 있다 ([ticket](docs/tickets/06-select-quest-group.md))
+6. [x] Quest 그룹 목록에서 그룹을 선택할 수 있다 ([ticket](docs/tickets/06-select-quest-group.md))
 7. [ ] admin 은 passkey로 로그인할 수 있다. ([ticket](docs/tickets/07-admin-login.md) — v1 scope is email+password only, passkey deferred)
 8. [ ] 실제 데이터베이스에 연결된다 ([ticket](docs/tickets/08-database-connection.md))
 9. [ ] 배포되서 링크로 진입할 수 있다 ([ticket](docs/tickets/09-deployment.md))

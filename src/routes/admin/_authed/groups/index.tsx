@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import * as v from "valibot";
 
 import { SimpleInput } from "@/components/form/simple-field";
@@ -26,11 +26,12 @@ function RouteComponent() {
         <Card.Title>Quest 그룹</Card.Title>
       </Card.Header>
       <Card.Body>
-        {/* 06-5에서 /admin/groups/$groupId가 생기면 각 항목을 링크로 바꾼다 */}
         <ul>
           {groups.map((group) => (
             <li key={group.id}>
-              {group.name}
+              <Link to="/admin/groups/$groupId" params={{ groupId: group.id }}>
+                {group.name}
+              </Link>
               {group.description && <span> — {group.description}</span>}
             </li>
           ))}

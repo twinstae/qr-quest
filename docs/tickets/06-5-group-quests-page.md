@@ -1,7 +1,18 @@
 # 06-5. `/admin/groups/$groupId` 페이지
 
-Status: Not started
+Status: Done. Verified end-to-end via `bun run dev` + curl: guard redirect, empty
+state, and (after seeding a quest directly through the repo, since no create-quest
+UI exists yet) a quest actually rendering in the list.
 Part of: [06](06-select-quest-group.md)
+
+Built at `src/routes/admin/_authed/groups/$groupId.tsx` (matches the `_authed`
+nesting from 06-1/06-3, not the originally-sketched `admin/groups/$groupId.tsx`).
+`src/routes/admin/_authed/groups/index.tsx` now links each group row to this route
+(`Link to="/admin/groups/$groupId"`) — deferred from 06-3 since the route didn't
+exist yet at that point.
+
+A disabled "Quest 만들기" button and a code comment mark where 04/05/01's actions
+attach; no links to unbuilt routes.
 
 ## Why
 
