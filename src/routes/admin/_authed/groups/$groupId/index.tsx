@@ -35,7 +35,13 @@ function RouteComponent() {
               <li key={quest.id}>
                 <img src={quest.image.src} alt={quest.image.alt} width={48} height={48} />
                 {quest.content}
-                {/* "수정"(ticket 05), "QR 다운로드"(ticket 01) 버튼은 각 티켓에서 추가한다 */}
+                <Link
+                  to="/admin/groups/$groupId/quests/$questId/edit"
+                  params={{ groupId, questId: quest.id }}
+                >
+                  수정
+                </Link>
+                {/* "QR 다운로드"(ticket 01) 버튼은 해당 티켓에서 추가한다 */}
               </li>
             ))}
           </ul>

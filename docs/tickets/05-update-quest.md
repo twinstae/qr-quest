@@ -1,6 +1,6 @@
 # 05. Quest를 수정할 수 있다
 
-Status: Split into mini-tickets below (same pattern as tickets 04/06).
+Status: Done — both mini-tickets complete.
 PLAN.md item: 5
 
 ## Why

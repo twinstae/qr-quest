@@ -1,6 +1,9 @@
 # 05-2. Quest 수정 페이지
 
-Status: Not started
+Status: Done. Verified end-to-end via `bun run dev` + curl: edit link on the group
+page, edit page renders with pre-filled content/answer, guard redirect when logged
+out. (The PATCH itself and its effect on solvability were already verified in
+[05-1](05-1-update-quest-api.md); this ticket just wires the UI to it.)
 Part of: [05](05-update-quest.md)
 
 ## Scope

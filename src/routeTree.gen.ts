@@ -17,6 +17,7 @@ import { Route as QuestQuestIdRouteImport } from "./routes/quest/$questId";
 import { Route as AdminAuthedGroupsIndexRouteImport } from "./routes/admin/_authed/groups/index";
 import { Route as AdminAuthedGroupsGroupIdIndexRouteImport } from "./routes/admin/_authed/groups/$groupId/index";
 import { Route as AdminAuthedGroupsGroupIdQuestsNewRouteImport } from "./routes/admin/_authed/groups/$groupId/quests/new";
+import { Route as AdminAuthedGroupsGroupIdQuestsQuestIdEditRouteImport } from "./routes/admin/_authed/groups/$groupId/quests/$questId/edit";
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
@@ -58,6 +59,12 @@ const AdminAuthedGroupsGroupIdQuestsNewRoute = AdminAuthedGroupsGroupIdQuestsNew
   path: "/groups/$groupId/quests/new",
   getParentRoute: () => AdminAuthedRoute,
 } as any);
+const AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute =
+  AdminAuthedGroupsGroupIdQuestsQuestIdEditRouteImport.update({
+    id: "/groups/$groupId/quests/$questId/edit",
+    path: "/groups/$groupId/quests/$questId/edit",
+    getParentRoute: () => AdminAuthedRoute,
+  } as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
@@ -68,6 +75,7 @@ export interface FileRoutesByFullPath {
   "/admin/groups/": typeof AdminAuthedGroupsIndexRoute;
   "/admin/groups/$groupId/": typeof AdminAuthedGroupsGroupIdIndexRoute;
   "/admin/groups/$groupId/quests/new": typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
+  "/admin/groups/$groupId/quests/$questId/edit": typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
@@ -78,6 +86,7 @@ export interface FileRoutesByTo {
   "/admin/groups": typeof AdminAuthedGroupsIndexRoute;
   "/admin/groups/$groupId": typeof AdminAuthedGroupsGroupIdIndexRoute;
   "/admin/groups/$groupId/quests/new": typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
+  "/admin/groups/$groupId/quests/$questId/edit": typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -89,6 +98,7 @@ export interface FileRoutesById {
   "/admin/_authed/groups/": typeof AdminAuthedGroupsIndexRoute;
   "/admin/_authed/groups/$groupId/": typeof AdminAuthedGroupsGroupIdIndexRoute;
   "/admin/_authed/groups/$groupId/quests/new": typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
+  "/admin/_authed/groups/$groupId/quests/$questId/edit": typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -100,7 +110,8 @@ export interface FileRouteTypes {
     | "/quest/$questId"
     | "/admin/groups/"
     | "/admin/groups/$groupId/"
-    | "/admin/groups/$groupId/quests/new";
+    | "/admin/groups/$groupId/quests/new"
+    | "/admin/groups/$groupId/quests/$questId/edit";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
@@ -110,7 +121,8 @@ export interface FileRouteTypes {
     | "/quest/$questId"
     | "/admin/groups"
     | "/admin/groups/$groupId"
-    | "/admin/groups/$groupId/quests/new";
+    | "/admin/groups/$groupId/quests/new"
+    | "/admin/groups/$groupId/quests/$questId/edit";
   id:
     | "__root__"
     | "/"
@@ -120,7 +132,8 @@ export interface FileRouteTypes {
     | "/quest/$questId"
     | "/admin/_authed/groups/"
     | "/admin/_authed/groups/$groupId/"
-    | "/admin/_authed/groups/$groupId/quests/new";
+    | "/admin/_authed/groups/$groupId/quests/new"
+    | "/admin/_authed/groups/$groupId/quests/$questId/edit";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -189,6 +202,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AdminAuthedGroupsGroupIdQuestsNewRouteImport;
       parentRoute: typeof AdminAuthedRoute;
     };
+    "/admin/_authed/groups/$groupId/quests/$questId/edit": {
+      id: "/admin/_authed/groups/$groupId/quests/$questId/edit";
+      path: "/groups/$groupId/quests/$questId/edit";
+      fullPath: "/admin/groups/$groupId/quests/$questId/edit";
+      preLoaderRoute: typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRouteImport;
+      parentRoute: typeof AdminAuthedRoute;
+    };
   }
 }
 
@@ -196,12 +216,14 @@ interface AdminAuthedRouteChildren {
   AdminAuthedGroupsIndexRoute: typeof AdminAuthedGroupsIndexRoute;
   AdminAuthedGroupsGroupIdIndexRoute: typeof AdminAuthedGroupsGroupIdIndexRoute;
   AdminAuthedGroupsGroupIdQuestsNewRoute: typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
+  AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute: typeof AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute;
 }
 
 const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
   AdminAuthedGroupsIndexRoute: AdminAuthedGroupsIndexRoute,
   AdminAuthedGroupsGroupIdIndexRoute: AdminAuthedGroupsGroupIdIndexRoute,
   AdminAuthedGroupsGroupIdQuestsNewRoute: AdminAuthedGroupsGroupIdQuestsNewRoute,
+  AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute: AdminAuthedGroupsGroupIdQuestsQuestIdEditRoute,
 };
 
 const AdminAuthedRouteWithChildren = AdminAuthedRoute._addFileChildren(AdminAuthedRouteChildren);
