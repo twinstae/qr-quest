@@ -1,6 +1,17 @@
 import type { AppContext } from "../api/context.ts";
 import { NotExistError } from "../domain/errors.ts";
-import { isCorrectAnswer } from "../domain/quest.ts";
+import { isCorrectAnswer, type Quest } from "../domain/quest.ts";
+
+export type CreateQuestInput = {
+  groupId: string;
+  content: string;
+  image: { src: string; alt: string };
+  answer: string;
+  placeholder: string;
+  hint: string;
+  rewardText?: string;
+  rewardImage?: { src: string; alt: string };
+};
 
 export type QuestDisplay = {
   content: string;
@@ -48,4 +59,17 @@ export async function submitAnswer(
 export async function listQuestsInGroup(ctx: AppContext, groupId: string): Promise<QuestSummary[]> {
   const quests = await ctx.repo.quest.listByGroupId(groupId);
   return quests.map(({ id, content, image }) => ({ id, content, image }));
+}
+
+export async function createQuest(ctx: AppContext, input: CreateQuestInput): Promise<Quest> {
+  return ctx.repo.quest.create({
+    groupId: input.groupId,
+    content: input.content,
+    image: input.image,
+    answer: input.answer,
+    alternatives: [],
+    placeholder: input.placeholder,
+    hint: input.hint,
+    reward: { text: input.rewardText, image: input.rewardImage },
+  });
 }

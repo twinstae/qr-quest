@@ -2,6 +2,7 @@ import { Elysia, status, t } from "elysia";
 
 import { createGroup, listGroups } from "../../application/questGroupService.ts";
 import {
+  createQuest,
   getQuestForDisplay,
   listQuestsInGroup,
   submitAnswer,
@@ -17,6 +18,23 @@ const QuestGroupSchema = t.Object({
   description: t.Optional(t.String()),
 });
 
+const ImageSchema = t.Object({ src: t.String(), alt: t.String() });
+
+const QuestSchema = t.Object({
+  id: t.String(),
+  groupId: t.String(),
+  content: t.String(),
+  image: ImageSchema,
+  answer: t.String(),
+  alternatives: t.Array(t.String()),
+  placeholder: t.String(),
+  hint: t.String(),
+  reward: t.Object({
+    text: t.Optional(t.String()),
+    image: t.Optional(ImageSchema),
+  }),
+});
+
 export function createApp(ctx: AppContext) {
   return new Elysia({ prefix: "/api" })
     .mount(ctx.auth.handler)
@@ -29,7 +47,7 @@ export function createApp(ctx: AppContext) {
       params: t.Object({ id: t.String() }),
       response: t.Object({
         content: t.String(),
-        image: t.Object({ src: t.String(), alt: t.String() }),
+        image: ImageSchema,
         placeholder: t.String(),
         hint: t.String(),
       }),
@@ -46,7 +64,7 @@ export function createApp(ctx: AppContext) {
             correct: t.Literal(true),
             reward: t.Object({
               text: t.Optional(t.String()),
-              image: t.Optional(t.Object({ src: t.String(), alt: t.String() })),
+              image: t.Optional(ImageSchema),
             }),
           }),
         ]),
@@ -68,7 +86,7 @@ export function createApp(ctx: AppContext) {
         t.Object({
           id: t.String(),
           content: t.String(),
-          image: t.Object({ src: t.String(), alt: t.String() }),
+          image: ImageSchema,
         }),
       ),
     })
@@ -79,6 +97,20 @@ export function createApp(ctx: AppContext) {
         contentType: t.String({ pattern: "^image/" }),
       }),
       response: t.Object({ uploadUrl: t.String(), publicUrl: t.String() }),
+    })
+    .post("/quests", ({ body }) => createQuest(ctx, body), {
+      auth: true,
+      body: t.Object({
+        groupId: t.String(),
+        content: t.String(),
+        image: ImageSchema,
+        answer: t.String(),
+        placeholder: t.String(),
+        hint: t.String(),
+        rewardText: t.Optional(t.String()),
+        rewardImage: t.Optional(ImageSchema),
+      }),
+      response: QuestSchema,
     });
 }
 

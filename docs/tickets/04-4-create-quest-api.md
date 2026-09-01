@@ -1,7 +1,15 @@
 # 04-4. POST /api/quests
 
-Status: Not started
+Status: Done. Verified end-to-end via `bun run dev` + curl: create a group, create a
+quest in it, solve it via the public submit-answer endpoint, confirm it appears in
+the group's quest list — the full loop, not just this endpoint in isolation.
 Part of: [04](04-create-quest.md)
+
+Also added `createTestClient` (`src/api/testHelpers.ts`) after repeated
+Content-Type/cookie/`JSON.stringify` boilerplate across every `app.test.ts` case —
+`client.get(path)` / `client.post(path, body)` return `{ status, json(), text() }`.
+Refactored all of `app.test.ts` and `authGuard.test.ts` to use it instead of building
+`Request` objects by hand at every call site.
 
 ## Scope
 
