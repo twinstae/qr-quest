@@ -1,4 +1,4 @@
-1. [ ] Quest 페이지의 QR 코드를 생성할 수 있다 ([ticket](docs/tickets/01-qr-code-generation.md))
+1. [x] Quest 페이지의 QR 코드를 생성할 수 있다 ([ticket](docs/tickets/01-qr-code-generation.md))
 2. [x] Quest 페이지에서 Quest를 풀 수 있다 ([ticket](docs/tickets/02-quest-solving.md))
 3. [x] 답을 맞추면 뭔가를 보여준다 ([ticket](docs/tickets/03-show-reward-on-correct-answer.md))
 4. [x] Quest를 생성할 수 있다 ([ticket](docs/tickets/04-create-quest.md))

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { button } from "styled-system/recipes";
 
+import { QuestQrCodeDownload } from "@/components/domains/quest-qr-code.tsx";
 import * as Card from "@/components/ui/card.tsx";
 import { getApiClient } from "@/lib/api-client";
 
@@ -41,7 +42,7 @@ function RouteComponent() {
                 >
                   수정
                 </Link>
-                {/* "QR 다운로드"(ticket 01) 버튼은 해당 티켓에서 추가한다 */}
+                <QuestQrCodeDownload questId={quest.id} />
               </li>
             ))}
           </ul>
