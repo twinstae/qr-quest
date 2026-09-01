@@ -14,7 +14,7 @@ Part of: [04](04-create-quest.md)
 Built at `src/routes/admin/_authed/groups/$groupId/quests/new.tsx` — this required
 restructuring [06-5](06-5-group-quests-page.md)'s `$groupId.tsx` (a single file) into
 `$groupId/index.tsx` (a directory), because TanStack Router treats a file `$groupId.tsx`
-sitting *alongside* a `$groupId/` directory as a **layout** for everything inside that
+sitting _alongside_ a `$groupId/` directory as a **layout** for everything inside that
 directory (requiring an `<Outlet/>` to show children) — verified this by checking the
 actual generated `routeTree.gen.ts` rather than trusting a fetched-docs paraphrase,
 which suggested a different (and, on inspection, unnecessary) trailing-underscore

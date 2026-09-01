@@ -4,8 +4,10 @@ import { createGroup, listGroups } from "../../application/questGroupService.ts"
 import {
   createQuest,
   getQuestForDisplay,
+  getQuestForEdit,
   listQuestsInGroup,
   submitAnswer,
+  updateQuest,
 } from "../../application/questService.ts";
 import { presignUpload } from "../../application/uploadService.ts";
 import { NotExistError } from "../../domain/errors.ts";
@@ -34,6 +36,16 @@ const QuestSchema = t.Object({
     image: t.Optional(ImageSchema),
   }),
 });
+
+const QuestFieldsSchema = {
+  content: t.String(),
+  image: ImageSchema,
+  answer: t.String(),
+  placeholder: t.String(),
+  hint: t.String(),
+  rewardText: t.Optional(t.String()),
+  rewardImage: t.Optional(ImageSchema),
+};
 
 export function createApp(ctx: AppContext) {
   return new Elysia({ prefix: "/api" })
@@ -100,16 +112,18 @@ export function createApp(ctx: AppContext) {
     })
     .post("/quests", ({ body }) => createQuest(ctx, body), {
       auth: true,
-      body: t.Object({
-        groupId: t.String(),
-        content: t.String(),
-        image: ImageSchema,
-        answer: t.String(),
-        placeholder: t.String(),
-        hint: t.String(),
-        rewardText: t.Optional(t.String()),
-        rewardImage: t.Optional(ImageSchema),
-      }),
+      body: t.Object({ groupId: t.String(), ...QuestFieldsSchema }),
+      response: QuestSchema,
+    })
+    .get("/quests/:id/edit", ({ params }) => getQuestForEdit(ctx, params.id), {
+      auth: true,
+      params: t.Object({ id: t.String() }),
+      response: QuestSchema,
+    })
+    .patch("/quests/:id", ({ params, body }) => updateQuest(ctx, params.id, body), {
+      auth: true,
+      params: t.Object({ id: t.String() }),
+      body: t.Object(QuestFieldsSchema),
       response: QuestSchema,
     });
 }

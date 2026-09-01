@@ -4,6 +4,7 @@ import type { QuestGroup } from "../domain/questGroup.ts";
 export interface QuestRepo {
   getById(id: Quest["id"]): Promise<Quest | undefined>;
   create(input: Omit<Quest, "id">): Promise<Quest>;
+  update(id: Quest["id"], input: Omit<Quest, "id" | "groupId">): Promise<Quest>;
   listByGroupId(groupId: Quest["groupId"]): Promise<Quest[]>;
 }
 

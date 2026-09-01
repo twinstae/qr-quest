@@ -25,9 +25,8 @@ function toDomain(row: typeof quests.$inferSelect): Quest {
   };
 }
 
-function toRow(input: Omit<Quest, "id">): typeof quests.$inferInsert {
+function toColumns(input: Omit<Quest, "id" | "groupId">) {
   return {
-    groupId: input.groupId,
     content: input.content,
     imageSrc: input.image.src,
     imageAlt: input.image.alt,
@@ -39,6 +38,10 @@ function toRow(input: Omit<Quest, "id">): typeof quests.$inferInsert {
     rewardImageSrc: input.reward.image?.src ?? null,
     rewardImageAlt: input.reward.image?.alt ?? null,
   };
+}
+
+function toRow(input: Omit<Quest, "id">): typeof quests.$inferInsert {
+  return { groupId: input.groupId, ...toColumns(input) };
 }
 
 export function createDrizzleQuestRepo(db: Database): QuestRepo {
@@ -55,6 +58,15 @@ export function createDrizzleQuestRepo(db: Database): QuestRepo {
     async listByGroupId(groupId) {
       const rows = await db.query.quests.findMany({ where: eq(quests.groupId, groupId) });
       return rows.map(toDomain);
+    },
+    async update(id, input) {
+      const [row] = await db
+        .update(quests)
+        .set(toColumns(input))
+        .where(eq(quests.id, id))
+        .returning();
+      if (!row) throw new Error("update did not return a row");
+      return toDomain(row);
     },
   } satisfies QuestRepo;
 }

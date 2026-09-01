@@ -262,3 +262,83 @@ describe("POST /api/quests", () => {
     });
   });
 });
+
+describe("GET /api/quests/:id/edit", () => {
+  it("세션이 없으면 401을 반환한다", async () => {
+    const client = createTestClient(appWithQuest(QUEST));
+
+    const response = await client.get(`/api/quests/${QUEST.id}/edit`);
+
+    expect(response.status).toBe(401);
+  });
+
+  it("로그인한 상태면 정답/보상을 포함한 전체 퀘스트를 반환한다", async () => {
+    const ctx = createFakeContext({
+      repo: { quest: createFakeQuestRepo({ [QUEST.id]: QUEST }) },
+    });
+    const { client } = await signedInClient(ctx);
+
+    const response = await client.get(`/api/quests/${QUEST.id}/edit`);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toEqual(QUEST);
+  });
+});
+
+describe("PATCH /api/quests/:id", () => {
+  const UPDATE_BODY = {
+    content: "수정된 문제",
+    image: { src: "https://example.com/new-cover.jpg", alt: "새 표지" },
+    answer: "수정된 정답",
+    placeholder: "새 placeholder",
+    hint: "새 힌트",
+    rewardText: "수정된 보상",
+  };
+
+  it("세션이 없으면 401을 반환한다", async () => {
+    const client = createTestClient(appWithQuest(QUEST));
+
+    const response = await client.patch(`/api/quests/${QUEST.id}`, UPDATE_BODY);
+
+    expect(response.status).toBe(401);
+  });
+
+  it("로그인한 상태면 수정하고, 새 정답으로만 풀 수 있다", async () => {
+    const ctx = createFakeContext({
+      repo: { quest: createFakeQuestRepo({ [QUEST.id]: QUEST }) },
+    });
+    const { client } = await signedInClient(ctx);
+
+    const updateResponse = await client.patch(`/api/quests/${QUEST.id}`, UPDATE_BODY);
+    const updated = await updateResponse.json();
+
+    expect(updateResponse.status).toBe(200);
+    expect(updated).toEqual({
+      id: QUEST.id,
+      groupId: QUEST.groupId,
+      content: UPDATE_BODY.content,
+      image: UPDATE_BODY.image,
+      answer: UPDATE_BODY.answer,
+      alternatives: [],
+      placeholder: UPDATE_BODY.placeholder,
+      hint: UPDATE_BODY.hint,
+      reward: { text: UPDATE_BODY.rewardText },
+    });
+
+    // 옛날 정답은 더 이상 통하지 않는다
+    const oldAnswerResponse = await client.post(`/api/quests/${QUEST.id}/submit-answer`, {
+      answer: QUEST.answer,
+    });
+    expect(await oldAnswerResponse.json()).toEqual({ correct: false });
+
+    // 새 정답으로 풀 수 있다
+    const newAnswerResponse = await client.post(`/api/quests/${QUEST.id}/submit-answer`, {
+      answer: UPDATE_BODY.answer,
+    });
+    expect(await newAnswerResponse.json()).toEqual({
+      correct: true,
+      reward: { text: UPDATE_BODY.rewardText },
+    });
+  });
+});

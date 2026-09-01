@@ -93,4 +93,46 @@ describe("createDrizzleQuestRepo", () => {
     expect(questsInA).toEqual(expect.arrayContaining([questA1, questA2]));
     expect(questsInA).toHaveLength(2);
   });
+
+  it("update로 변경한 내용이 getById에도 반영된다", async () => {
+    await using db = await createTestDatabase();
+    const group = await createDrizzleQuestGroupRepo(db).create({ name: "Library Event 2026" });
+    const repo = createDrizzleQuestRepo(db);
+
+    const quest = await repo.create({
+      groupId: group.id,
+      content: "원래 문제",
+      image: { src: "https://example.com/cover.jpg", alt: "cover" },
+      answer: "원래 정답",
+      alternatives: [],
+      placeholder: "placeholder",
+      hint: "hint",
+      reward: { text: undefined, image: undefined },
+    });
+
+    const updated = await repo.update(quest.id, {
+      content: "수정된 문제",
+      image: quest.image,
+      answer: "수정된 정답",
+      alternatives: [],
+      placeholder: quest.placeholder,
+      hint: quest.hint,
+      reward: { text: "수정된 보상", image: undefined },
+    });
+
+    expect(updated).toEqual({
+      id: quest.id,
+      groupId: group.id,
+      content: "수정된 문제",
+      image: quest.image,
+      answer: "수정된 정답",
+      alternatives: [],
+      placeholder: quest.placeholder,
+      hint: quest.hint,
+      reward: { text: "수정된 보상", image: undefined },
+    });
+
+    const found = await repo.getById(quest.id);
+    expect(found).toEqual(updated);
+  });
 });

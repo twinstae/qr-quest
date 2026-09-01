@@ -16,6 +16,13 @@ export function createFakeQuestRepo(initState: Record<string, Quest>): QuestRepo
     async listByGroupId(groupId) {
       return [...state.values()].filter((quest) => quest.groupId === groupId);
     },
+    async update(id, input) {
+      const existing = state.get(id);
+      if (!existing) throw new Error(`no quest with id=${id}`);
+      const quest: Quest = { ...existing, ...input, id };
+      state.set(id, quest);
+      return quest;
+    },
   } satisfies QuestRepo;
 }
 

@@ -25,7 +25,7 @@ Part of: [05](05-update-quest.md)
   already-uploaded, no need to re-upload unless changing them).
 - Changing a field and saving updates it — verify via `bun run dev` + curl/seeded
   data: the change is visible in the group's quest list and the quest is still
-  solvable at `/quest/:id` with the *new* answer (not the old one).
+  solvable at `/quest/:id` with the _new_ answer (not the old one).
 
 ## Depends on
 

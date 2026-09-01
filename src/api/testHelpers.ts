@@ -33,6 +33,7 @@ export type TestResponse = {
 export type TestClient = {
   get(path: string): Promise<TestResponse>;
   post(path: string, body?: unknown): Promise<TestResponse>;
+  patch(path: string, body?: unknown): Promise<TestResponse>;
 };
 
 // Test-only convenience wrapper over app.handle() — avoids repeating
@@ -59,5 +60,6 @@ export function createTestClient(
   return {
     get: (path) => request("GET", path),
     post: (path, body) => request("POST", path, body),
+    patch: (path, body) => request("PATCH", path, body),
   };
 }

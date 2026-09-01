@@ -13,6 +13,8 @@ export type CreateQuestInput = {
   rewardImage?: { src: string; alt: string };
 };
 
+export type UpdateQuestInput = Omit<CreateQuestInput, "groupId">;
+
 export type QuestDisplay = {
   content: string;
   image: { src: string; alt: string };
@@ -64,6 +66,27 @@ export async function listQuestsInGroup(ctx: AppContext, groupId: string): Promi
 export async function createQuest(ctx: AppContext, input: CreateQuestInput): Promise<Quest> {
   return ctx.repo.quest.create({
     groupId: input.groupId,
+    content: input.content,
+    image: input.image,
+    answer: input.answer,
+    alternatives: [],
+    placeholder: input.placeholder,
+    hint: input.hint,
+    reward: { text: input.rewardText, image: input.rewardImage },
+  });
+}
+
+export async function getQuestForEdit(ctx: AppContext, id: string): Promise<Quest> {
+  return getQuestOrThrow(ctx, id);
+}
+
+export async function updateQuest(
+  ctx: AppContext,
+  id: string,
+  input: UpdateQuestInput,
+): Promise<Quest> {
+  await getQuestOrThrow(ctx, id);
+  return ctx.repo.quest.update(id, {
     content: input.content,
     image: input.image,
     answer: input.answer,
