@@ -13,11 +13,11 @@ describe("QuestQrCodeDownload", () => {
     );
   });
 
-  it("SVG/PNG 다운로드 버튼을 클릭해도 오류가 발생하지 않는다", async () => {
+  it("복사, 다운로드 버튼을 클릭해도 오류가 발생하지 않는다", async () => {
     await runSiheom(
       given.render(<QuestQrCodeDownload questId="quest-123" />),
-      actions.click(query.button("SVG")),
-      actions.click(query.button("PNG")),
+      actions.click(query.button("URL 복사")),
+      actions.click(query.button("QR")),
     );
   });
 });

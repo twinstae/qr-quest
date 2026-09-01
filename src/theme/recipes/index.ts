@@ -1,3 +1,4 @@
+import { clipboard } from "./clipboard";
 import { fileUpload } from "./file-upload";
 import { badge } from "./badge";
 import { collapsible } from "./collapsible";
@@ -27,5 +28,6 @@ export const recipes = {
   collapsible,
   badge,
   fileUpload,
+  clipboard,
 };
 export const slotRecipes = {};

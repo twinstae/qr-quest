@@ -3,7 +3,8 @@ import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 
 import { Button } from "@/components/ui/button.tsx";
 import { Group } from "@/components/ui/group.tsx";
-import { QrCode } from "lucide-react";
+import { Link, QrCode } from "lucide-react";
+import * as Clipboard from "@/components/ui/clipboard.tsx";
 
 function triggerDownload(filename: string, href: string) {
   const a = document.createElement("a");
@@ -35,7 +36,7 @@ export function QuestQrCodeDownload({ questId }: { questId: string }) {
   }
 
   return (
-    <Group attached>
+    <Group >
       <QRCodeSVG ref={svgRef} value={url} size={128} title={url} style={{ display: "none" }} />
       <QRCodeCanvas
         ref={canvasRef}
@@ -44,11 +45,15 @@ export function QuestQrCodeDownload({ questId }: { questId: string }) {
         title={url}
         style={{ display: "none" }}
       />
-      <Button type="button" variant="outline" size="xs" onClick={downloadSvg}>
-        <QrCode /> SVG
-      </Button>
-      <Button type="button" variant="outline" size="xs" onClick={downloadPng}>
-        <QrCode /> PNG
+      <Clipboard.Root value={url}>
+        <Clipboard.Trigger asChild aria-label="URL 복사">
+          <Button variant="outline" size="sm">
+            <Link /> URL 복사
+          </Button>
+        </Clipboard.Trigger>
+      </Clipboard.Root>
+      <Button type="button" variant="outline" size="sm" onClick={downloadPng}>
+        <QrCode /> QR
       </Button>
     </Group>
   );

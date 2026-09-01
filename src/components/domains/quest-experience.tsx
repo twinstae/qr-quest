@@ -40,9 +40,7 @@ export function QuestExperience({
             />
           )}
           <Card.Header alignItems="center">
-            <CheckCircle2 className={css({ boxSize: "12", color: "colorPalette.9" })} />
-            <Card.Title textStyle="xl">정답입니다!</Card.Title>
-            {state.reward.text && <Card.Description>{state.reward.text}</Card.Description>}
+            <Card.Title textStyle="xl">{state.reward.text ?? "정답입니다!"}</Card.Title>
           </Card.Header>
         </Card.Root>
       </VStack>
