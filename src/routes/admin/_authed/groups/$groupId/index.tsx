@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { button } from "styled-system/recipes";
 
 import * as Card from "@/components/ui/card.tsx";
-import { Button } from "@/components/ui/button.tsx";
 import { getApiClient } from "@/lib/api-client";
 
-export const Route = createFileRoute("/admin/_authed/groups/$groupId")({
+export const Route = createFileRoute("/admin/_authed/groups/$groupId/")({
   component: RouteComponent,
   loader: async ({ params }) => {
     const client = getApiClient();
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/admin/_authed/groups/$groupId")({
 });
 
 function RouteComponent() {
+  const { groupId } = Route.useParams();
   const { quests } = Route.useLoaderData();
 
   return (
@@ -22,10 +23,9 @@ function RouteComponent() {
         <Card.Title>그룹의 Quest 목록</Card.Title>
       </Card.Header>
       <Card.Body>
-        {/* "Quest 만들기"는 ticket 04에서 실제 폼으로 연결한다 */}
-        <Button type="button" color="primary" disabled className="mt-2">
+        <Link to="/admin/groups/$groupId/quests/new" params={{ groupId }} className={button()}>
           Quest 만들기
-        </Button>
+        </Link>
 
         {quests.length === 0 ? (
           <p>아직 이 그룹에 Quest가 없습니다.</p>

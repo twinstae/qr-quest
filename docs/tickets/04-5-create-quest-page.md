@@ -1,7 +1,27 @@
 # 04-5. Quest 생성 페이지
 
-Status: Not started
+Status: Done. Verified via `bun run dev` + curl: guard redirect, the group page's
+link to this route, and this page rendering all fields (content/answer/hint, both
+image-upload fields, submit button) with no errors. The actual click-through
+(picking a file, submitting, landing back on the group page) is **not** verified —
+no browser automation available. The pieces it's built from (`POST
+/api/uploads/presign`, `POST /api/quests`, `SimpleImageUpload`) are each
+independently verified end-to-end already (04-2, 04-3, 04-4).
 Part of: [04](04-create-quest.md)
+
+## Routing structure note
+
+Built at `src/routes/admin/_authed/groups/$groupId/quests/new.tsx` — this required
+restructuring [06-5](06-5-group-quests-page.md)'s `$groupId.tsx` (a single file) into
+`$groupId/index.tsx` (a directory), because TanStack Router treats a file `$groupId.tsx`
+sitting *alongside* a `$groupId/` directory as a **layout** for everything inside that
+directory (requiring an `<Outlet/>` to show children) — verified this by checking the
+actual generated `routeTree.gen.ts` rather than trusting a fetched-docs paraphrase,
+which suggested a different (and, on inspection, unnecessary) trailing-underscore
+convention. With `$groupId.tsx` moved to `$groupId/index.tsx`, there's no ambiguous
+layout file, so `$groupId/index.tsx` and `$groupId/quests/new.tsx` are independent
+sibling routes sharing a URL prefix — `quests/new.tsx` renders as a fully standalone
+page, not nested inside the quest-list page's chrome.
 
 ## Scope
 

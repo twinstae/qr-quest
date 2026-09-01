@@ -15,7 +15,8 @@ import { Route as AdminLoginRouteImport } from "./routes/admin/login";
 import { Route as ApiSplatRouteImport } from "./routes/api/$";
 import { Route as QuestQuestIdRouteImport } from "./routes/quest/$questId";
 import { Route as AdminAuthedGroupsIndexRouteImport } from "./routes/admin/_authed/groups/index";
-import { Route as AdminAuthedGroupsGroupIdRouteImport } from "./routes/admin/_authed/groups/$groupId";
+import { Route as AdminAuthedGroupsGroupIdIndexRouteImport } from "./routes/admin/_authed/groups/$groupId/index";
+import { Route as AdminAuthedGroupsGroupIdQuestsNewRouteImport } from "./routes/admin/_authed/groups/$groupId/quests/new";
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
@@ -47,9 +48,14 @@ const AdminAuthedGroupsIndexRoute = AdminAuthedGroupsIndexRouteImport.update({
   path: "/groups/",
   getParentRoute: () => AdminAuthedRoute,
 } as any);
-const AdminAuthedGroupsGroupIdRoute = AdminAuthedGroupsGroupIdRouteImport.update({
-  id: "/groups/$groupId",
-  path: "/groups/$groupId",
+const AdminAuthedGroupsGroupIdIndexRoute = AdminAuthedGroupsGroupIdIndexRouteImport.update({
+  id: "/groups/$groupId/",
+  path: "/groups/$groupId/",
+  getParentRoute: () => AdminAuthedRoute,
+} as any);
+const AdminAuthedGroupsGroupIdQuestsNewRoute = AdminAuthedGroupsGroupIdQuestsNewRouteImport.update({
+  id: "/groups/$groupId/quests/new",
+  path: "/groups/$groupId/quests/new",
   getParentRoute: () => AdminAuthedRoute,
 } as any);
 
@@ -59,8 +65,9 @@ export interface FileRoutesByFullPath {
   "/admin/login": typeof AdminLoginRoute;
   "/api/$": typeof ApiSplatRoute;
   "/quest/$questId": typeof QuestQuestIdRoute;
-  "/admin/groups/$groupId": typeof AdminAuthedGroupsGroupIdRoute;
   "/admin/groups/": typeof AdminAuthedGroupsIndexRoute;
+  "/admin/groups/$groupId/": typeof AdminAuthedGroupsGroupIdIndexRoute;
+  "/admin/groups/$groupId/quests/new": typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
@@ -68,8 +75,9 @@ export interface FileRoutesByTo {
   "/admin/login": typeof AdminLoginRoute;
   "/api/$": typeof ApiSplatRoute;
   "/quest/$questId": typeof QuestQuestIdRoute;
-  "/admin/groups/$groupId": typeof AdminAuthedGroupsGroupIdRoute;
   "/admin/groups": typeof AdminAuthedGroupsIndexRoute;
+  "/admin/groups/$groupId": typeof AdminAuthedGroupsGroupIdIndexRoute;
+  "/admin/groups/$groupId/quests/new": typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -78,8 +86,9 @@ export interface FileRoutesById {
   "/admin/login": typeof AdminLoginRoute;
   "/api/$": typeof ApiSplatRoute;
   "/quest/$questId": typeof QuestQuestIdRoute;
-  "/admin/_authed/groups/$groupId": typeof AdminAuthedGroupsGroupIdRoute;
   "/admin/_authed/groups/": typeof AdminAuthedGroupsIndexRoute;
+  "/admin/_authed/groups/$groupId/": typeof AdminAuthedGroupsGroupIdIndexRoute;
+  "/admin/_authed/groups/$groupId/quests/new": typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -89,8 +98,9 @@ export interface FileRouteTypes {
     | "/admin/login"
     | "/api/$"
     | "/quest/$questId"
-    | "/admin/groups/$groupId"
-    | "/admin/groups/";
+    | "/admin/groups/"
+    | "/admin/groups/$groupId/"
+    | "/admin/groups/$groupId/quests/new";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
@@ -98,8 +108,9 @@ export interface FileRouteTypes {
     | "/admin/login"
     | "/api/$"
     | "/quest/$questId"
+    | "/admin/groups"
     | "/admin/groups/$groupId"
-    | "/admin/groups";
+    | "/admin/groups/$groupId/quests/new";
   id:
     | "__root__"
     | "/"
@@ -107,8 +118,9 @@ export interface FileRouteTypes {
     | "/admin/login"
     | "/api/$"
     | "/quest/$questId"
-    | "/admin/_authed/groups/$groupId"
-    | "/admin/_authed/groups/";
+    | "/admin/_authed/groups/"
+    | "/admin/_authed/groups/$groupId/"
+    | "/admin/_authed/groups/$groupId/quests/new";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -163,24 +175,33 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AdminAuthedGroupsIndexRouteImport;
       parentRoute: typeof AdminAuthedRoute;
     };
-    "/admin/_authed/groups/$groupId": {
-      id: "/admin/_authed/groups/$groupId";
+    "/admin/_authed/groups/$groupId/": {
+      id: "/admin/_authed/groups/$groupId/";
       path: "/groups/$groupId";
-      fullPath: "/admin/groups/$groupId";
-      preLoaderRoute: typeof AdminAuthedGroupsGroupIdRouteImport;
+      fullPath: "/admin/groups/$groupId/";
+      preLoaderRoute: typeof AdminAuthedGroupsGroupIdIndexRouteImport;
+      parentRoute: typeof AdminAuthedRoute;
+    };
+    "/admin/_authed/groups/$groupId/quests/new": {
+      id: "/admin/_authed/groups/$groupId/quests/new";
+      path: "/groups/$groupId/quests/new";
+      fullPath: "/admin/groups/$groupId/quests/new";
+      preLoaderRoute: typeof AdminAuthedGroupsGroupIdQuestsNewRouteImport;
       parentRoute: typeof AdminAuthedRoute;
     };
   }
 }
 
 interface AdminAuthedRouteChildren {
-  AdminAuthedGroupsGroupIdRoute: typeof AdminAuthedGroupsGroupIdRoute;
   AdminAuthedGroupsIndexRoute: typeof AdminAuthedGroupsIndexRoute;
+  AdminAuthedGroupsGroupIdIndexRoute: typeof AdminAuthedGroupsGroupIdIndexRoute;
+  AdminAuthedGroupsGroupIdQuestsNewRoute: typeof AdminAuthedGroupsGroupIdQuestsNewRoute;
 }
 
 const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
-  AdminAuthedGroupsGroupIdRoute: AdminAuthedGroupsGroupIdRoute,
   AdminAuthedGroupsIndexRoute: AdminAuthedGroupsIndexRoute,
+  AdminAuthedGroupsGroupIdIndexRoute: AdminAuthedGroupsGroupIdIndexRoute,
+  AdminAuthedGroupsGroupIdQuestsNewRoute: AdminAuthedGroupsGroupIdQuestsNewRoute,
 };
 
 const AdminAuthedRouteWithChildren = AdminAuthedRoute._addFileChildren(AdminAuthedRouteChildren);

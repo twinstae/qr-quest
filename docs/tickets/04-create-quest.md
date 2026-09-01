@@ -1,6 +1,6 @@
 # 04. Quest를 생성할 수 있다
 
-Status: Split into mini-tickets below (same pattern as ticket 06).
+Status: Done — all 5 mini-tickets complete.
 PLAN.md item: 4
 
 ## Why
