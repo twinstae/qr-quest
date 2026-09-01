@@ -1,4 +1,4 @@
-import { useId, useState, type ChangeEvent, type ComponentProps } from "react";
+import { useId, useState, type ComponentProps } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 import { Input } from "@/components/ui/input.tsx";
@@ -225,10 +225,7 @@ export function SimpleImageUpload({
             ? "이미지 업로드에 실패했습니다"
             : (fieldState.error?.root?.message ?? fieldState.error?.message);
 
-        async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-          const file = event.target.files?.[0];
-          if (!file) return;
-
+        async function uploadFile(file: File) {
           setStatus("uploading");
 
           const client = getApiClient();
@@ -264,13 +261,19 @@ export function SimpleImageUpload({
               onFileChange={(details) => {
                 // 새로 골랐던 파일을 지우면(delete trigger) 폼 값도 함께 비운다.
                 // 기존 값 미리보기는 acceptedFiles에 안 들어있으므로 여기서 건드리지 않는다.
-                if (details.acceptedFiles.length === 0 && field.value?.src) {
-                  field.onChange(undefined);
+                if (details.acceptedFiles.length === 0) {
+                  if (field.value?.src) field.onChange(undefined);
+                  return;
                 }
+
+                // HiddenInput의 change 이벤트로 업로드를 트리거하면 zag-js가 파일
+                // 선택 후 내부적으로 input을 다시 동기화하며 change를 한 번 더
+                // 발생시켜 같은 파일이 두 번 업로드된다. 대신 라이브러리가 중복
+                // 없이 한 번만 호출하는 onFileChange에서 업로드를 트리거한다.
+                uploadFile(details.acceptedFiles[0]);
               }}
             >
               <FileUpload.HiddenInput
-                onChange={handleFileChange}
                 aria-invalid={isError}
                 aria-describedby={isError ? errorId : hint ? descriptionId : undefined}
                 aria-errormessage={isError ? errorId : undefined}
