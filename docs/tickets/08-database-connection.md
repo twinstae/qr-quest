@@ -1,6 +1,8 @@
 # 08. 실제 데이터베이스에 연결된다
 
-Status: Not started
+Status: Core done (schema, PGLite driver, migrations, test helper, `bun run db:migrate`).
+Postgres driver path is implemented but only verified against PGLite so far — confirm
+against a real Supabase database during [09](09-deployment.md).
 PLAN.md item: 8
 
 ## Why
