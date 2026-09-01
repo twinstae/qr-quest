@@ -1,39 +1,57 @@
 # 06-1. `/admin` 세션 가드
 
-Status: Not started
+Status: Done. Verified end-to-end via `bun run dev` + curl (logged out → redirect to
+`/admin/login`; logged in → `/admin` renders, no redirect).
 Part of: [06](06-select-quest-group.md)
 
-## Why
+## What was actually built
 
-Deferred from [07](07-admin-login.md): there was no protected content to verify a
-guard against. Now that this ticket is about to add real protected admin pages, build
-the guard first so 06-3/06-5 can just sit inside it.
+- `src/api/elysia/authGuard.ts` — `createAuthGuard(ctx)`, an Elysia plugin exporting
+  the `auth` macro from the
+  [Elysia + better-auth integration guide](https://elysiajs.com/integrations/better-auth):
+  `{ auth: true }` on a route resolves `ctx.auth.api.getSession({ headers })` and
+  returns 401 if absent. `.use()`'d into `src/api/elysia/app.ts` — no routes use it
+  yet, [06-2](06-2-group-repo-and-api.md)/[06-4](06-4-group-quests-api.md) are the
+  first consumers.
+- `src/routes/admin/_authed.tsx` — a **pathless layout route** (TanStack Router's
+  `_` prefix convention: contributes no URL segment, just wraps children).
+  `beforeLoad` redirects to `/admin/login` if there's no session. Registers at
+  `fullPath: "/admin"`, so visiting bare `/admin` already exercises it.
+  `src/routes/admin/login.tsx` stays a sibling *outside* `_authed`, so it's never
+  wrapped by its own guard.
 
-## Scope
+## Bug caught during end-to-end verification (not visible in unit tests)
 
-- `src/routes/admin/route.tsx` — pathless-ish layout wrapping everything under
-  `/admin` **except** `/admin/login`. `beforeLoad` calls `authClient.getSession()`
-  (`src/lib/auth-client.ts`) and `throw redirect({ to: "/admin/login" })` if there's
-  no session.
-  - TanStack Router convention to exclude `/admin/login`: keep `login.tsx` as a
-    sibling file outside the guarded layout's route id, e.g. layout at
-    `src/routes/admin/route.tsx` matching `/admin` and `/admin/*`, with `login.tsx`
-    registered so it doesn't inherit that `beforeLoad` — verify against the actual
-    generated `routeTree.gen.ts` once written; TanStack Start's exact layout/pathless
-    conventions should be checked against installed version, not assumed.
-- Elysia side: add the `auth: true` macro (from the
-  [Elysia + better-auth integration guide](https://elysiajs.com/integrations/better-auth))
-  to `src/api/elysia/app.ts` so [06-2](06-2-group-repo-and-api.md) and
-  [06-4](06-4-group-quests-api.md) can guard their routes with `{ auth: true }` instead
-  of hand-rolling a session check per route.
+`authClient.getSession()` (the `better-auth/react` client) does a relative
+`fetch("/api/auth/get-session")`. That's fine in the browser but throws
+`Failed to parse URL from /api/auth/get-session` when `beforeLoad` runs **server-side**
+during SSR — Bun's server-side `fetch` has no implicit origin to resolve a relative
+URL against. Same class of problem `getApiClient` (ticket 03) already solved with
+`createIsomorphicFn`.
 
-## Acceptance criteria
+Fix: `src/lib/auth-client.ts` now exports `getCurrentSession`, isomorphic:
+- `.server()`: calls `auth.api.getSession({ headers: getRequest().headers })` directly
+  (no HTTP round-trip — `getRequest`/`getRequest().headers` from
+  `@tanstack/react-start/server`), using the real incoming request's cookies.
+- `.client()`: `authClient.getSession()` (relative fetch works fine in-browser).
 
-- An Elysia route marked `{ auth: true }` returns 401 without a session cookie, 200
-  with a valid one (test via `app.handle()` + a real signed-in session from
-  `ctx.auth`, not a mocked check).
-- Visiting any route under the `/admin` layout while logged out redirects to
-  `/admin/login`; `/admin/login` itself stays reachable while logged out.
+`src/api/elysia/index.ts` now also exports the raw `auth` singleton (previously only
+`app`), since the server branch needs direct access to it.
+
+**Lesson for future routes**: any session/data read needed in a `beforeLoad`/loader
+that runs isomorphically must use this pattern (or `getApiClient`'s), never a bare
+client-only fetch call — unit tests (`app.handle()`) won't catch this, only an actual
+`bun run dev` + curl/SSR check will, since vitest's browser project never exercises
+server-side loader execution the way real SSR does.
+
+## Acceptance criteria — verified
+
+- Elysia route marked `{ auth: true }`: 401 without a session cookie, 200 with a real
+  signed-in session (`authGuard.test.ts`, via `ctx.auth` directly — not mocked).
+- `curl http://localhost:3000/admin` while logged out → redirects to `/admin/login`,
+  200, no error page.
+- `curl http://localhost:3000/admin` with a valid session cookie → 200, stays at
+  `/admin`, no redirect, no error page.
 
 ## Depends on
 

@@ -15,7 +15,7 @@ currently only has `getById`/`create` — no way to query by group.
 - `src/application/questService.ts` — `listQuestsInGroup(ctx, groupId)`. Returns the
   same reward-excluding/answer-excluding shape as `getQuestForDisplay` per quest (an
   admin list view still shouldn't need to show the raw answer inline — decide when
-  building whether admin actually needs to *see* the answer here for editing context;
+  building whether admin actually needs to _see_ the answer here for editing context;
   if so it's fine to return it since this endpoint is `auth: true`, unlike the public
   `GET /api/quests/:id`).
 - `GET /api/groups/:id/quests` — `{ auth: true }`, on the app from

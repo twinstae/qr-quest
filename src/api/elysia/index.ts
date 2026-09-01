@@ -17,4 +17,5 @@ const ctx: AppContext = {
 };
 
 export const app = createApp(ctx);
+export const auth = ctx.auth;
 export type { App };

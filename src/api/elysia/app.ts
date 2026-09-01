@@ -3,10 +3,12 @@ import { Elysia, status, t } from "elysia";
 import { getQuestForDisplay, submitAnswer } from "../../application/questService.ts";
 import { NotExistError } from "../../domain/errors.ts";
 import type { AppContext } from "../context.ts";
+import { createAuthGuard } from "./authGuard.ts";
 
 export function createApp(ctx: AppContext) {
   return new Elysia({ prefix: "/api" })
     .mount(ctx.auth.handler)
+    .use(createAuthGuard(ctx))
     .error({ NotExistError })
     .onError(({ code }) => {
       if (code === "NotExistError") return status("Not Found");
