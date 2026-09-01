@@ -11,3 +11,10 @@ export interface QuestGroupRepo {
   create(input: Omit<QuestGroup, "id">): Promise<QuestGroup>;
   list(): Promise<QuestGroup[]>;
 }
+
+export interface ImageStorage {
+  presignUpload(input: {
+    filename: string;
+    contentType: string;
+  }): Promise<{ uploadUrl: string; publicUrl: string }>;
+}

@@ -9,7 +9,7 @@ Part of: [04](04-create-quest.md)
   thin wrapper over `ctx.repo.quest.create` (repo `create` already exists, from
   ticket 03's test-fixture needs).
 - `POST /api/quests` — `{ auth: true }`, body `{ groupId, content, image, answer,
-  placeholder, hint, rewardText?, rewardImage? }` (TypeBox schema; `alternatives` not
+placeholder, hint, rewardText?, rewardImage? }` (TypeBox schema; `alternatives` not
   exposed, per the ticket-level deferral — repo still defaults it to `[]`).
 
 ## Acceptance criteria

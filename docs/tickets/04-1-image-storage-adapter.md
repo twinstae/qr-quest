@@ -1,7 +1,16 @@
 # 04-1. ImageStorage 어댑터
 
-Status: Not started
+Status: Done. Fake adapter tested; real adapter typechecks but is unverified (no
+Supabase project exists in this environment). `imageStorage` lives at the top level
+of `AppContext` (parallel to `auth`), not under `repo` — it's infrastructure, not a
+domain-entity repository.
 Part of: [04](04-create-quest.md)
+
+`src/api/elysia/index.ts`'s `createImageStorageFromEnv()` falls back to the fake
+adapter when `SUPABASE_S3_*`/`SUPABASE_STORAGE_*` env vars aren't all present —
+verified `bun run dev` still starts and serves pages with none of those vars set
+(current state of this environment). Same fallback pattern as `DATABASE_URL`'s
+`?? "pglite://.data/dev"` default from ticket 08.
 
 ## Why
 
