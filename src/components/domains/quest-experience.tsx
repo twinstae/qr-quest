@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 
 import { QuestCardForm, type Quest } from "@/components/domains/quest-card.tsx";
 import * as Card from "@/components/ui/card.tsx";

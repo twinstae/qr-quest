@@ -21,14 +21,6 @@ export function QuestQrCodeDownload({ questId }: { questId: string }) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const url = `${origin}/quest/${questId}`;
 
-  function downloadSvg() {
-    const svg = svgRef.current;
-    if (!svg) return;
-    const serialized = new XMLSerializer().serializeToString(svg);
-    const blob = new Blob([serialized], { type: "image/svg+xml" });
-    triggerDownload(`quest-${questId}.svg`, URL.createObjectURL(blob));
-  }
-
   function downloadPng() {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -36,7 +28,7 @@ export function QuestQrCodeDownload({ questId }: { questId: string }) {
   }
 
   return (
-    <Group >
+    <Group>
       <QRCodeSVG ref={svgRef} value={url} size={128} title={url} style={{ display: "none" }} />
       <QRCodeCanvas
         ref={canvasRef}

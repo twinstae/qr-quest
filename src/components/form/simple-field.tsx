@@ -1,4 +1,4 @@
-import { useId, type ChangeEvent, type ComponentProps } from "react";
+import { useId, useState, type ChangeEvent, type ComponentProps } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 import { Input } from "@/components/ui/input.tsx";
@@ -130,30 +130,71 @@ export function SimpleCheckbox({
 
 export type SimpleImageValue = { src: string; alt: string };
 
-const FileUploadList = () => {
+type UploadStatus = "idle" | "uploading" | "error";
+
+// 새로 선택한 파일이 있으면 그 미리보기를, 없으면 기존 값(수정 화면 등)의
+// 이미지를 보여준다 — react-hook-form의 field.value와 FileUpload의 내부
+// acceptedFiles 상태를 양방향으로 동기화하기 위한 분기.
+const FileUploadPreview = ({
+  existingValue,
+  onRemoveExisting,
+}: {
+  existingValue: SimpleImageValue | undefined;
+  onRemoveExisting: () => void;
+}) => {
   const fileUpload = useFileUploadContext();
   const files = fileUpload.acceptedFiles;
-  if (files.length === 0)
+
+  if (files.length > 0) {
     return (
-      <FileUpload.Dropzone className={css({ minHeight: "160px" })}>
-        <UploadIcon />
-        <p>이미지를 업로드하세요</p>
+      <FileUpload.ItemGroup>
+        {files.map((file) => (
+          <FileUpload.Item file={file} key={file.name} p="0.5" w="fit-content">
+            <FileUpload.ItemPreviewImage />
+            <FileUpload.ItemDeleteTrigger asChild>
+              <IconButton size="2xs" borderRadius="full" pos="absolute" top="-2" right="-2">
+                <XIcon />
+              </IconButton>
+            </FileUpload.ItemDeleteTrigger>
+          </FileUpload.Item>
+        ))}
+      </FileUpload.ItemGroup>
+    );
+  }
+
+  if (existingValue?.src) {
+    return (
+      <FileUpload.Dropzone className={css({ minHeight: "160px", p: "0.5" })}>
+        <div className={css({ pos: "relative", w: "fit-content" })}>
+          <img
+            src={existingValue.src}
+            alt={existingValue.alt}
+            className={css({ maxH: "150px", borderRadius: "sm", display: "block" })}
+          />
+          <IconButton
+            size="2xs"
+            borderRadius="full"
+            pos="absolute"
+            top="-2"
+            right="-2"
+            onClick={(event) => {
+              // Dropzone 클릭 = 파일 선택창 오픈이라 버블링을 막아야 한다.
+              event.stopPropagation();
+              onRemoveExisting();
+            }}
+          >
+            <XIcon />
+          </IconButton>
+        </div>
       </FileUpload.Dropzone>
     );
+  }
 
   return (
-    <FileUpload.ItemGroup>
-      {files.map((file) => (
-        <FileUpload.Item file={file} key={file.name} p="0.5" w="fit-content">
-          <FileUpload.ItemPreviewImage />
-          <FileUpload.ItemDeleteTrigger asChild>
-            <IconButton size="2xs" borderRadius="full" pos="absolute" top="-2" right="-2">
-              <XIcon />
-            </IconButton>
-          </FileUpload.ItemDeleteTrigger>
-        </FileUpload.Item>
-      ))}
-    </FileUpload.ItemGroup>
+    <FileUpload.Dropzone className={css({ minHeight: "160px" })}>
+      <UploadIcon />
+      <p>이미지를 업로드하세요</p>
+    </FileUpload.Dropzone>
   );
 };
 
@@ -170,6 +211,7 @@ export function SimpleImageUpload({
   required?: boolean;
 }) {
   const { control } = useFormContext();
+  const [status, setStatus] = useState<UploadStatus>("idle");
 
   const descriptionId = useId();
   const errorId = useId();
@@ -178,11 +220,16 @@ export function SimpleImageUpload({
     <Controller
       render={({ field, fieldState }) => {
         const isError = !!fieldState.error || status === "error";
-        const errorMessage = fieldState.error?.root?.message ?? fieldState.error?.message;
+        const errorMessage =
+          status === "error"
+            ? "이미지 업로드에 실패했습니다"
+            : (fieldState.error?.root?.message ?? fieldState.error?.message);
 
         async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
           const file = event.target.files?.[0];
           if (!file) return;
+
+          setStatus("uploading");
 
           const client = getApiClient();
           const { data: presigned } = await client.uploads.presign.post({
@@ -190,6 +237,7 @@ export function SimpleImageUpload({
             contentType: file.type,
           });
           if (!presigned) {
+            setStatus("error");
             return;
           }
 
@@ -199,9 +247,11 @@ export function SimpleImageUpload({
             body: file,
           });
           if (!uploadResponse.ok) {
+            setStatus("error");
             return;
           }
 
+          setStatus("idle");
           field.onChange({ src: presigned.publicUrl, alt: file.name } satisfies SimpleImageValue);
         }
 
@@ -210,14 +260,25 @@ export function SimpleImageUpload({
             <Field.Label>
               {label} {required && <Field.RequiredIndicator />}
             </Field.Label>
-            <FileUpload.Root>
+            <FileUpload.Root
+              onFileChange={(details) => {
+                // 새로 골랐던 파일을 지우면(delete trigger) 폼 값도 함께 비운다.
+                // 기존 값 미리보기는 acceptedFiles에 안 들어있으므로 여기서 건드리지 않는다.
+                if (details.acceptedFiles.length === 0 && field.value?.src) {
+                  field.onChange(undefined);
+                }
+              }}
+            >
               <FileUpload.HiddenInput
                 onChange={handleFileChange}
                 aria-invalid={isError}
                 aria-describedby={isError ? errorId : hint ? descriptionId : undefined}
                 aria-errormessage={isError ? errorId : undefined}
               />
-              <FileUploadList />
+              <FileUploadPreview
+                existingValue={field.value}
+                onRemoveExisting={() => field.onChange(undefined)}
+              />
             </FileUpload.Root>
             {isError && (
               <Field.ErrorText id={errorId} role="alert">
