@@ -1,21 +1,12 @@
 import { eq } from "drizzle-orm";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { createTestDatabase } from "./test-helpers.ts";
 import { questGroups, quests } from "./schema.ts";
 
 describe("schema", () => {
-  let close: (() => Promise<void>) | undefined;
-
-  afterEach(async () => {
-    await close?.();
-    close = undefined;
-  });
-
   it("퀘스트 그룹과 그 안의 퀘스트를 저장하고 읽을 수 있다", async () => {
-    const created = await createTestDatabase();
-    const db = created.db;
-    close = created.close;
+    await using db = await createTestDatabase();
 
     const [group] = await db
       .insert(questGroups)

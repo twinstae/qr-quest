@@ -6,12 +6,14 @@ import * as schema from "./schema.ts";
 
 const migrationsFolder = new URL("./migrations", import.meta.url).pathname;
 
-export async function createTestDatabase(): Promise<{
-  db: PgliteDatabase<typeof schema>;
-  close: () => Promise<void>;
-}> {
+export type TestDatabase = PgliteDatabase<typeof schema> & AsyncDisposable;
+
+export async function createTestDatabase(): Promise<TestDatabase> {
   const client = new PGlite();
   const db = drizzle({ client, schema });
   await migrate(db, { migrationsFolder });
-  return { db, close: () => client.close() };
+
+  return Object.assign(db, {
+    [Symbol.asyncDispose]: () => client.close(),
+  });
 }

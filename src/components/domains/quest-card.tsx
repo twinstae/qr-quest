@@ -8,14 +8,11 @@ import * as Card from "@/components/ui/card.tsx";
 import * as Collapsible from "@/components/ui/collapsible.tsx";
 
 export type Quest = {
-  id: string;
   image?: {
     src: string;
     alt: string;
   };
   content: string;
-  answer: string;
-  alternatives: string[];
   placeholder: string;
   hint: string;
 };

@@ -1,7 +1,38 @@
 # 03. 답을 맞추면 뭔가를 보여준다
 
-Status: Not started
+Status: Done. Verified end-to-end via `bun run dev` + curl + real HTML SSR output
+(browser click-through not verified — no browser automation available this session).
 PLAN.md item: 3
+
+## Architecture note (added during implementation)
+
+Built as a layered hexagonal structure (domain / application / persistence / api),
+not routes calling Drizzle directly — matching the pattern already used elsewhere in
+this developer's projects (see `../realworld-ts/back`). This applies to every ticket
+from here on, not just this one:
+
+- `src/domain/` — plain types + pure logic (`Quest`, `QuestGroup`, `isCorrectAnswer`),
+  no I/O.
+- `src/persistence/types.ts` — repo interfaces (`QuestRepo`, `QuestGroupRepo`).
+  `src/persistence/Fake*Repo.ts` — in-memory implementations for fast tests.
+  `src/persistence/drizzle/Drizzle*Repo.ts` — real implementations, plus the DB
+  client/schema/migrations (moved here from the earlier `src/server/db/`).
+- `src/application/*Service.ts` — orchestration functions `(ctx: AppContext, ...) => ...`,
+  no framework/HTTP awareness. Throws domain errors (`src/domain/errors.ts`) on failure.
+- `src/api/context.ts` — `AppContext` (the `repo` bag) + `createFakeContext()` for tests.
+  `src/api/elysia/app.ts` — thin Elysia layer, maps domain errors to HTTP status via
+  `.onError`. `src/api/elysia/index.ts` — real singleton wiring (Drizzle repos from
+  `DATABASE_URL`), imported by the actual route mount at `src/routes/api/$.ts`.
+- Repository tests seed fixtures through repo interfaces only (e.g.
+  `DrizzleQuestGroupRepo.create()`), never by reaching into `db.insert()` directly —
+  a repo test shouldn't need to know it's backed by Drizzle.
+- Test DB fixtures use `await using db = await createTestDatabase()` (explicit
+  resource management) instead of manual `afterEach` cleanup bookkeeping.
+
+Known rough edge: a file-based PGLite instance (`pglite://...`) left unclosed leaves a
+stale `postmaster.pid` lock that hangs the *next* process indefinitely (no timeout, no
+staleness check). `migrate.ts` now closes its client; any one-off script against
+`.data/dev` should do the same or you'll need to manually remove the lock file.
 
 ## Why
 

@@ -34,7 +34,7 @@ const config = defineConfig({
           setupFiles: ["src/setupTest.ts"],
           name: "browser",
           include: ["src/**/*.test.{ts,tsx}"],
-          exclude: ["src/server/**"],
+          exclude: ["src/domain/**", "src/application/**", "src/persistence/**", "src/api/**"],
           browser: {
             enabled: true,
             headless: true,
@@ -53,7 +53,12 @@ const config = defineConfig({
         test: {
           name: "server",
           environment: "node",
-          include: ["src/server/**/*.test.ts"],
+          include: [
+            "src/domain/**/*.test.ts",
+            "src/application/**/*.test.ts",
+            "src/persistence/**/*.test.ts",
+            "src/api/**/*.test.ts",
+          ],
         },
       },
     ],

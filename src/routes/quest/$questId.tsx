@@ -1,9 +1,19 @@
-import { QuestCardForm } from "@/components/domains/quest-card";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 import { styled } from "styled-system/jsx";
+
+import { QuestCardForm } from "@/components/domains/quest-card";
+import * as Card from "@/components/ui/card.tsx";
+import { getApiClient } from "@/lib/api-client";
 
 export const Route = createFileRoute("/quest/$questId")({
   component: RouteComponent,
+  loader: async ({ params }) => {
+    const client = getApiClient();
+    const { data: quest } = await client.quests({ id: params.questId }).get();
+    if (!quest) throw notFound();
+    return { quest };
+  },
 });
 
 const VStack = styled("div", {
@@ -14,33 +24,50 @@ const VStack = styled("div", {
   },
 });
 
-const TEST_QUEST = {
-  id: "2131abcd",
-  image: {
-    src: "https://press.knou.ac.kr/com/file/getImage.do?fileName=0000000000000004000000001.jpg&filePath=/public/cmdtimages",
-    alt: "헌법논증이론 표지",
-  },
-  content: "헌법논증이론의 저자는 누구일까요?",
-  answer: "이민열, 김도균",
-  alternatives: ["이한"],
-  placeholder: "ㅇㅇㅇ, ㅁㅁㅁ",
-  hint: "표지 안에 답이 있습니다",
-};
+type Reward = { text?: string; image?: { src: string; alt: string } };
+
+type SubmitResult =
+  | { status: "idle" }
+  | { status: "incorrect" }
+  | { status: "correct"; reward: Reward };
 
 function RouteComponent() {
-  const quest = TEST_QUEST;
+  const { questId } = Route.useParams();
+  const { quest } = Route.useLoaderData();
+  const [result, setResult] = useState<SubmitResult>({ status: "idle" });
+
+  if (result.status === "correct") {
+    return (
+      <VStack minHeight="screen">
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>정답입니다!</Card.Title>
+          </Card.Header>
+          <Card.Body>
+            {result.reward.image && (
+              <img src={result.reward.image.src} alt={result.reward.image.alt} />
+            )}
+            {result.reward.text && <p>{result.reward.text}</p>}
+          </Card.Body>
+        </Card.Root>
+      </VStack>
+    );
+  }
+
   return (
     <VStack minHeight="screen">
       <QuestCardForm
         quest={quest}
         onSubmit={async ({ answer }) => {
-          if (answer === TEST_QUEST.answer) {
-            alert("정답입니다~");
-          } else {
-            alert("틀렸습니다~");
-          }
+          const client = getApiClient();
+          const { data } = await client.quests({ id: questId })["submit-answer"].post({ answer });
+
+          setResult(
+            data?.correct ? { status: "correct", reward: data.reward } : { status: "incorrect" },
+          );
         }}
       />
+      {result.status === "incorrect" && <p>틀렸습니다~ 다시 시도해보세요.</p>}
     </VStack>
   );
 }

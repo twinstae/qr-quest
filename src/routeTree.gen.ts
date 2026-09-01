@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as IndexRouteImport } from "./routes/index";
+import { Route as ApiSplatRouteImport } from "./routes/api/$";
 import { Route as QuestQuestIdRouteImport } from "./routes/quest/$questId";
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
   path: "/",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const ApiSplatRoute = ApiSplatRouteImport.update({
+  id: "/api/$",
+  path: "/api/$",
   getParentRoute: () => rootRouteImport,
 } as any);
 const QuestQuestIdRoute = QuestQuestIdRouteImport.update({
@@ -25,27 +31,31 @@ const QuestQuestIdRoute = QuestQuestIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/api/$": typeof ApiSplatRoute;
   "/quest/$questId": typeof QuestQuestIdRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
+  "/api/$": typeof ApiSplatRoute;
   "/quest/$questId": typeof QuestQuestIdRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
+  "/api/$": typeof ApiSplatRoute;
   "/quest/$questId": typeof QuestQuestIdRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/quest/$questId";
+  fullPaths: "/" | "/api/$" | "/quest/$questId";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/quest/$questId";
-  id: "__root__" | "/" | "/quest/$questId";
+  to: "/" | "/api/$" | "/quest/$questId";
+  id: "__root__" | "/" | "/api/$" | "/quest/$questId";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  ApiSplatRoute: typeof ApiSplatRoute;
   QuestQuestIdRoute: typeof QuestQuestIdRoute;
 }
 
@@ -56,6 +66,13 @@ declare module "@tanstack/react-router" {
       path: "/";
       fullPath: "/";
       preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/$": {
+      id: "/api/$";
+      path: "/api/$";
+      fullPath: "/api/$";
+      preLoaderRoute: typeof ApiSplatRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/quest/$questId": {
@@ -70,6 +87,7 @@ declare module "@tanstack/react-router" {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiSplatRoute: ApiSplatRoute,
   QuestQuestIdRoute: QuestQuestIdRoute,
 };
 export const routeTree = rootRouteImport

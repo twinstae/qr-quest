@@ -15,6 +15,9 @@ todos.json
 *storybook.log
 storybook-static
 
+## Local dev database (PGLite)
+.data
+
 ## Panda
 styled-system
 styled-system-studio

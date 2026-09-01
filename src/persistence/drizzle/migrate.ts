@@ -1,3 +1,5 @@
+import { mkdirSync } from "node:fs";
+
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
@@ -12,9 +14,11 @@ const migrationsFolder = new URL("./migrations", import.meta.url).pathname;
 export async function migrateDatabase(databaseUrl: string): Promise<void> {
   if (databaseUrl.startsWith("pglite://")) {
     const dataDir = databaseUrl.slice("pglite://".length);
+    if (dataDir !== "memory") mkdirSync(dataDir, { recursive: true });
     const client = new PGlite(dataDir === "memory" ? undefined : dataDir);
     const db = drizzlePglite({ client, schema });
     await migratePglite(db, { migrationsFolder });
+    await client.close();
     return;
   }
 

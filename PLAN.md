@@ -1,6 +1,6 @@
 1. [ ] Quest 페이지의 QR 코드를 생성할 수 있다 ([ticket](docs/tickets/01-qr-code-generation.md))
 2. [x] Quest 페이지에서 Quest를 풀 수 있다 ([ticket](docs/tickets/02-quest-solving.md))
-3. [ ] 답을 맞추면 뭔가를 보여준다 ([ticket](docs/tickets/03-show-reward-on-correct-answer.md))
+3. [x] 답을 맞추면 뭔가를 보여준다 ([ticket](docs/tickets/03-show-reward-on-correct-answer.md))
 4. [ ] Quest를 생성할 수 있다 ([ticket](docs/tickets/04-create-quest.md))
 5. [ ] Quest를 수정할 수 있다 ([ticket](docs/tickets/05-update-quest.md))
 6. [ ] Quest 그룹 목록에서 그룹을 선택할 수 있다 ([ticket](docs/tickets/06-select-quest-group.md))
