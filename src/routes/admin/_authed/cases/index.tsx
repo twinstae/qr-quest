@@ -3,7 +3,9 @@ import { FolderPlus } from "lucide-react";
 
 import { CaseListItem } from "@/components/domains/case-list-item.tsx";
 import { CreateCaseDialog } from "@/components/domains/case-form-dialog.tsx";
+import { DashboardSummary } from "@/components/domains/dashboard-summary.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
+import { summarizeCaseStatuses } from "@/domain/case.ts";
 import { getApiClient } from "@/lib/api-client";
 import { Flex, Grid, styled } from "styled-system/jsx";
 
@@ -35,13 +37,16 @@ const PageTitle = styled("h1", {
 
 function RouteComponent() {
   const { cases } = Route.useLoaderData();
+  const { liveCount, totalCount } = summarizeCaseStatuses(cases);
 
   return (
     <Main>
-      <Flex justify="space-between" align="center" gap="4" mb="8">
+      <Flex justify="space-between" align="center" gap="4" mb="6">
         <PageTitle>CASE 목록</PageTitle>
         <CreateCaseDialog />
       </Flex>
+
+      <DashboardSummary liveCount={liveCount} totalCount={totalCount} />
 
       {cases.length === 0 ? (
         <EmptyState

@@ -6,6 +6,7 @@ import {
   describeLiveViolation,
   formatCaseNumber,
   isLastStep,
+  summarizeCaseStatuses,
   type LiveViolation,
 } from "./case.ts";
 import { requiresQrToken, type Step } from "./step.ts";
@@ -14,6 +15,23 @@ describe("formatCaseNumber", () => {
   it("두 자리로 맞춘다", () => {
     expect(formatCaseNumber(1)).toBe("CASE 01");
     expect(formatCaseNumber(12)).toBe("CASE 12");
+  });
+});
+
+describe("summarizeCaseStatuses", () => {
+  it("LIVE 상태 개수와 전체 개수를 센다", () => {
+    const cases = [
+      { status: "LIVE" as const },
+      { status: "LIVE" as const },
+      { status: "DRAFT" as const },
+      { status: "CLOSED" as const },
+    ];
+
+    expect(summarizeCaseStatuses(cases)).toEqual({ liveCount: 2, totalCount: 4 });
+  });
+
+  it("빈 목록이면 0/0이다", () => {
+    expect(summarizeCaseStatuses([])).toEqual({ liveCount: 0, totalCount: 0 });
   });
 });
 

@@ -26,6 +26,15 @@ export function formatCaseNumber(value: number): string {
   return `CASE ${String(value).padStart(2, "0")}`;
 }
 
+export function summarizeCaseStatuses(
+  cases: readonly { status: CaseStatus }[],
+): { liveCount: number; totalCount: number } {
+  return {
+    liveCount: cases.filter((item) => item.status === "LIVE").length,
+    totalCount: cases.length,
+  };
+}
+
 /** 새 CASE를 만들면 이 뼈대가 자동으로 생긴다 — 관리자가 빈 화면을 마주하지 않게. */
 export type StepTemplate = {
   order: number;
