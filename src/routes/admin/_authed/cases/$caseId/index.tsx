@@ -13,6 +13,19 @@ import { unwrapEdenError } from "@/lib/eden-error";
 import { css } from "styled-system/css";
 import { Flex, styled, VStack } from "styled-system/jsx";
 
+const actionLinkStyle = css({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "1.5",
+  borderWidth: "1px",
+  borderColor: "border",
+  borderRadius: "l2",
+  px: "3",
+  h: "9",
+  textStyle: "sm",
+  _hover: { bg: "gray.subtle.bg" },
+});
+
 export const Route = createFileRoute("/admin/_authed/cases/$caseId/")({
   component: RouteComponent,
   loader: async ({ params }) => {
@@ -111,6 +124,13 @@ function RouteComponent() {
               window.open(`/play/${caseItem.id}`, "_blank");
             }}
           />
+          <Link
+            to="/admin/cases/$caseId/check"
+            params={{ caseId: caseItem.id }}
+            className={actionLinkStyle}
+          >
+            설치 점검
+          </Link>
           <CreateStepDialog caseId={caseItem.id} />
         </Flex>
       </Flex>
