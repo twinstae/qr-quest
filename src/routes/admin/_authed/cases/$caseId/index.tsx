@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/domains/empty-state.tsx";
 import { ReissueTokenButton } from "@/components/domains/reissue-token-button.tsx";
 import { StartTestModeButton } from "@/components/domains/start-test-mode-button.tsx";
 import { CreateStepDialog } from "@/components/domains/step-form-dialog.tsx";
+import { TestSessionActions } from "@/components/domains/test-session-actions.tsx";
 import { StepListItem } from "@/components/domains/step-list-item.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { formatCaseNumber, type LiveViolation } from "@/domain/case.ts";
@@ -134,6 +135,19 @@ function RouteComponent() {
             }}
             onStarted={() => {
               window.open(`/play/${caseItem.id}`, "_blank");
+            }}
+          />
+          <TestSessionActions
+            caseId={caseItem.id}
+            stepBack={async (id) => {
+              const { data } = await getApiClient().cases({ id })["test-session"]["step-back"].post();
+              return data?.ok ?? false;
+            }}
+            resetCompletion={async (id) => {
+              const { data } = await getApiClient()
+                .cases({ id })
+                ["test-session"]["reset-completion"].post();
+              return data?.ok ?? false;
             }}
           />
           <Link

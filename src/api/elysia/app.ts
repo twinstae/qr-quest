@@ -7,7 +7,9 @@ import {
   reissueEntryToken,
   reissueStepQrToken,
   reorderSteps,
+  resetTestSessionCompletion,
   startTestSession,
+  stepBackTestSession,
   updateCaseStatus,
 } from "../../application/caseEditorService.ts";
 import {
@@ -251,6 +253,30 @@ export function createApp(ctx: AppContext) {
             completionCode: t.Optional(t.String()),
             resumed: t.Boolean(),
           }),
+        },
+      )
+      .post(
+        "/cases/:id/test-session/step-back",
+        async ({ params }) => {
+          const session = await stepBackTestSession(ctx, params.id);
+          return { ok: session !== undefined };
+        },
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          response: t.Object({ ok: t.Boolean() }),
+        },
+      )
+      .post(
+        "/cases/:id/test-session/reset-completion",
+        async ({ params }) => {
+          const session = await resetTestSessionCompletion(ctx, params.id);
+          return { ok: session !== undefined };
+        },
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          response: t.Object({ ok: t.Boolean() }),
         },
       )
       .get("/steps/:id/preview", ({ params }) => getStepForPreview(ctx, params.id), {

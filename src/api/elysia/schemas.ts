@@ -123,6 +123,8 @@ export const StepDisplaySchema = t.Object({
   placeholder: t.Optional(t.String()),
   // 힌트 글자는 절대 담지 않는다 — 있는지 여부만 알려주고, 실제 글자는 힌트 엔드포인트로만 받는다.
   hasHint: t.Boolean(),
+  // 관리자 테스트 세션의 [정답 보기] 토글에만 담는다. 일반 참가자 응답에는 절대 나가지 않는다.
+  debugAnswer: t.Optional(t.String()),
 });
 
 // 미리보기는 관리자 전용이라 힌트 글자를 그대로 보여준다(정답 자체는 여전히 감춘다).

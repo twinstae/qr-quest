@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Lightbulb } from "lucide-react";
+import { ChevronDown, Eye, Lightbulb } from "lucide-react";
 import * as v from "valibot";
 
 import { SimpleInput } from "@/components/form/simple-field";
@@ -21,6 +21,8 @@ export type StepCardData = {
   answerSpec?: PublicAnswerSpec;
   placeholder?: string;
   hasHint?: boolean;
+  /** 관리자 테스트 세션에서만 온다 — 실제 참가자 화면에는 절대 없다. */
+  debugAnswer?: string;
 };
 
 /** 이미지와 동영상을 같은 자리에서 보여준다. */
@@ -82,6 +84,33 @@ function HintDisclosure({ requestHint }: { requestHint: () => Promise<string | u
       <Collapsible.Content>
         <Card.Description role="status" aria-label="힌트" pt="2">
           {loading ? "불러오는 중…" : hint}
+        </Card.Description>
+      </Collapsible.Content>
+    </Collapsible.Root>
+  );
+}
+
+/** 관리자가 테스트 모드에서 정답을 확인해볼 때만 쓴다(요구 30-8). */
+function AnswerDisclosure({ answer }: { answer: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Collapsible.Root open={open} onOpenChange={(details) => setOpen(details.open)}>
+      <Collapsible.Trigger className={css({ cursor: "pointer" })}>
+        <Badge variant="outline" size="lg" colorPalette="orange">
+          <Eye />
+          {open ? "정답 숨기기" : "정답 보기"}
+          <ChevronDown
+            className={css({
+              transition: "transform",
+              transform: open ? "rotate(180deg)" : "rotate(0)",
+            })}
+          />
+        </Badge>
+      </Collapsible.Trigger>
+      <Collapsible.Content>
+        <Card.Description role="status" aria-label="정답" pt="2">
+          {answer}
         </Card.Description>
       </Collapsible.Content>
     </Collapsible.Root>
@@ -236,6 +265,7 @@ export function StepCardForm({
         </Flex>
         {step.body && <Card.Description>{step.body}</Card.Description>}
         {step.hasHint && <HintDisclosure requestHint={onRequestHint} />}
+        {step.debugAnswer && <AnswerDisclosure answer={step.debugAnswer} />}
       </Card.Header>
       <Card.Body>
         {step.question && (

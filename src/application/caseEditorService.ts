@@ -2,6 +2,7 @@ import type { AppContext } from "../api/context.ts";
 import { checkCaseLiveReadiness, type Case, type CaseStatus, type LiveViolation } from "../domain/case.ts";
 import { generateQrToken, generateSessionToken } from "../domain/codes.ts";
 import { LiveReadinessError, NotExistError } from "../domain/errors.ts";
+import type { PlaySession } from "../domain/playSession.ts";
 import { requiresQrToken, type Step } from "../domain/step.ts";
 import type { StartSessionResult } from "./playService.ts";
 import { toStepDisplay, type StepDisplay } from "./stepService.ts";
@@ -140,6 +141,52 @@ export async function startTestSession(ctx: AppContext, caseId: string): Promise
     completionCode: created.completionCode,
     resumed: false,
   };
+}
+
+/** 가장 최근에 시작한 테스트 세션. 여러 개 있어도 가장 최근 것 하나만 다룬다. */
+async function findActiveTestSession(ctx: AppContext, caseId: string): Promise<PlaySession | undefined> {
+  const sessions = await ctx.repo.playSession.listByCaseId(caseId);
+  return sessions.filter((session) => session.isTest).sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0];
+}
+
+/**
+ * 방금 지난 단계를 다시 시험해보고 싶을 때 쓴다(요구 30-8). 같은 세션을 그대로 쓰므로
+ * 브라우저의 테스트 쿠키를 새로 받을 필요가 없다 — "테스트 모드 시작"과 달리 처음부터
+ * 다시 걷지 않아도 된다.
+ */
+export async function stepBackTestSession(
+  ctx: AppContext,
+  caseId: string,
+): Promise<PlaySession | undefined> {
+  const session = await findActiveTestSession(ctx, caseId);
+  if (!session) return undefined;
+
+  const steps = await ctx.repo.step.listByCaseId(caseId);
+  const introOrder = steps.find((step) => step.kind === "INTRO")?.order ?? 0;
+  const target = Math.max(introOrder, session.currentStepOrder - 1);
+  if (target === session.currentStepOrder) return session;
+
+  return ctx.repo.playSession.update(session.id, { currentStepOrder: target });
+}
+
+/**
+ * 완료 화면을 다시 확인하고 싶을 때 쓴다. FINAL 단계로 되돌려 다시 제출하면
+ * 새 완료 코드를 받을 수 있다 — QR 단계들을 처음부터 다시 찍을 필요가 없다.
+ */
+export async function resetTestSessionCompletion(
+  ctx: AppContext,
+  caseId: string,
+): Promise<PlaySession | undefined> {
+  const session = await findActiveTestSession(ctx, caseId);
+  if (!session || session.status !== "COMPLETED") return session;
+
+  const steps = await ctx.repo.step.listByCaseId(caseId);
+  const finalOrder = steps.find((step) => step.kind === "FINAL")?.order ?? session.currentStepOrder;
+
+  return ctx.repo.playSession.update(session.id, {
+    status: "IN_PROGRESS",
+    currentStepOrder: finalOrder,
+  });
 }
 
 /** 저장하지 않은 초안도 그대로 보여준다 — 공개 여부·CASE 상태를 확인하지 않는다. */

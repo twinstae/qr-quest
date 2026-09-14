@@ -201,6 +201,36 @@ describe("getStepForPlay", () => {
     }
   });
 
+  it("일반 세션에는 정답 요약(debugAnswer)을 담지 않는다", async () => {
+    const session = activeSession();
+    const ctx = contextWith({ sessions: [session] });
+
+    const result = await getStepForPlay(ctx, {
+      qrToken: TEST_STEP.qrToken ?? "",
+      sessionToken: session.token,
+    });
+
+    expect(result.kind).toBe("ALLOWED");
+    if (result.kind === "ALLOWED") {
+      expect(result.step.debugAnswer).toBeUndefined();
+    }
+  });
+
+  it("테스트 세션에는 관리자용 정답 요약(debugAnswer)을 담는다", async () => {
+    const session = activeSession({ isTest: true });
+    const ctx = contextWith({ sessions: [session] });
+
+    const result = await getStepForPlay(ctx, {
+      qrToken: TEST_STEP.qrToken ?? "",
+      sessionToken: session.token,
+    });
+
+    expect(result.kind).toBe("ALLOWED");
+    if (result.kind === "ALLOWED") {
+      expect(result.step.debugAnswer).toBe("이민열, 김도균");
+    }
+  });
+
   it("없는 QR 토큰은 NotExistError를 던진다", async () => {
     const ctx = contextWith();
 

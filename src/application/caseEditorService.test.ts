@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { createFakeContext } from "../api/context.ts";
 import { openStep } from "../domain/tourFlow.ts";
 import { ANOTHER_CASE, TEST_CASE, TEST_STEP } from "../domain/fixtures.ts";
+import type { PlaySession } from "../domain/playSession.ts";
 import type { Step } from "../domain/step.ts";
 import createFakeCaseRepo from "../persistence/FakeCaseRepo.ts";
 import { createFakePlaySessionRepo, createFakeStepAttemptRepo } from "../persistence/FakePlaySessionRepo.ts";
@@ -17,20 +18,42 @@ import {
   reissueEntryToken,
   reissueStepQrToken,
   reorderSteps,
+  resetTestSessionCompletion,
   startTestSession,
+  stepBackTestSession,
   updateCaseStatus,
 } from "./caseEditorService.ts";
 
-function contextWith(input: { cases?: Record<string, typeof TEST_CASE>; steps?: Step[] } = {}) {
+function contextWith(
+  input: { cases?: Record<string, typeof TEST_CASE>; steps?: Step[]; sessions?: PlaySession[] } = {},
+) {
   const steps = input.steps ?? [];
+  const sessions = input.sessions ?? [];
   return createFakeContext({
     repo: {
       case: createFakeCaseRepo(input.cases ?? { [TEST_CASE.id]: TEST_CASE }),
       step: createFakeStepRepo(Object.fromEntries(steps.map((step) => [step.id, step]))),
-      playSession: createFakePlaySessionRepo(),
+      playSession: createFakePlaySessionRepo(
+        Object.fromEntries(sessions.map((session) => [session.id, session])),
+      ),
       stepAttempt: createFakeStepAttemptRepo(),
     },
   });
+}
+
+function testSession(overrides: Partial<PlaySession> = {}): PlaySession {
+  const now = new Date().toISOString();
+  return {
+    id: "test-session-1",
+    caseId: TEST_CASE.id,
+    token: "test-session-token",
+    status: "IN_PROGRESS",
+    currentStepOrder: 2,
+    startedAt: now,
+    lastSeenAt: now,
+    isTest: true,
+    ...overrides,
+  };
 }
 
 const INTRO: Step = {
@@ -265,6 +288,60 @@ describe("startTestSession", () => {
     expect(result.currentStepOrder).toBe(INTRO.order);
     const session = await ctx.repo.playSession.getByToken(result.token);
     expect(session?.isTest).toBe(true);
+  });
+});
+
+describe("stepBackTestSession", () => {
+  it("진행 중인 테스트 세션을 한 단계 앞으로 되돌린다", async () => {
+    const session = testSession({ currentStepOrder: 2 });
+    const ctx = contextWith({ steps: fullCaseSteps(), sessions: [session] });
+
+    const result = await stepBackTestSession(ctx, TEST_CASE.id);
+
+    expect(result?.currentStepOrder).toBe(1);
+  });
+
+  it("첫 단계보다 앞으로는 되돌리지 않는다", async () => {
+    const session = testSession({ currentStepOrder: INTRO.order });
+    const ctx = contextWith({ steps: fullCaseSteps(), sessions: [session] });
+
+    const result = await stepBackTestSession(ctx, TEST_CASE.id);
+
+    expect(result?.currentStepOrder).toBe(INTRO.order);
+  });
+
+  it("진행 중인 테스트 세션이 없으면 아무 일도 하지 않는다", async () => {
+    const ctx = contextWith({ steps: fullCaseSteps() });
+
+    const result = await stepBackTestSession(ctx, TEST_CASE.id);
+
+    expect(result).toBeUndefined();
+  });
+});
+
+describe("resetTestSessionCompletion", () => {
+  it("완료된 테스트 세션을 FINAL 단계로 되돌려 다시 완료해볼 수 있게 한다", async () => {
+    const finalStep = fullCaseSteps().find((step) => step.kind === "FINAL");
+    const session = testSession({
+      status: "COMPLETED",
+      currentStepOrder: CLOSING.order,
+      completionCode: "79-1-ABCD",
+    });
+    const ctx = contextWith({ steps: fullCaseSteps(), sessions: [session] });
+
+    const result = await resetTestSessionCompletion(ctx, TEST_CASE.id);
+
+    expect(result?.status).toBe("IN_PROGRESS");
+    expect(result?.currentStepOrder).toBe(finalStep?.order);
+  });
+
+  it("완료되지 않은 세션은 그대로 둔다", async () => {
+    const session = testSession({ status: "IN_PROGRESS", currentStepOrder: 2 });
+    const ctx = contextWith({ steps: fullCaseSteps(), sessions: [session] });
+
+    const result = await resetTestSessionCompletion(ctx, TEST_CASE.id);
+
+    expect(result).toEqual(session);
   });
 });
 

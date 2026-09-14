@@ -470,6 +470,56 @@ describe("CASE 편집기 (ticket 13)", () => {
     });
   });
 
+  describe("POST /api/cases/:id/test-session/step-back", () => {
+    it("진행 중인 테스트 세션이 있으면 ok=true를 돌려준다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+      await client.post(`/api/cases/${created.id}/test-session`);
+
+      const response = await client.post(`/api/cases/${created.id}/test-session/step-back`);
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload).toEqual({ ok: true });
+    });
+
+    it("테스트 세션이 없으면 ok=false를 돌려준다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+
+      const response = await client.post(`/api/cases/${created.id}/test-session/step-back`);
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload).toEqual({ ok: false });
+    });
+  });
+
+  describe("POST /api/cases/:id/test-session/reset-completion", () => {
+    it("완료되지 않은 테스트 세션이면 ok=true(변화 없음)를 돌려준다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+      await client.post(`/api/cases/${created.id}/test-session`);
+
+      const response = await client.post(`/api/cases/${created.id}/test-session/reset-completion`);
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload).toEqual({ ok: true });
+    });
+
+    it("테스트 세션이 없으면 ok=false를 돌려준다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+
+      const response = await client.post(`/api/cases/${created.id}/test-session/reset-completion`);
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload).toEqual({ ok: false });
+    });
+  });
+
   describe("GET /api/steps/:id/preview", () => {
     it("공개하지 않은 단계도 초안을 그대로 보여준다", async () => {
       const { client } = await signedInClient();

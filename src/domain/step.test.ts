@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_CORRECT_MESSAGE,
   DEFAULT_WRONG_MESSAGE,
+  describeAnswerForDebug,
   matchAnswer,
   normalizeLoose,
   normalizeText,
@@ -10,6 +11,42 @@ import {
   resolveWrongMessage,
   type AnswerSpec,
 } from "./step.ts";
+
+describe("describeAnswerForDebug", () => {
+  it("객관식은 정답 보기 기호와 라벨을 보여준다", () => {
+    const spec: AnswerSpec = {
+      type: "SINGLE_CHOICE",
+      choices: [
+        { id: "A", label: "창가 쪽 서가" },
+        { id: "B", label: "계단 옆 서가" },
+      ],
+      correctChoiceIds: ["B"],
+    };
+    expect(describeAnswerForDebug(spec)).toBe("B. 계단 옆 서가");
+  });
+
+  it("복수 선택은 여러 보기를 함께 보여준다", () => {
+    const spec: AnswerSpec = {
+      type: "MULTI_CHOICE",
+      choices: [
+        { id: "A", label: "창가 쪽 서가" },
+        { id: "B", label: "계단 옆 서가" },
+      ],
+      correctChoiceIds: ["A", "B"],
+    };
+    expect(describeAnswerForDebug(spec)).toBe("A. 창가 쪽 서가, B. 계단 옆 서가");
+  });
+
+  it("단답형·숫자·키워드는 허용값을 쉼표로 보여준다", () => {
+    expect(
+      describeAnswerForDebug({ type: "SHORT_TEXT", accepted: ["사과", "apple"], match: "EXACT" }),
+    ).toBe("사과, apple");
+    expect(describeAnswerForDebug({ type: "NUMBER", accepted: [42] })).toBe("42");
+    expect(describeAnswerForDebug({ type: "KEYWORDS", keywords: ["사라진", "책"], match: "ALL" })).toBe(
+      "사라진, 책",
+    );
+  });
+});
 
 describe("resolveCorrectMessage / resolveWrongMessage", () => {
   it("커스텀 메시지가 있으면 그대로 쓴다", () => {

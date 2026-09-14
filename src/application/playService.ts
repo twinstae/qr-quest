@@ -3,6 +3,7 @@ import { generateCompletionCode, generateSessionToken } from "../domain/codes.ts
 import { NotExistError } from "../domain/errors.ts";
 import type { PlaySession } from "../domain/playSession.ts";
 import {
+  describeAnswerForDebug,
   matchAnswer,
   requiresQrToken,
   resolveCorrectMessage,
@@ -114,21 +115,29 @@ export async function startOrResumeSession(
   return toStartResult(created, false);
 }
 
-export type PlayStepDisplay = Omit<StepDisplay, "hint"> & { hasHint: boolean };
+export type PlayStepDisplay = Omit<StepDisplay, "hint"> & { hasHint: boolean; debugAnswer?: string };
 
 /**
  * 힌트 글자는 참가자 응답에 절대 담지 않는다 — 여기서 함께 내려주면 "사용했는지"를
  * 알 수 없어 힌트 통계(16)가 불가능해진다. 있는지 여부만 알려주고, 글자는
  * requestHint를 거쳐야 받을 수 있다.
+ *
+ * debugAnswer(정답 요약)는 관리자 테스트 세션([정답 보기] 토글)에서만 담는다 —
+ * 실제 참가자에게는 절대 나가지 않는다.
  */
-function toPlayStepDisplay(step: Step): PlayStepDisplay {
+function toPlayStepDisplay(step: Step, includeDebugAnswer = false): PlayStepDisplay {
   const { hint, ...display } = toStepDisplay(step);
-  return { ...display, hasHint: Boolean(hint) };
+  return {
+    ...display,
+    hasHint: Boolean(hint),
+    debugAnswer:
+      includeDebugAnswer && step.answerSpec ? describeAnswerForDebug(step.answerSpec) : undefined,
+  };
 }
 
 export type PlayStepResult = { kind: "ALLOWED"; step: PlayStepDisplay } | LockedResult;
 
-/** QR을 찍어 단계에 들어갈 때 쓴다. 정답은 절대 담지 않는다. */
+/** QR을 찍어 단계에 들어갈 때 쓴다. 정답은 절대 담지 않는다(테스트 세션의 정답 요약은 예외). */
 export async function getStepForPlay(
   ctx: AppContext,
   input: { qrToken: string; sessionToken?: string },
@@ -140,7 +149,7 @@ export async function getStepForPlay(
   const lock = openStep({ session, step });
   if (lock.kind !== "ALLOWED") return toLockedResult(ctx, lock, step.caseId);
 
-  return { kind: "ALLOWED", step: toPlayStepDisplay(step) };
+  return { kind: "ALLOWED", step: toPlayStepDisplay(step, session?.isTest === true) };
 }
 
 function submissionToText(submission: AnswerSubmission): string {

@@ -164,3 +164,33 @@ describe("StepCardForm > 힌트", () => {
     expect(requestCount).toBe(1);
   });
 });
+
+describe("StepCardForm > 정답 보기 (테스트 모드)", () => {
+  it("정답 요약이 없으면 정답 보기 버튼을 보여주지 않는다", async () => {
+    await runSiheom(
+      given.render(
+        <StepCardForm
+          step={baseStep({ answerSpec: { type: "SHORT_TEXT" } })}
+          onSubmit={noSubmit}
+          onRequestHint={noHint}
+        />,
+      ),
+      assertions.not.visible(query.button("정답 보기")),
+    );
+  });
+
+  it("정답 보기를 누르면 정답 요약을 보여준다", async () => {
+    await runSiheom(
+      given.render(
+        <StepCardForm
+          step={baseStep({ answerSpec: { type: "SHORT_TEXT" }, debugAnswer: "이민열, 김도균" })}
+          onSubmit={noSubmit}
+          onRequestHint={noHint}
+        />,
+      ),
+      actions.click(query.button("정답 보기")),
+      assertions.visible(query.status("정답")),
+      assertions.textContent(query.status("정답"), "이민열, 김도균"),
+    );
+  });
+});

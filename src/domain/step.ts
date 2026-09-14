@@ -101,6 +101,25 @@ export function resolveWrongMessage(step: Pick<Step, "wrongMessage">): string {
   return step.wrongMessage?.trim() ? step.wrongMessage : DEFAULT_WRONG_MESSAGE;
 }
 
+/**
+ * 관리자 테스트 모드의 [정답 보기] 토글에만 쓴다 — 참가자에게는 절대 내려주지 않는다.
+ */
+export function describeAnswerForDebug(spec: AnswerSpec): string {
+  switch (spec.type) {
+    case "SINGLE_CHOICE":
+    case "MULTI_CHOICE": {
+      const correct = spec.choices.filter((choice) => spec.correctChoiceIds.includes(choice.id));
+      return correct.map((choice) => `${choice.id}. ${choice.label}`).join(", ");
+    }
+    case "SHORT_TEXT":
+      return spec.accepted.join(", ");
+    case "NUMBER":
+      return spec.accepted.join(", ");
+    case "KEYWORDS":
+      return spec.keywords.join(", ");
+  }
+}
+
 /** QR을 찍어서 들어가는 단계인가. INTRO/CLOSING은 화면으로만 지나간다. */
 export function requiresQrToken(kind: StepKind): boolean {
   return kind === "QR" || kind === "FINAL";
