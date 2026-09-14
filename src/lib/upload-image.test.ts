@@ -65,10 +65,49 @@ describe("toUploadIssue", () => {
     });
   });
 
+  // Eden Treaty는 실패를 { status, value }로 감싼다. 브라우저에서 실제 응답으로 확인한 모양.
+  it("Eden Treaty가 감싼 413 응답도 풀어서 이유를 알려준다", () => {
+    const issue = toUploadIssue({
+      status: 413,
+      value: {
+        code: "FILE_TOO_LARGE",
+        message: "5MB 이하만 올릴 수 있어요. 선택한 파일은 12MB예요.",
+        limitBytes: 5 * 1024 * 1024,
+        actualBytes: 12 * 1024 * 1024,
+      },
+    });
+
+    expect(issue).toEqual({
+      kind: "too-large",
+      message: "5MB 이하만 올릴 수 있어요. 선택한 파일은 12MB예요.",
+      limitBytes: 5 * 1024 * 1024,
+      actualBytes: 12 * 1024 * 1024,
+    });
+  });
+
+  it("Eden Treaty가 감싼 415 응답도 풀어서 이유를 알려준다", () => {
+    const issue = toUploadIssue({
+      status: 415,
+      value: {
+        code: "UNSUPPORTED_FILE_TYPE",
+        message: "JPG, PNG, WebP, GIF 파일만 올릴 수 있어요.",
+      },
+    });
+
+    expect(issue).toEqual({
+      kind: "unsupported",
+      message: "JPG, PNG, WebP, GIF 파일만 올릴 수 있어요.",
+    });
+  });
+
   it("알 수 없는 오류는 일반 실패 문구로 바꾼다", () => {
     expect(toUploadIssue(undefined)).toEqual({ kind: "failed", message: UPLOAD_FAILED_MESSAGE });
     expect(toUploadIssue("boom")).toEqual({ kind: "failed", message: UPLOAD_FAILED_MESSAGE });
     expect(toUploadIssue({ code: "SOMETHING_ELSE" })).toEqual({
+      kind: "failed",
+      message: UPLOAD_FAILED_MESSAGE,
+    });
+    expect(toUploadIssue({ status: 413, value: { code: "SOMETHING_ELSE" } })).toEqual({
       kind: "failed",
       message: UPLOAD_FAILED_MESSAGE,
     });
@@ -137,6 +176,23 @@ describe("uploadImageFile", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response(null, { status: 500 })),
+    );
+    const { presign } = presignOk();
+
+    const result = await uploadImageFile(imageFile(1024), presign);
+
+    expect(result).toEqual({
+      status: "issue",
+      issue: { kind: "failed", message: UPLOAD_FAILED_MESSAGE },
+    });
+  });
+
+  it("네트워크가 끊겨 fetch가 던지면 업로드 중 상태로 멈추지 않고 실패를 돌려준다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new TypeError("Failed to fetch");
+      }),
     );
     const { presign } = presignOk();
 
