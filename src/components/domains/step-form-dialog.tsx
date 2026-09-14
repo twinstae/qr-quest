@@ -86,6 +86,8 @@ export function EditStepDialog({ stepId }: { stepId: string }) {
           hint: step.hint ?? "",
           revealText: step.reveal.text ?? "",
           revealMedia: step.reveal.media,
+          revealPreset: step.reveal.preset ?? "FADE_UP",
+          revealSound: step.reveal.sound ?? "NONE",
         },
       });
     }

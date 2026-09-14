@@ -152,3 +152,51 @@ describe("StepEditorForm > 정답 검증", () => {
     });
   });
 });
+
+describe("StepEditorForm > 공개 연출", () => {
+  it("기본값은 FADE_UP·효과음 없음이다", async () => {
+    let submitted: StepEditorSubmit | undefined;
+
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="QR"
+          submitLabel="저장"
+          defaultValues={{ ...EMPTY_STEP_EDITOR_VALUES, name: "QR 05", title: "제목" }}
+          onSubmit={async (payload) => {
+            submitted = payload;
+          }}
+        />,
+      ),
+      actions.fill(query.textbox("정답"), "사과"),
+      actions.click(query.button("저장")),
+    );
+
+    expect(submitted?.values.revealPreset).toBe("FADE_UP");
+    expect(submitted?.values.revealSound).toBe("NONE");
+  });
+
+  it("프리셋과 효과음을 고르면 그대로 제출된다", async () => {
+    let submitted: StepEditorSubmit | undefined;
+
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="QR"
+          submitLabel="저장"
+          defaultValues={{ ...EMPTY_STEP_EDITOR_VALUES, name: "QR 05", title: "제목" }}
+          onSubmit={async (payload) => {
+            submitted = payload;
+          }}
+        />,
+      ),
+      actions.fill(query.textbox("정답"), "사과"),
+      actions.click(query.button("두루마리가 펴짐")),
+      actions.click(query.button("차임벨")),
+      actions.click(query.button("저장")),
+    );
+
+    expect(submitted?.values.revealPreset).toBe("UNROLL");
+    expect(submitted?.values.revealSound).toBe("chime");
+  });
+});

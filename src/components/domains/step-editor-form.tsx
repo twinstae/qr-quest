@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { Volume2 } from "lucide-react";
 import * as v from "valibot";
 
 import { SimpleCheckbox, SimpleImageUpload, SimpleInput } from "@/components/form/simple-field";
@@ -12,8 +13,10 @@ import {
   type Choice,
   type Media,
   type MediaKind,
+  type SoundKey,
   type StepKind,
 } from "@/domain/step.ts";
+import { playSound } from "@/lib/sound-effects";
 import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
@@ -32,6 +35,23 @@ const ANSWER_TYPE_LABELS: Record<AnswerType, string> = {
   SHORT_TEXT: "단답형",
   NUMBER: "숫자",
   KEYWORDS: "키워드",
+};
+
+const REVEAL_PRESETS = ["FADE_UP", "UNROLL", "TYPEWRITER", "TV_SCAN", "GLITCH"] as const;
+const REVEAL_PRESET_LABELS: Record<(typeof REVEAL_PRESETS)[number], string> = {
+  FADE_UP: "차분하게 떠오름",
+  UNROLL: "두루마리가 펴짐",
+  TYPEWRITER: "한 글자씩",
+  TV_SCAN: "브라운관 스캔",
+  GLITCH: "글리치",
+};
+
+const SOUND_KEYS = ["paper", "radio", "chime"] as const;
+const SOUND_LABELS: Record<"NONE" | (typeof SOUND_KEYS)[number], string> = {
+  NONE: "없음",
+  paper: "종이 넘기는 소리",
+  radio: "낮은 확성기 톤",
+  chime: "차임벨",
 };
 
 const CHOICE_IDS = ["A", "B", "C", "D"] as const;
@@ -62,6 +82,8 @@ const StepEditorEntries = {
   hint: v.string(),
   revealText: v.string(),
   revealMedia: v.optional(ImageValueSchema),
+  revealPreset: v.picklist(REVEAL_PRESETS),
+  revealSound: v.picklist(["NONE", ...SOUND_KEYS]),
 };
 
 const StepEditorSchema = v.object(StepEditorEntries);
@@ -94,6 +116,8 @@ export const EMPTY_STEP_EDITOR_VALUES: StepEditorDefaultValues = {
   hint: "",
   revealText: "",
   revealMedia: undefined,
+  revealPreset: "FADE_UP",
+  revealSound: "NONE",
 };
 
 /** 참가자에게 문제를 내는 단계인가. QR·마지막 단서만 문제를 갖는다. */
@@ -264,6 +288,8 @@ export function toStepRequestBody(payload: StepEditorSubmit) {
     reveal: {
       text: values.revealText || undefined,
       media: payload.revealMedia,
+      preset: values.revealPreset,
+      sound: values.revealSound === "NONE" ? undefined : values.revealSound,
     },
     question: isQuestion ? values.question || undefined : undefined,
     answerSpec: payload.answerSpec,
@@ -358,6 +384,66 @@ function AnswerTypeFields() {
   );
 }
 
+function RevealPresetFields() {
+  const { watch, setValue } = useFormContext<StepEditorFormValues>();
+  const preset = watch("revealPreset");
+  const sound = watch("revealSound");
+
+  return (
+    <Fieldset.Content>
+      <div>
+        <span className={css({ textStyle: "sm", fontWeight: "medium", mb: "1", display: "block" })}>
+          공개 연출
+        </span>
+        <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
+          {REVEAL_PRESETS.map((option) => (
+            <Button
+              key={option}
+              type="button"
+              size="sm"
+              variant={preset === option ? "solid" : "outline"}
+              aria-pressed={preset === option}
+              onClick={() => setValue("revealPreset", option)}
+            >
+              {REVEAL_PRESET_LABELS[option]}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <span className={css({ textStyle: "sm", fontWeight: "medium", mb: "1", display: "block" })}>
+          효과음
+        </span>
+        <div className={css({ display: "flex", flexWrap: "wrap", gap: "2", alignItems: "center" })}>
+          {(["NONE", ...SOUND_KEYS] as const).map((option) => (
+            <Button
+              key={option}
+              type="button"
+              size="sm"
+              variant={sound === option ? "solid" : "outline"}
+              aria-pressed={sound === option}
+              onClick={() => setValue("revealSound", option)}
+            >
+              {SOUND_LABELS[option]}
+            </Button>
+          ))}
+          {sound !== "NONE" && (
+            <Button
+              type="button"
+              size="sm"
+              variant="plain"
+              onClick={() => playSound(sound as SoundKey)}
+            >
+              <Volume2 /> 미리듣기
+            </Button>
+          )}
+        </div>
+      </div>
+    </Fieldset.Content>
+  );
+}
+
 export function StepEditorForm({
   kind,
   submitLabel,
@@ -433,6 +519,7 @@ export function StepEditorForm({
           <SimpleInput name="revealText" label="문구" />
           <SimpleImageUpload name="revealMedia" label="이미지" allowVideo />
         </Fieldset.Content>
+        <RevealPresetFields />
       </Fieldset.Root>
 
       <Footer>

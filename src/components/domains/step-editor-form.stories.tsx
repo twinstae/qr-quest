@@ -44,6 +44,8 @@ export const Edit: Story = {
       hint: "표지 안에 답이 있습니다.",
       revealText: "새로운 단서가 발견되었습니다.",
       revealMedia: undefined,
+      revealPreset: "FADE_UP",
+      revealSound: "NONE",
     },
   },
 };
