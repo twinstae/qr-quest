@@ -1,4 +1,4 @@
-import type { Media, StepKind } from "./step.ts";
+import { requiresQrToken, type Media, type Step, type StepKind } from "./step.ts";
 
 export type CaseStatus = "DRAFT" | "TEST" | "LIVE" | "CLOSED";
 
@@ -55,4 +55,43 @@ export function defaultStepTemplates(qrStepCount: number = DEFAULT_QR_STEP_COUNT
 /** 완주 화면이 이 단계 다음에 온다. */
 export function isLastStep(steps: { order: number }[], order: number): boolean {
   return Math.max(...steps.map((step) => step.order)) === order;
+}
+
+export type LiveViolation =
+  | { kind: "ORDER_GAP" }
+  | { kind: "MISSING_CLOSING" }
+  | { kind: "MISSING_INTRO_BODY" }
+  | { kind: "MISSING_ANSWER"; stepId: string; stepName: string }
+  | { kind: "MISSING_QR_TOKEN"; stepId: string; stepName: string };
+
+/**
+ * LIVE로 바꾸기 전 검사(요구 30). 순수 함수라 테스트가 가장 싸다 — 저장소 없이
+ * 이미 가져온 단계 목록만으로 판단한다.
+ */
+export function checkCaseLiveReadiness(steps: Step[]): LiveViolation[] {
+  const sorted = [...steps].sort((a, b) => a.order - b.order);
+  const violations: LiveViolation[] = [];
+
+  const hasOrderGap = sorted.some((step, index) => step.order !== index);
+  if (hasOrderGap) violations.push({ kind: "ORDER_GAP" });
+
+  if (!sorted.some((step) => step.kind === "CLOSING")) {
+    violations.push({ kind: "MISSING_CLOSING" });
+  }
+
+  for (const step of sorted) {
+    if (requiresQrToken(step.kind)) {
+      if (!step.answerSpec) {
+        violations.push({ kind: "MISSING_ANSWER", stepId: step.id, stepName: step.name });
+      }
+      if (!step.qrToken) {
+        violations.push({ kind: "MISSING_QR_TOKEN", stepId: step.id, stepName: step.name });
+      }
+    }
+    if (step.kind === "INTRO" && step.body.trim() === "") {
+      violations.push({ kind: "MISSING_INTRO_BODY" });
+    }
+  }
+
+  return violations;
 }

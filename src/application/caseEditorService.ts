@@ -1,10 +1,12 @@
 import type { AppContext } from "../api/context.ts";
-import type { Case } from "../domain/case.ts";
+import { checkCaseLiveReadiness, type Case, type CaseStatus, type LiveViolation } from "../domain/case.ts";
 import { generateQrToken, generateSessionToken } from "../domain/codes.ts";
-import { NotExistError } from "../domain/errors.ts";
+import { LiveReadinessError, NotExistError } from "../domain/errors.ts";
 import { requiresQrToken, type Step } from "../domain/step.ts";
 import type { StartSessionResult } from "./playService.ts";
 import { toStepDisplay, type StepDisplay } from "./stepService.ts";
+
+export type { LiveViolation };
 
 async function getCaseOrThrow(ctx: AppContext, id: string): Promise<Case> {
   const found = await ctx.repo.case.getById(id);
@@ -64,44 +66,30 @@ export async function cloneCase(ctx: AppContext, caseId: string): Promise<Case> 
   return cloned;
 }
 
-export type LiveViolation =
-  | { kind: "ORDER_GAP" }
-  | { kind: "MISSING_CLOSING" }
-  | { kind: "MISSING_INTRO_BODY" }
-  | { kind: "MISSING_ANSWER"; stepId: string; stepName: string }
-  | { kind: "MISSING_QR_TOKEN"; stepId: string; stepName: string };
-
 /**
  * LIVE로 바꾸기 전 검사(요구 30). 위반이 하나라도 있으면 빈 배열이 아니다 —
  * 호출부는 결과가 비어 있는지로만 판단하고, 목록은 화면에 그대로 보여준다.
  */
 export async function checkLiveReadiness(ctx: AppContext, caseId: string): Promise<LiveViolation[]> {
   const steps = await ctx.repo.step.listByCaseId(caseId);
-  const sorted = [...steps].sort((a, b) => a.order - b.order);
-  const violations: LiveViolation[] = [];
+  return checkCaseLiveReadiness(steps);
+}
 
-  const hasOrderGap = sorted.some((step, index) => step.order !== index);
-  if (hasOrderGap) violations.push({ kind: "ORDER_GAP" });
-
-  if (!sorted.some((step) => step.kind === "CLOSING")) {
-    violations.push({ kind: "MISSING_CLOSING" });
-  }
-
-  for (const step of sorted) {
-    if (requiresQrToken(step.kind)) {
-      if (!step.answerSpec) {
-        violations.push({ kind: "MISSING_ANSWER", stepId: step.id, stepName: step.name });
-      }
-      if (!step.qrToken) {
-        violations.push({ kind: "MISSING_QR_TOKEN", stepId: step.id, stepName: step.name });
-      }
-    }
-    if (step.kind === "INTRO" && step.body.trim() === "") {
-      violations.push({ kind: "MISSING_INTRO_BODY" });
+/** LIVE로 바꾸려는데 위반이 있으면 거부한다. 그 외 상태 변경은 그대로 저장한다. */
+export async function updateCaseStatus(
+  ctx: AppContext,
+  caseId: string,
+  status: CaseStatus,
+): Promise<Case> {
+  if (status === "LIVE") {
+    const violations = await checkLiveReadiness(ctx, caseId);
+    if (violations.length > 0) {
+      throw new LiveReadinessError("이 CASE는 아직 LIVE로 바꿀 수 없어요.", violations);
     }
   }
 
-  return violations;
+  const existing = await getCaseOrThrow(ctx, caseId);
+  return ctx.repo.case.update(caseId, { ...existing, status });
 }
 
 /**

@@ -8,12 +8,14 @@ import createFakeCaseRepo from "../persistence/FakeCaseRepo.ts";
 import { createFakePlaySessionRepo, createFakeStepAttemptRepo } from "../persistence/FakePlaySessionRepo.ts";
 import createFakeStepRepo from "../persistence/FakeStepRepo.ts";
 import { createStep, updateStep } from "./stepService.ts";
+import { LiveReadinessError } from "../domain/errors.ts";
 import {
   cloneCase,
   checkLiveReadiness,
   getStepForPreview,
   reorderSteps,
   startTestSession,
+  updateCaseStatus,
 } from "./caseEditorService.ts";
 
 function contextWith(input: { cases?: Record<string, typeof TEST_CASE>; steps?: Step[] } = {}) {
@@ -178,6 +180,36 @@ describe("checkLiveReadiness", () => {
     const violations = await checkLiveReadiness(ctx, TEST_CASE.id);
 
     expect(violations).toContainEqual(expect.objectContaining({ kind: "MISSING_CLOSING" }));
+  });
+});
+
+describe("updateCaseStatus", () => {
+  it("완전한 CASE는 LIVE로 바뀐다", async () => {
+    const ctx = contextWith({ steps: fullCaseSteps() });
+
+    const updated = await updateCaseStatus(ctx, TEST_CASE.id, "LIVE");
+
+    expect(updated.status).toBe("LIVE");
+  });
+
+  it("위반이 있으면 LIVE 전환을 거부하고 위반 목록을 담아 던진다", async () => {
+    const steps = fullCaseSteps().map((step) =>
+      step.name === "QR 01" ? { ...step, answerSpec: undefined } : step,
+    );
+    const ctx = contextWith({ steps });
+
+    await expect(updateCaseStatus(ctx, TEST_CASE.id, "LIVE")).rejects.toThrow(LiveReadinessError);
+
+    const stillDraft = await ctx.repo.case.getById(TEST_CASE.id);
+    expect(stillDraft?.status).toBe("DRAFT");
+  });
+
+  it("LIVE가 아닌 상태로는 검사 없이 바뀐다", async () => {
+    const ctx = contextWith();
+
+    const updated = await updateCaseStatus(ctx, TEST_CASE.id, "CLOSED");
+
+    expect(updated.status).toBe("CLOSED");
   });
 });
 
