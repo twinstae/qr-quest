@@ -11,12 +11,6 @@ import {
   QR_TOKEN_LENGTH,
 } from "./codes.ts";
 
-// 결정적인 테스트를 위해 정해진 값을 돌려주는 난수원.
-function sequence(values: number[]): () => number {
-  let index = 0;
-  return () => values[index++ % values.length] ?? 0;
-}
-
 describe("generateQrToken", () => {
   it("정해진 길이의 토큰을 만든다", () => {
     expect(generateQrToken()).toHaveLength(QR_TOKEN_LENGTH);
