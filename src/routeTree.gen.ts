@@ -17,6 +17,7 @@ import { Route as PlayCaseIdRouteImport } from './routes/play/$caseId'
 import { Route as SEntryTokenRouteImport } from './routes/s/$entryToken'
 import { Route as TQrTokenRouteImport } from './routes/t/$qrToken'
 import { Route as AdminAuthedCasesIndexRouteImport } from './routes/admin/_authed/cases/index'
+import { Route as AdminAuthedPreviewStepIdRouteImport } from './routes/admin/_authed/preview/$stepId'
 import { Route as AdminAuthedCasesCaseIdIndexRouteImport } from './routes/admin/_authed/cases/$caseId/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,6 +60,12 @@ const AdminAuthedCasesIndexRoute = AdminAuthedCasesIndexRouteImport.update({
   path: '/cases/',
   getParentRoute: () => AdminAuthedRoute,
 } as any)
+const AdminAuthedPreviewStepIdRoute =
+  AdminAuthedPreviewStepIdRouteImport.update({
+    id: '/preview/$stepId',
+    path: '/preview/$stepId',
+    getParentRoute: () => AdminAuthedRoute,
+  } as any)
 const AdminAuthedCasesCaseIdIndexRoute =
   AdminAuthedCasesCaseIdIndexRouteImport.update({
     id: '/cases/$caseId/',
@@ -74,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/play/$caseId': typeof PlayCaseIdRoute
   '/s/$entryToken': typeof SEntryTokenRoute
   '/t/$qrToken': typeof TQrTokenRoute
+  '/admin/preview/$stepId': typeof AdminAuthedPreviewStepIdRoute
   '/admin/cases/': typeof AdminAuthedCasesIndexRoute
   '/admin/cases/$caseId/': typeof AdminAuthedCasesCaseIdIndexRoute
 }
@@ -85,6 +93,7 @@ export interface FileRoutesByTo {
   '/play/$caseId': typeof PlayCaseIdRoute
   '/s/$entryToken': typeof SEntryTokenRoute
   '/t/$qrToken': typeof TQrTokenRoute
+  '/admin/preview/$stepId': typeof AdminAuthedPreviewStepIdRoute
   '/admin/cases': typeof AdminAuthedCasesIndexRoute
   '/admin/cases/$caseId': typeof AdminAuthedCasesCaseIdIndexRoute
 }
@@ -97,6 +106,7 @@ export interface FileRoutesById {
   '/play/$caseId': typeof PlayCaseIdRoute
   '/s/$entryToken': typeof SEntryTokenRoute
   '/t/$qrToken': typeof TQrTokenRoute
+  '/admin/_authed/preview/$stepId': typeof AdminAuthedPreviewStepIdRoute
   '/admin/_authed/cases/': typeof AdminAuthedCasesIndexRoute
   '/admin/_authed/cases/$caseId/': typeof AdminAuthedCasesCaseIdIndexRoute
 }
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/play/$caseId'
     | '/s/$entryToken'
     | '/t/$qrToken'
+    | '/admin/preview/$stepId'
     | '/admin/cases/'
     | '/admin/cases/$caseId/'
   fileRoutesByTo: FileRoutesByTo
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/play/$caseId'
     | '/s/$entryToken'
     | '/t/$qrToken'
+    | '/admin/preview/$stepId'
     | '/admin/cases'
     | '/admin/cases/$caseId'
   id:
@@ -132,6 +144,7 @@ export interface FileRouteTypes {
     | '/play/$caseId'
     | '/s/$entryToken'
     | '/t/$qrToken'
+    | '/admin/_authed/preview/$stepId'
     | '/admin/_authed/cases/'
     | '/admin/_authed/cases/$caseId/'
   fileRoutesById: FileRoutesById
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthedCasesIndexRouteImport
       parentRoute: typeof AdminAuthedRoute
     }
+    '/admin/_authed/preview/$stepId': {
+      id: '/admin/_authed/preview/$stepId'
+      path: '/preview/$stepId'
+      fullPath: '/admin/preview/$stepId'
+      preLoaderRoute: typeof AdminAuthedPreviewStepIdRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
     '/admin/_authed/cases/$caseId/': {
       id: '/admin/_authed/cases/$caseId/'
       path: '/cases/$caseId'
@@ -215,11 +235,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminAuthedRouteChildren {
+  AdminAuthedPreviewStepIdRoute: typeof AdminAuthedPreviewStepIdRoute
   AdminAuthedCasesIndexRoute: typeof AdminAuthedCasesIndexRoute
   AdminAuthedCasesCaseIdIndexRoute: typeof AdminAuthedCasesCaseIdIndexRoute
 }
 
 const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
+  AdminAuthedPreviewStepIdRoute: AdminAuthedPreviewStepIdRoute,
   AdminAuthedCasesIndexRoute: AdminAuthedCasesIndexRoute,
   AdminAuthedCasesCaseIdIndexRoute: AdminAuthedCasesCaseIdIndexRoute,
 }
