@@ -57,6 +57,22 @@ describe("createDrizzleQuestRepo", () => {
     expect(questsInA).toHaveLength(2);
   });
 
+  it("deleteByGroupId는 해당 그룹의 퀘스트만 지운다", async () => {
+    await using db = await createTestDatabase();
+    const groupRepo = createDrizzleQuestGroupRepo(db);
+    const repo = createDrizzleQuestRepo(db);
+
+    const groupA = await groupRepo.create(questGroupInput({ name: "그룹 A" }));
+    const groupB = await groupRepo.create(questGroupInput({ name: "그룹 B" }));
+    await repo.create(questInput({ groupId: groupA.id, content: "A1" }));
+    const questB = await repo.create(questInput({ groupId: groupB.id, content: "B1" }));
+
+    await repo.deleteByGroupId(groupA.id);
+
+    expect(await repo.listByGroupId(groupA.id)).toEqual([]);
+    expect(await repo.listByGroupId(groupB.id)).toEqual([questB]);
+  });
+
   it("update로 변경한 내용이 getById에도 반영된다", async () => {
     await using db = await createTestDatabase();
     const group = await createDrizzleQuestGroupRepo(db).create(questGroupInput());

@@ -9,6 +9,7 @@ describe("createFakeImageStorage", () => {
     const result = await storage.presignUpload({
       filename: "cover.jpg",
       contentType: "image/jpeg",
+      byteSize: 1024,
     });
 
     expect(result.uploadUrl).toContain("cover.jpg");
@@ -19,8 +20,16 @@ describe("createFakeImageStorage", () => {
   it("호출할 때마다 서로 다른 키를 생성한다", async () => {
     const storage = createFakeImageStorage();
 
-    const a = await storage.presignUpload({ filename: "cover.jpg", contentType: "image/jpeg" });
-    const b = await storage.presignUpload({ filename: "cover.jpg", contentType: "image/jpeg" });
+    const a = await storage.presignUpload({
+      filename: "cover.jpg",
+      contentType: "image/jpeg",
+      byteSize: 1024,
+    });
+    const b = await storage.presignUpload({
+      filename: "cover.jpg",
+      contentType: "image/jpeg",
+      byteSize: 1024,
+    });
 
     expect(a.publicUrl).not.toBe(b.publicUrl);
   });

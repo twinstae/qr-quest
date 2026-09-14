@@ -27,11 +27,18 @@ export function createSupabaseImageStorage(config: SupabaseImageStorageConfig): 
   });
 
   return {
-    async presignUpload({ filename, contentType }) {
+    async presignUpload({ filename, contentType, byteSize }) {
       const key = `${crypto.randomUUID()}-${filename}`;
       const uploadUrl = await getSignedUrl(
         client,
-        new PutObjectCommand({ Bucket: config.bucket, Key: key, ContentType: contentType }),
+        new PutObjectCommand({
+          Bucket: config.bucket,
+          Key: key,
+          ContentType: contentType,
+          // Content-Length까지 서명해야 검증한 크기보다 큰 파일이 스토리지에
+          // 올라가지 않는다 (S3가 서명과 다른 크기를 거부한다).
+          ContentLength: byteSize,
+        }),
         { expiresIn: PRESIGN_EXPIRES_IN_SECONDS },
       );
       return { uploadUrl, publicUrl: `${config.publicUrlBase}/${config.bucket}/${key}` };

@@ -36,4 +36,16 @@ describe("createDrizzleQuestGroupRepo", () => {
     expect(groups).toContainEqual(b);
     expect(groups).toHaveLength(2);
   });
+
+  it("delete로 지운 그룹은 list에 없다", async () => {
+    await using db = await createTestDatabase();
+    const repo = createDrizzleQuestGroupRepo(db);
+
+    const kept = await repo.create(questGroupInput({ name: TEST_QUEST_GROUP.name }));
+    const removed = await repo.create(questGroupInput({ name: ANOTHER_QUEST_GROUP.name }));
+
+    await repo.delete(removed.id);
+
+    expect(await repo.list()).toEqual([kept]);
+  });
 });

@@ -1,6 +1,6 @@
 import { Elysia, status, t } from "elysia";
 
-import { createGroup, listGroups } from "../../application/questGroupService.ts";
+import { createGroup, deleteGroup, listGroups } from "../../application/questGroupService.ts";
 import {
   createQuest,
   getQuestForDisplay,
@@ -10,7 +10,7 @@ import {
   updateQuest,
 } from "../../application/questService.ts";
 import { presignUpload } from "../../application/uploadService.ts";
-import { NotExistError } from "../../domain/errors.ts";
+import { FileTooLargeError, NotExistError, UnsupportedFileTypeError } from "../../domain/errors.ts";
 import type { AppContext } from "../context.ts";
 import { createAuthGuard } from "./authGuard.ts";
 
@@ -51,9 +51,28 @@ export function createApp(ctx: AppContext) {
   return new Elysia({ prefix: "/api" })
     .mount(ctx.auth.handler)
     .use(createAuthGuard(ctx))
-    .error({ NotExistError })
-    .onError(({ code }) => {
+    .error({ NotExistError, FileTooLargeError, UnsupportedFileTypeError })
+    .onError(({ code, error }) => {
       if (code === "NotExistError") return status("Not Found");
+
+      // 업로드 실패는 화면에서 그대로 보여줄 수 있게 숫자를 함께 내려준다.
+      // ("5MB 이하만 올릴 수 있어요. 선택한 파일은 8.2MB예요.")
+      if (code === "FileTooLargeError") {
+        return status(413, {
+          code: "FILE_TOO_LARGE",
+          message: error.message,
+          limitBytes: error.limitBytes,
+          actualBytes: error.actualBytes,
+        });
+      }
+
+      if (code === "UnsupportedFileTypeError") {
+        return status(415, {
+          code: "UNSUPPORTED_FILE_TYPE",
+          message: error.message,
+          allowedTypes: [...error.allowedTypes],
+        });
+      }
     })
     .get("/quests/:id", ({ params }) => getQuestForDisplay(ctx, params.id), {
       params: t.Object({ id: t.String() }),
@@ -103,11 +122,26 @@ export function createApp(ctx: AppContext) {
         }),
       ),
     })
+    .delete(
+      "/groups/:id",
+      async ({ params }) => {
+        await deleteGroup(ctx, params.id);
+        return { deleted: true };
+      },
+      {
+        auth: true,
+        params: t.Object({ id: t.String() }),
+        response: t.Object({ deleted: t.Boolean() }),
+      },
+    )
     .post("/uploads/presign", ({ body }) => presignUpload(ctx, body), {
       auth: true,
+      // 형식/용량 판단은 도메인(upload.ts)이 단독으로 한다 — 스키마에서 먼저
+      // 거르면 어떤 형식이 허용되는지 설명할 수 없는 400이 나간다.
       body: t.Object({
         filename: t.String(),
-        contentType: t.String({ pattern: "^image/" }),
+        contentType: t.String(),
+        byteSize: t.Number({ minimum: 0 }),
       }),
       response: t.Object({ uploadUrl: t.String(), publicUrl: t.String() }),
     })

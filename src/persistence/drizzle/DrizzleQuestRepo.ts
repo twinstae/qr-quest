@@ -68,6 +68,9 @@ export function createDrizzleQuestRepo(db: Database): QuestRepo {
       if (!row) throw new Error("update did not return a row");
       return toDomain(row);
     },
+    async deleteByGroupId(groupId) {
+      await db.delete(quests).where(eq(quests.groupId, groupId));
+    },
   } satisfies QuestRepo;
 }
 

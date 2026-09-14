@@ -23,6 +23,11 @@ export function createFakeQuestRepo(initState: Record<string, Quest>): QuestRepo
       state.set(id, quest);
       return quest;
     },
+    async deleteByGroupId(groupId) {
+      for (const [id, quest] of state) {
+        if (quest.groupId === groupId) state.delete(id);
+      }
+    },
   } satisfies QuestRepo;
 }
 

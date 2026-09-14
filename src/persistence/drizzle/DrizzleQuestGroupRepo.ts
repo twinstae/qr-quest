@@ -1,3 +1,5 @@
+import { eq } from "drizzle-orm";
+
 import type { QuestGroup } from "../../domain/questGroup.ts";
 import type { QuestGroupRepo } from "../types.ts";
 import type { Database } from "./client.ts";
@@ -24,6 +26,9 @@ export function createDrizzleQuestGroupRepo(db: Database): QuestGroupRepo {
     async list() {
       const rows = await db.query.questGroups.findMany();
       return rows.map(toDomain);
+    },
+    async delete(id) {
+      await db.delete(questGroups).where(eq(questGroups.id, id));
     },
   } satisfies QuestGroupRepo;
 }

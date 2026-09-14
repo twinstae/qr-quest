@@ -13,6 +13,9 @@ export function createFakeQuestGroupRepo(initState: Record<string, QuestGroup>):
     async list() {
       return [...state.values()];
     },
+    async delete(id) {
+      state.delete(id);
+    },
   } satisfies QuestGroupRepo;
 }
 

@@ -1,5 +1,6 @@
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
+import { DEFAULT_MAX_IMAGE_BYTES } from "../../domain/upload.ts";
 import createFakeImageStorage from "../../persistence/FakeImageStorage.ts";
 import { createDatabase } from "../../persistence/drizzle/client.ts";
 import createDrizzleQuestGroupRepo from "../../persistence/drizzle/DrizzleQuestGroupRepo.ts";
@@ -36,6 +37,12 @@ function createImageStorageFromEnv(): ImageStorage {
   return createFakeImageStorage();
 }
 
+function maxImageBytesFromEnv(): number {
+  const raw = process.env.UPLOAD_MAX_BYTES;
+  const parsed = raw ? Number(raw) : Number.NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MAX_IMAGE_BYTES;
+}
+
 const ctx: AppContext = {
   repo: {
     quest: createDrizzleQuestRepo(db),
@@ -43,6 +50,7 @@ const ctx: AppContext = {
   },
   auth: createAuth(drizzleAdapter(db, { provider: "pg" })),
   imageStorage: createImageStorageFromEnv(),
+  uploadLimits: { maxImageBytes: maxImageBytesFromEnv() },
 };
 
 export const app = createApp(ctx);

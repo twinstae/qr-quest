@@ -4,12 +4,21 @@ import { Controller, useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input.tsx";
 import * as Field from "@/components/ui/field.tsx";
 import * as Checkbox from "@/components/ui/checkbox.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { getApiClient } from "@/lib/api-client.ts";
 import * as FileUpload from "@/components/ui/file-upload.tsx";
-import { UploadIcon, XIcon } from "lucide-react";
+import { ImageDown, UploadIcon, XIcon } from "lucide-react";
 import { IconButton } from "../ui/icon-button";
 import { useFileUploadContext } from "@ark-ui/react/file-upload";
 import { css } from "styled-system/css";
+import { ALLOWED_IMAGE_TYPE_LABEL, DEFAULT_MAX_IMAGE_BYTES, formatBytes } from "@/domain/upload.ts";
+import { compressImage } from "@/lib/compress-image.ts";
+import {
+  COMPRESS_FAILED_MESSAGE,
+  uploadImageFile,
+  type UploadIssue,
+  type UploadedImage,
+} from "@/lib/upload-image.ts";
 
 // export function SimpleDatePicker({ name, label }: { name: string; label: string }) {
 //   const { control } = useFormContext();
@@ -128,9 +137,12 @@ export function SimpleCheckbox({
   );
 }
 
-export type SimpleImageValue = { src: string; alt: string };
+export type SimpleImageValue = UploadedImage;
 
-type UploadStatus = "idle" | "uploading" | "error";
+// 자동 압축은 긴 변을 단계적으로 줄여가며 두 번까지 시도하고,
+// 그 뒤에도 한도를 넘으면 더 작은 사진을 고르게 한다.
+const COMPRESS_MAX_EDGES = [1600, 1200] as const;
+const MAX_COMPRESS_ATTEMPTS = COMPRESS_MAX_EDGES.length;
 
 // 새로 선택한 파일이 있으면 그 미리보기를, 없으면 기존 값(수정 화면 등)의
 // 이미지를 보여준다 — react-hook-form의 field.value와 FileUpload의 내부
@@ -150,7 +162,12 @@ const FileUploadPreview = ({
       <FileUpload.ItemGroup>
         {files.map((file) => (
           <FileUpload.Item file={file} key={file.name} p="0.5" w="fit-content">
-            <FileUpload.ItemPreviewImage />
+            {/* 이미지가 아닌 파일(PDF 등)은 미리보기 이미지를 만들 수 없어 예외가 난다. */}
+            {file.type.startsWith("image/") ? (
+              <FileUpload.ItemPreviewImage />
+            ) : (
+              <FileUpload.ItemPreview />
+            )}
             <FileUpload.ItemDeleteTrigger asChild>
               <IconButton size="2xs" borderRadius="full" pos="absolute" top="-2" right="-2">
                 <XIcon />
@@ -211,7 +228,10 @@ export function SimpleImageUpload({
   required?: boolean;
 }) {
   const { control } = useFormContext();
-  const [status, setStatus] = useState<UploadStatus>("idle");
+  const [busy, setBusy] = useState<"idle" | "uploading" | "compressing">("idle");
+  const [issue, setIssue] = useState<UploadIssue | null>(null);
+  const [retry, setRetry] = useState<{ file: File; attempts: number } | null>(null);
+  const [note, setNote] = useState<string | null>(null);
 
   const descriptionId = useId();
   const errorId = useId();
@@ -219,37 +239,59 @@ export function SimpleImageUpload({
   return (
     <Controller
       render={({ field, fieldState }) => {
-        const isError = !!fieldState.error || status === "error";
-        const errorMessage =
-          status === "error"
-            ? "이미지 업로드에 실패했습니다"
-            : (fieldState.error?.root?.message ?? fieldState.error?.message);
+        const fieldErrorMessage = fieldState.error?.root?.message ?? fieldState.error?.message;
+        const errorMessage = fieldErrorMessage ?? issue?.message;
+        const isError = !!errorMessage;
 
-        async function uploadFile(file: File) {
-          setStatus("uploading");
+        async function runUpload(
+          file: File,
+          options: { compressedFrom?: number; attempts?: number } = {},
+        ) {
+          setIssue(null);
+          setNote(null);
+          setBusy("uploading");
 
-          const client = getApiClient();
-          const { data: presigned } = await client.uploads.presign.post({
-            filename: file.name,
-            contentType: file.type,
-          });
-          if (!presigned) {
-            setStatus("error");
+          const result = await uploadImageFile(file, (input) =>
+            getApiClient().uploads.presign.post(input),
+          );
+
+          setBusy("idle");
+
+          if (result.status === "uploaded") {
+            setRetry(null);
+            if (options.compressedFrom != null) {
+              setNote(
+                `${formatBytes(options.compressedFrom)} → ${formatBytes(file.size)}로 줄여서 올렸어요.`,
+              );
+            }
+            field.onChange(result.image);
             return;
           }
 
-          const uploadResponse = await fetch(presigned.uploadUrl, {
-            method: "PUT",
-            headers: { "Content-Type": file.type },
-            body: file,
-          });
-          if (!uploadResponse.ok) {
-            setStatus("error");
-            return;
-          }
+          setIssue(result.issue);
+          setRetry(
+            result.issue.kind === "too-large" ? { file, attempts: options.attempts ?? 0 } : null,
+          );
+        }
 
-          setStatus("idle");
-          field.onChange({ src: presigned.publicUrl, alt: file.name } satisfies SimpleImageValue);
+        async function compressAndUpload() {
+          if (!retry) return;
+
+          const source = retry.file;
+          const attempts = retry.attempts + 1;
+
+          setBusy("compressing");
+          setIssue(null);
+
+          try {
+            const maxEdge = COMPRESS_MAX_EDGES[retry.attempts] ?? COMPRESS_MAX_EDGES[0];
+            const compressed = await compressImage(source, { maxEdge });
+            await runUpload(compressed, { compressedFrom: source.size, attempts });
+          } catch {
+            setBusy("idle");
+            setRetry(null);
+            setIssue({ kind: "failed", message: COMPRESS_FAILED_MESSAGE });
+          }
         }
 
         return (
@@ -259,6 +301,10 @@ export function SimpleImageUpload({
             </Field.Label>
             <FileUpload.Root
               onFileChange={(details) => {
+                setIssue(null);
+                setRetry(null);
+                setNote(null);
+
                 // 새로 골랐던 파일을 지우면(delete trigger) 폼 값도 함께 비운다.
                 // 기존 값 미리보기는 acceptedFiles에 안 들어있으므로 여기서 건드리지 않는다.
                 if (details.acceptedFiles.length === 0) {
@@ -270,12 +316,12 @@ export function SimpleImageUpload({
                 // 선택 후 내부적으로 input을 다시 동기화하며 change를 한 번 더
                 // 발생시켜 같은 파일이 두 번 업로드된다. 대신 라이브러리가 중복
                 // 없이 한 번만 호출하는 onFileChange에서 업로드를 트리거한다.
-                uploadFile(details.acceptedFiles[0]);
+                runUpload(details.acceptedFiles[0]);
               }}
             >
               <FileUpload.HiddenInput
                 aria-invalid={isError}
-                aria-describedby={isError ? errorId : hint ? descriptionId : undefined}
+                aria-describedby={isError ? errorId : descriptionId}
                 aria-errormessage={isError ? errorId : undefined}
               />
               <FileUploadPreview
@@ -283,10 +329,36 @@ export function SimpleImageUpload({
                 onRemoveExisting={() => field.onChange(undefined)}
               />
             </FileUpload.Root>
-            {isError && (
+            {isError ? (
               <Field.ErrorText id={errorId} role="alert">
                 {errorMessage}
               </Field.ErrorText>
+            ) : (
+              <Field.HelperText id={descriptionId}>
+                {hint ??
+                  `${formatBytes(DEFAULT_MAX_IMAGE_BYTES)} 이하 · ${ALLOWED_IMAGE_TYPE_LABEL}`}
+              </Field.HelperText>
+            )}
+            {issue?.kind === "too-large" &&
+              retry &&
+              (retry.attempts < MAX_COMPRESS_ATTEMPTS ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  loading={busy === "compressing"}
+                  onClick={compressAndUpload}
+                >
+                  <ImageDown /> 자동 압축해서 올리기
+                </Button>
+              ) : (
+                <p className={css({ textStyle: "sm", color: "fg.muted" })}>
+                  더 작은 사진을 골라 주세요.
+                </p>
+              ))}
+            {note && (
+              <p role="status" className={css({ textStyle: "sm", color: "fg.muted" })}>
+                {note}
+              </p>
             )}
           </Field.Root>
         );

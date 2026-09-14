@@ -4,6 +4,7 @@ import { createFakeContext } from "../context.ts";
 import { createTestClient, signInAndGetCookie } from "../testHelpers.ts";
 import { ANOTHER_QUEST, TEST_ADMIN, TEST_QUEST } from "../../domain/fixtures.ts";
 import type { Quest } from "../../domain/quest.ts";
+import { DEFAULT_MAX_IMAGE_BYTES } from "../../domain/upload.ts";
 import createFakeQuestRepo from "../../persistence/FakeQuestRepo.ts";
 import { createApp } from "./app.ts";
 
@@ -171,6 +172,7 @@ describe("POST /api/uploads/presign", () => {
     const response = await client.post("/api/uploads/presign", {
       filename: "cover.jpg",
       contentType: "image/jpeg",
+      byteSize: 1024,
     });
 
     expect(response.status).toBe(401);
@@ -182,6 +184,7 @@ describe("POST /api/uploads/presign", () => {
     const response = await client.post("/api/uploads/presign", {
       filename: "cover.jpg",
       contentType: "image/jpeg",
+      byteSize: 1024,
     });
     const payload = await response.json();
 
@@ -190,7 +193,35 @@ describe("POST /api/uploads/presign", () => {
     expect(payload.publicUrl).toContain("cover.jpg");
   });
 
-  it("이미지가 아닌 파일은 스토리지를 호출하지 않고 거부한다", async () => {
+  it("한도를 넘는 파일은 413과 함께 실제 한도/크기를 알려준다", async () => {
+    let presignCalls = 0;
+    const { client } = await signedInClient(
+      createFakeContext({
+        imageStorage: {
+          async presignUpload() {
+            presignCalls++;
+            return { uploadUrl: "unused", publicUrl: "unused" };
+          },
+        },
+      }),
+    );
+
+    const response = await client.post("/api/uploads/presign", {
+      filename: "huge.jpg",
+      contentType: "image/jpeg",
+      byteSize: Math.round(8.2 * 1024 * 1024),
+    });
+    const payload = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(payload.code).toBe("FILE_TOO_LARGE");
+    expect(payload.limitBytes).toBe(DEFAULT_MAX_IMAGE_BYTES);
+    expect(payload.actualBytes).toBe(Math.round(8.2 * 1024 * 1024));
+    expect(payload.message).toEqual(expect.stringContaining("8.2MB"));
+    expect(presignCalls).toBe(0);
+  });
+
+  it("이미지가 아닌 파일은 415와 함께 지원 형식을 알려준다", async () => {
     let presignCalls = 0;
     const { client } = await signedInClient(
       createFakeContext({
@@ -206,10 +237,45 @@ describe("POST /api/uploads/presign", () => {
     const response = await client.post("/api/uploads/presign", {
       filename: "doc.pdf",
       contentType: "application/pdf",
+      byteSize: 1024,
     });
+    const payload = await response.json();
 
-    expect(response.status).not.toBe(200);
+    expect(response.status).toBe(415);
+    expect(payload.code).toBe("UNSUPPORTED_FILE_TYPE");
+    expect(payload.allowedTypes).toContain("image/webp");
+    expect(payload.message).toEqual(expect.stringContaining("JPG, PNG, WebP, GIF"));
     expect(presignCalls).toBe(0);
+  });
+});
+
+describe("DELETE /api/groups/:id", () => {
+  async function signedInWithGroup() {
+    const { client } = await signedInClient();
+    const created = await (await client.post("/api/groups", { name: "정리할 그룹" })).json();
+    await client.post("/api/quests", { ...toQuestRequestBody(TEST_QUEST), groupId: created.id });
+    return { client, group: created };
+  }
+
+  it("세션이 없으면 401을 반환한다", async () => {
+    const client = createTestClient(createApp(createFakeContext()));
+
+    expect((await client.delete("/api/groups/some-id")).status).toBe(401);
+  });
+
+  it("그룹을 지우면 그룹의 퀘스트도 함께 사라진다", async () => {
+    const { client, group } = await signedInWithGroup();
+
+    const response = await client.delete(`/api/groups/${group.id}`);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ deleted: true });
+
+    const groups = await (await client.get("/api/groups")).json();
+    expect(groups).toEqual([]);
+
+    const quests = await (await client.get(`/api/groups/${group.id}/quests`)).json();
+    expect(quests).toEqual([]);
   });
 });
 
