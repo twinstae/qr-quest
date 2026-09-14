@@ -485,4 +485,30 @@ describe("CASE 편집기 (ticket 13)", () => {
       expect(JSON.stringify(payload)).not.toContain("accepted");
     });
   });
+
+  describe("GET /api/cases/:id/qr-check", () => {
+    it("이 CASE의 단계 토큰이면 준비 완료를 알려준다", async () => {
+      const { client } = await signedInClient();
+      const created = await (await client.post("/api/cases", toCaseRequestBody(TEST_CASE))).json();
+      const steps = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+      const qrStep = steps.find((step: { qrToken: string | null }) => step.qrToken);
+
+      const response = await client.get(
+        `/api/cases/${created.id}/qr-check?token=${qrStep.qrToken}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ kind: "READY", label: qrStep.name, title: qrStep.title });
+    });
+
+    it("아무 데도 없는 토큰은 미발급으로 본다", async () => {
+      const { client } = await signedInClient();
+      const created = await (await client.post("/api/cases", toCaseRequestBody(TEST_CASE))).json();
+
+      const response = await client.get(`/api/cases/${created.id}/qr-check?token=NOPE`);
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ kind: "UNKNOWN" });
+    });
+  });
 });

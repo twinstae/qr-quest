@@ -147,3 +147,9 @@ export const LiveViolationSchema = t.Union([
   t.Object({ kind: t.Literal("MISSING_QR_TOKEN"), stepId: t.String(), stepName: t.String() }),
 ]);
 
+export const QrCheckResultSchema = t.Union([
+  t.Object({ kind: t.Literal("READY"), label: t.String(), title: t.String() }),
+  t.Object({ kind: t.Literal("OTHER_CASE"), caseNumber: t.Number() }),
+  t.Object({ kind: t.Literal("UNKNOWN") }),
+]);
+

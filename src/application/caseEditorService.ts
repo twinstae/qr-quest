@@ -147,3 +147,40 @@ export async function getStepForPreview(ctx: AppContext, stepId: string): Promis
   const step = await getStepOrThrow(ctx, stepId);
   return toStepDisplay(step);
 }
+
+export type QrCheckResult =
+  | { kind: "READY"; label: string; title: string }
+  | { kind: "OTHER_CASE"; caseNumber: number }
+  | { kind: "UNKNOWN" };
+
+/**
+ * 설치 점검(요구 22)에서 QR 하나를 스캔했을 때 무슨 QR인지 판정한다.
+ * 참가자 잠금과는 무관하다 — 순서와 상관없이 자유롭게 스캔해서 설치를 확인해야 한다.
+ */
+export async function checkQrToken(
+  ctx: AppContext,
+  caseId: string,
+  token: string,
+): Promise<QrCheckResult> {
+  const currentCase = await getCaseOrThrow(ctx, caseId);
+
+  if (token === currentCase.entryToken) {
+    return { kind: "READY", label: "시작 QR", title: currentCase.title };
+  }
+
+  const step = await ctx.repo.step.getByQrToken(token);
+  if (step) {
+    if (step.caseId !== caseId) {
+      const otherCase = await ctx.repo.case.getById(step.caseId);
+      return { kind: "OTHER_CASE", caseNumber: otherCase?.number ?? 0 };
+    }
+    return { kind: "READY", label: step.name, title: step.title };
+  }
+
+  const otherCaseByEntry = await ctx.repo.case.getByEntryToken(token);
+  if (otherCaseByEntry && otherCaseByEntry.id !== caseId) {
+    return { kind: "OTHER_CASE", caseNumber: otherCaseByEntry.number };
+  }
+
+  return { kind: "UNKNOWN" };
+}

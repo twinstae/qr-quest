@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createFakeContext } from "../api/context.ts";
 import { openStep } from "../domain/tourFlow.ts";
-import { TEST_CASE, TEST_STEP } from "../domain/fixtures.ts";
+import { ANOTHER_CASE, TEST_CASE, TEST_STEP } from "../domain/fixtures.ts";
 import type { Step } from "../domain/step.ts";
 import createFakeCaseRepo from "../persistence/FakeCaseRepo.ts";
 import { createFakePlaySessionRepo, createFakeStepAttemptRepo } from "../persistence/FakePlaySessionRepo.ts";
@@ -10,6 +10,7 @@ import createFakeStepRepo from "../persistence/FakeStepRepo.ts";
 import { createStep, updateStep } from "./stepService.ts";
 import { LiveReadinessError } from "../domain/errors.ts";
 import {
+  checkQrToken,
   cloneCase,
   checkLiveReadiness,
   getStepForPreview,
@@ -282,5 +283,85 @@ describe("getStepForPreview", () => {
 
     expect(preview.title).toBe("초안 제목");
     expect(JSON.stringify(preview)).not.toContain("accepted");
+  });
+});
+
+describe("qrToken 불변식 (요구 23)", () => {
+  it("단계 콘텐츠를 수정해도 qrToken이 그대로다", async () => {
+    const ctx = contextWith({ steps: [TEST_STEP] });
+
+    const updated = await updateStep(ctx, TEST_STEP.id, {
+      name: TEST_STEP.name,
+      kind: TEST_STEP.kind,
+      title: "완전히 다른 제목",
+      body: "완전히 다른 본문",
+      reveal: { text: "다른 단서" },
+      answerSpec: { type: "SHORT_TEXT", accepted: ["다른 정답"], match: "EXACT" },
+    });
+
+    expect(updated.qrToken).toBe(TEST_STEP.qrToken);
+  });
+
+  it("복제된 CASE의 단계는 원본과 다른 qrToken을 가진다", async () => {
+    const ctx = contextWith({ steps: [TEST_STEP] });
+
+    const cloned = await cloneCase(ctx, TEST_CASE.id);
+    const clonedSteps = await ctx.repo.step.listByCaseId(cloned.id);
+
+    expect(clonedSteps[0]?.qrToken).not.toBe(TEST_STEP.qrToken);
+    expect(clonedSteps[0]?.qrToken).toEqual(expect.any(String));
+  });
+});
+
+describe("checkQrToken", () => {
+  function ctxWithTwoCases() {
+    return createFakeContext({
+      repo: {
+        case: createFakeCaseRepo({ [TEST_CASE.id]: TEST_CASE, [ANOTHER_CASE.id]: ANOTHER_CASE }),
+        step: createFakeStepRepo({ [TEST_STEP.id]: TEST_STEP }),
+        playSession: createFakePlaySessionRepo(),
+        stepAttempt: createFakeStepAttemptRepo(),
+      },
+    });
+  }
+
+  it("이 CASE의 시작 토큰이면 준비 완료로 본다", async () => {
+    const ctx = ctxWithTwoCases();
+
+    const result = await checkQrToken(ctx, TEST_CASE.id, TEST_CASE.entryToken);
+
+    expect(result).toEqual({ kind: "READY", label: "시작 QR", title: TEST_CASE.title });
+  });
+
+  it("이 CASE의 단계 토큰이면 단계 이름과 현재 제목을 알려준다", async () => {
+    const ctx = ctxWithTwoCases();
+
+    const result = await checkQrToken(ctx, TEST_CASE.id, TEST_STEP.qrToken ?? "");
+
+    expect(result).toEqual({ kind: "READY", label: TEST_STEP.name, title: TEST_STEP.title });
+  });
+
+  it("다른 CASE의 단계 토큰이면 그 CASE 번호를 알려준다", async () => {
+    const ctx = ctxWithTwoCases();
+
+    const result = await checkQrToken(ctx, ANOTHER_CASE.id, TEST_STEP.qrToken ?? "");
+
+    expect(result).toEqual({ kind: "OTHER_CASE", caseNumber: TEST_CASE.number });
+  });
+
+  it("다른 CASE의 시작 토큰이면 그 CASE 번호를 알려준다", async () => {
+    const ctx = ctxWithTwoCases();
+
+    const result = await checkQrToken(ctx, ANOTHER_CASE.id, TEST_CASE.entryToken);
+
+    expect(result).toEqual({ kind: "OTHER_CASE", caseNumber: TEST_CASE.number });
+  });
+
+  it("아무 CASE에도 없는 토큰이면 미발급으로 본다", async () => {
+    const ctx = ctxWithTwoCases();
+
+    const result = await checkQrToken(ctx, TEST_CASE.id, "NOPE");
+
+    expect(result).toEqual({ kind: "UNKNOWN" });
   });
 });

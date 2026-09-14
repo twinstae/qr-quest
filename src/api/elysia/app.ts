@@ -1,6 +1,7 @@
 import { Elysia, status, t } from "elysia";
 
 import {
+  checkQrToken,
   cloneCase,
   getStepForPreview,
   reorderSteps,
@@ -30,6 +31,7 @@ import {
   CaseFieldsSchema,
   CaseSchema,
   LiveViolationSchema,
+  QrCheckResultSchema,
   StepFieldsSchema,
   StepKindSchema,
   StepPreviewSchema,
@@ -254,6 +256,16 @@ export function createApp(ctx: AppContext) {
         params: t.Object({ id: t.String() }),
         response: StepPreviewSchema,
       })
+      .get(
+        "/cases/:id/qr-check",
+        ({ params, query }) => checkQrToken(ctx, params.id, query.token),
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          query: t.Object({ token: t.String() }),
+          response: QrCheckResultSchema,
+        },
+      )
       .post("/uploads/presign", ({ body }) => presignUpload(ctx, body), {
         auth: true,
         // 형식/용량 판단은 도메인(upload.ts)이 단독으로 한다 — 스키마에서 먼저
