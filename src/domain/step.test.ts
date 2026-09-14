@@ -1,6 +1,29 @@
 import { describe, expect, it } from "vitest";
 
-import { matchAnswer, normalizeLoose, normalizeText, type AnswerSpec } from "./step.ts";
+import {
+  DEFAULT_CORRECT_MESSAGE,
+  DEFAULT_WRONG_MESSAGE,
+  matchAnswer,
+  normalizeLoose,
+  normalizeText,
+  resolveCorrectMessage,
+  resolveWrongMessage,
+  type AnswerSpec,
+} from "./step.ts";
+
+describe("resolveCorrectMessage / resolveWrongMessage", () => {
+  it("커스텀 메시지가 있으면 그대로 쓴다", () => {
+    expect(resolveCorrectMessage({ correctMessage: "잘했어요!" })).toBe("잘했어요!");
+    expect(resolveWrongMessage({ wrongMessage: "다시 살펴보세요." })).toBe("다시 살펴보세요.");
+  });
+
+  it("비어 있거나 공백뿐이면 기본 문구를 쓴다", () => {
+    expect(resolveCorrectMessage({})).toBe(DEFAULT_CORRECT_MESSAGE);
+    expect(resolveCorrectMessage({ correctMessage: "   " })).toBe(DEFAULT_CORRECT_MESSAGE);
+    expect(resolveWrongMessage({})).toBe(DEFAULT_WRONG_MESSAGE);
+    expect(resolveWrongMessage({ wrongMessage: "" })).toBe(DEFAULT_WRONG_MESSAGE);
+  });
+});
 
 describe("normalizeText / normalizeLoose", () => {
   it("앞뒤 공백과 연속 공백, 대소문자를 흡수한다", () => {

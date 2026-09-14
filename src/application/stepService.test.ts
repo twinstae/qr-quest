@@ -85,6 +85,19 @@ describe("createStep", () => {
 
     expect(created.order).toBe(TEST_STEP.order + 1);
   });
+
+  it("정답/오답 메시지를 함께 저장한다", async () => {
+    const ctx = contextWith();
+
+    const created = await createStep(ctx, TEST_CASE.id, {
+      ...EDITOR_INPUT,
+      correctMessage: "정답이에요!",
+      wrongMessage: "다시 살펴보세요.",
+    });
+
+    expect(created.correctMessage).toBe("정답이에요!");
+    expect(created.wrongMessage).toBe("다시 살펴보세요.");
+  });
 });
 
 describe("updateStep", () => {
@@ -117,6 +130,19 @@ describe("updateStep", () => {
     const ctx = contextWith();
 
     await expect(updateStep(ctx, "missing", EDITOR_INPUT)).rejects.toThrow(NotExistError);
+  });
+
+  it("정답/오답 메시지를 고칠 수 있다", async () => {
+    const ctx = contextWith([TEST_STEP]);
+
+    const updated = await updateStep(ctx, TEST_STEP.id, {
+      ...EDITOR_INPUT,
+      correctMessage: "정답이에요!",
+      wrongMessage: "다시 살펴보세요.",
+    });
+
+    expect(updated.correctMessage).toBe("정답이에요!");
+    expect(updated.wrongMessage).toBe("다시 살펴보세요.");
   });
 
   it("getStepForEdit은 정답을 포함한 전체 단계를 돌려준다", async () => {

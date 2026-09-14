@@ -4,7 +4,7 @@ import { createFakeContext } from "../api/context.ts";
 import { NotExistError } from "../domain/errors.ts";
 import { ANOTHER_CASE, TEST_CASE, TEST_STEP } from "../domain/fixtures.ts";
 import type { PlaySession } from "../domain/playSession.ts";
-import type { Step } from "../domain/step.ts";
+import { DEFAULT_CORRECT_MESSAGE, DEFAULT_WRONG_MESSAGE, type Step } from "../domain/step.ts";
 import createFakeCaseRepo from "../persistence/FakeCaseRepo.ts";
 import { createFakePlaySessionRepo, createFakeStepAttemptRepo } from "../persistence/FakePlaySessionRepo.ts";
 import createFakeStepRepo from "../persistence/FakeStepRepo.ts";
@@ -219,7 +219,11 @@ describe("submitAnswer", () => {
       submission: { type: "TEXT", value: "이민열, 김도균" },
     });
 
-    expect(result).toEqual({ kind: "CORRECT", reveal: TEST_STEP.reveal });
+    expect(result).toEqual({
+      kind: "CORRECT",
+      reveal: TEST_STEP.reveal,
+      message: DEFAULT_CORRECT_MESSAGE,
+    });
 
     const updated = await ctx.repo.playSession.getById(session.id);
     expect(updated?.currentStepOrder).toBe(FINAL_STEP.order);
@@ -239,7 +243,7 @@ describe("submitAnswer", () => {
         sessionToken: session.token,
         submission: { type: "TEXT", value: "엉뚱한 답" },
       });
-      expect(result).toEqual({ kind: "INCORRECT" });
+      expect(result).toEqual({ kind: "INCORRECT", message: DEFAULT_WRONG_MESSAGE });
     }
 
     const updated = await ctx.repo.playSession.getById(session.id);
@@ -283,6 +287,30 @@ describe("submitAnswer", () => {
     expect(result.kind).toBe("LOCKED");
     const attempts = await ctx.repo.stepAttempt.listBySessionId(session.id);
     expect(attempts).toHaveLength(0);
+  });
+
+  it("단계에 커스텀 정답/오답 메시지가 있으면 그대로 내려준다", async () => {
+    const customStep: Step = {
+      ...TEST_STEP,
+      correctMessage: "완벽해요!",
+      wrongMessage: "힌트를 다시 읽어보세요.",
+    };
+    const session = activeSession();
+    const ctx = contextWith({ steps: [customStep], sessions: [session] });
+
+    const correct = await submitAnswer(ctx, {
+      stepId: customStep.id,
+      sessionToken: session.token,
+      submission: { type: "TEXT", value: "이민열, 김도균" },
+    });
+    expect(correct).toMatchObject({ kind: "CORRECT", message: "완벽해요!" });
+
+    const incorrect = await submitAnswer(ctx, {
+      stepId: customStep.id,
+      sessionToken: session.token,
+      submission: { type: "TEXT", value: "엉뚱한 답" },
+    });
+    expect(incorrect).toEqual({ kind: "INCORRECT", message: "힌트를 다시 읽어보세요." });
   });
 });
 

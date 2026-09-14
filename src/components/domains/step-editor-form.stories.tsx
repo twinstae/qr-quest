@@ -42,6 +42,8 @@ export const Edit: Story = {
       ...toAnswerFormValues({ type: "SHORT_TEXT", accepted: ["이민열, 김도균"], match: "EXACT" }),
       placeholder: "정답을 입력하세요",
       hint: "표지 안에 답이 있습니다.",
+      correctMessage: "",
+      wrongMessage: "",
       revealText: "새로운 단서가 발견되었습니다.",
       revealMedia: undefined,
       revealPreset: "FADE_UP",

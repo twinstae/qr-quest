@@ -2,7 +2,14 @@ import type { AppContext } from "../api/context.ts";
 import { generateCompletionCode, generateSessionToken } from "../domain/codes.ts";
 import { NotExistError } from "../domain/errors.ts";
 import type { PlaySession } from "../domain/playSession.ts";
-import { matchAnswer, requiresQrToken, type AnswerSubmission, type Step } from "../domain/step.ts";
+import {
+  matchAnswer,
+  requiresQrToken,
+  resolveCorrectMessage,
+  resolveWrongMessage,
+  type AnswerSubmission,
+  type Step,
+} from "../domain/step.ts";
 import { nextOrderAfter, openStep, progressOf, type OpenStepResult } from "../domain/tourFlow.ts";
 import { toStepDisplay, type StepDisplay } from "./stepService.ts";
 
@@ -141,8 +148,8 @@ function submissionToText(submission: AnswerSubmission): string {
 }
 
 export type SubmitAnswerResult =
-  | { kind: "INCORRECT" }
-  | { kind: "CORRECT"; reveal: Step["reveal"]; completionCode?: string }
+  | { kind: "INCORRECT"; message: string }
+  | { kind: "CORRECT"; reveal: Step["reveal"]; message: string; completionCode?: string }
   | LockedResult;
 
 /**
@@ -171,7 +178,7 @@ export async function submitAnswer(
     createdAt: new Date().toISOString(),
   });
 
-  if (!correct) return { kind: "INCORRECT" };
+  if (!correct) return { kind: "INCORRECT", message: resolveWrongMessage(step) };
 
   if (step.kind === "FINAL") {
     const completionCode = generateCompletionCode();
@@ -181,7 +188,7 @@ export async function submitAnswer(
       completionCode,
       currentStepOrder: step.order,
     });
-    return { kind: "CORRECT", reveal: step.reveal, completionCode };
+    return { kind: "CORRECT", reveal: step.reveal, message: resolveCorrectMessage(step), completionCode };
   }
 
   const steps = await ctx.repo.step.listByCaseId(step.caseId);
@@ -191,7 +198,7 @@ export async function submitAnswer(
     lastSeenAt: new Date().toISOString(),
   });
 
-  return { kind: "CORRECT", reveal: step.reveal };
+  return { kind: "CORRECT", reveal: step.reveal, message: resolveCorrectMessage(step) };
 }
 
 export type HintResult = { kind: "HINT"; hint?: string } | LockedResult;

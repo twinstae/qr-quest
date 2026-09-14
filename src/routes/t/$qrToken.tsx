@@ -64,8 +64,11 @@ function RouteComponent() {
 
         setState(
           outcome.kind === "CORRECT"
-            ? { status: "correct", reveal: outcome.reveal }
-            : { status: "incorrect" },
+            ? { status: "correct", reveal: outcome.reveal, message: outcome.message }
+            : {
+                status: "incorrect",
+                message: outcome.kind === "INCORRECT" ? outcome.message : "다시 시도해주세요.",
+              },
         );
       }}
       onRequestHint={async () => {

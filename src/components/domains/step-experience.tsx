@@ -16,8 +16,8 @@ export type Reveal = { text?: string; media?: Media; preset?: RevealPreset; soun
 
 export type StepExperienceState =
   | { status: "idle" }
-  | { status: "incorrect" }
-  | { status: "correct"; reveal: Reveal };
+  | { status: "incorrect"; message: string }
+  | { status: "correct"; reveal: Reveal; message: string };
 
 export function StepExperience({
   step,
@@ -68,7 +68,7 @@ export function StepExperience({
               textStyle="xl"
               className={revealAnimation({ preset: state.reveal.preset ?? "FADE_UP" })}
             >
-              {state.reveal.text ?? "정답입니다. 새로운 단서가 발견되었습니다."}
+              {state.reveal.text || state.message}
             </Card.Title>
           </Card.Header>
         </Card.Root>
@@ -98,7 +98,7 @@ export function StepExperience({
           })}
         >
           <MessageCircleQuestion className={css({ boxSize: "4", flexShrink: "0" })} />
-          아직 사건의 핵심에 도달하지 못했어요. 문장을 다시 살펴보세요.
+          {state.message}
         </p>
       )}
     </VStack>

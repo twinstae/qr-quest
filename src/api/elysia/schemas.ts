@@ -105,6 +105,8 @@ export const StepFieldsSchema = {
   answerSpec: t.Optional(AnswerSpecSchema),
   placeholder: t.Optional(t.String()),
   hint: t.Optional(t.String()),
+  correctMessage: t.Optional(t.String()),
+  wrongMessage: t.Optional(t.String()),
 };
 
 export const StepDisplaySchema = t.Object({

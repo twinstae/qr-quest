@@ -125,10 +125,11 @@ export function createPlayRoutes(ctx: AppContext) {
         }),
         response: {
           200: t.Union([
-            t.Object({ kind: t.Literal("INCORRECT") }),
+            t.Object({ kind: t.Literal("INCORRECT"), message: t.String() }),
             t.Object({
               kind: t.Literal("CORRECT"),
               reveal: RevealSchema,
+              message: t.String(),
               completionCode: t.Optional(t.String()),
             }),
             CompletedSchema,

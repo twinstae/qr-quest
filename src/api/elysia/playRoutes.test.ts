@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createFakeContext } from "../context.ts";
 import { ANOTHER_CASE, TEST_CASE, TEST_STEP } from "../../domain/fixtures.ts";
-import type { Step } from "../../domain/step.ts";
+import { DEFAULT_CORRECT_MESSAGE, DEFAULT_WRONG_MESSAGE, type Step } from "../../domain/step.ts";
 import createFakeCaseRepo from "../../persistence/FakeCaseRepo.ts";
 import createFakeStepRepo from "../../persistence/FakeStepRepo.ts";
 import { createApp } from "./app.ts";
@@ -154,7 +154,11 @@ describe("POST /api/play/steps/:id/submit-answer", () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload).toEqual({ kind: "CORRECT", reveal: TEST_STEP.reveal });
+    expect(payload).toEqual({
+      kind: "CORRECT",
+      reveal: TEST_STEP.reveal,
+      message: DEFAULT_CORRECT_MESSAGE,
+    });
   });
 
   it("오답은 실패가 아니라 횟수 제한 없이 다시 시도할 수 있다", async () => {
@@ -170,7 +174,7 @@ describe("POST /api/play/steps/:id/submit-answer", () => {
         session.token,
       );
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({ kind: "INCORRECT" });
+      expect(await response.json()).toEqual({ kind: "INCORRECT", message: DEFAULT_WRONG_MESSAGE });
     }
   });
 

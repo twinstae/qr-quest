@@ -90,6 +90,17 @@ export type Step = {
   wrongMessage?: string;
 };
 
+export const DEFAULT_CORRECT_MESSAGE = "정답입니다. 새로운 단서가 발견되었습니다.";
+export const DEFAULT_WRONG_MESSAGE = "아직 사건의 핵심에 도달하지 못했어요. 문장을 다시 살펴보세요.";
+
+export function resolveCorrectMessage(step: Pick<Step, "correctMessage">): string {
+  return step.correctMessage?.trim() ? step.correctMessage : DEFAULT_CORRECT_MESSAGE;
+}
+
+export function resolveWrongMessage(step: Pick<Step, "wrongMessage">): string {
+  return step.wrongMessage?.trim() ? step.wrongMessage : DEFAULT_WRONG_MESSAGE;
+}
+
 /** QR을 찍어서 들어가는 단계인가. INTRO/CLOSING은 화면으로만 지나간다. */
 export function requiresQrToken(kind: StepKind): boolean {
   return kind === "QR" || kind === "FINAL";

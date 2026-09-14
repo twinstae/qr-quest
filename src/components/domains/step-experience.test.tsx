@@ -35,7 +35,7 @@ function setup(onSubmitResult: () => StepExperienceState, onContinue: () => void
 describe("StepExperience > 오답", () => {
   it("경고가 아닌 안내로 문구를 보여주고, 입력값을 지우지 않는다", async () => {
     await runSiheom(
-      setup(() => ({ status: "incorrect" })),
+      setup(() => ({ status: "incorrect", message: INCORRECT_MESSAGE })),
       actions.fill(query.textbox("정답"), "틀린 답"),
       actions.click(query.button("제출하기")),
       assertions.visible(query.status("안내")),
@@ -50,7 +50,7 @@ describe("StepExperience > 오답", () => {
     await runSiheom(
       setup(() => {
         submitCount += 1;
-        return { status: "incorrect" };
+        return { status: "incorrect", message: INCORRECT_MESSAGE };
       }),
       actions.fill(query.textbox("정답"), "1"),
       actions.click(query.button("제출하기")),
@@ -71,7 +71,7 @@ describe("StepExperience > 정답", () => {
 
     await runSiheom(
       setup(
-        () => ({ status: "correct", reveal: { text: "새 단서 발견" } }),
+        () => ({ status: "correct", reveal: { text: "새 단서 발견" }, message: "정답이에요!" }),
         () => {
           continued = true;
         },
@@ -83,5 +83,14 @@ describe("StepExperience > 정답", () => {
     );
 
     expect(continued).toBe(true);
+  });
+
+  it("공개할 단서 문구가 비어 있으면 정답 메시지를 대신 보여준다", async () => {
+    await runSiheom(
+      setup(() => ({ status: "correct", reveal: {}, message: "정답이에요!" })),
+      actions.fill(query.textbox("정답"), "정답"),
+      actions.click(query.button("제출하기")),
+      assertions.visible(query.heading("정답이에요!")),
+    );
   });
 });

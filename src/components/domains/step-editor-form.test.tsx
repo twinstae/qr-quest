@@ -200,3 +200,44 @@ describe("StepEditorForm > 공개 연출", () => {
     expect(submitted?.values.revealSound).toBe("chime");
   });
 });
+
+describe("StepEditorForm > 정답/오답 메시지", () => {
+  it("기본값은 비어 있고, 채우면 그대로 제출된다", async () => {
+    let submitted: StepEditorSubmit | undefined;
+
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="QR"
+          submitLabel="저장"
+          defaultValues={{ ...EMPTY_STEP_EDITOR_VALUES, name: "QR 05", title: "제목" }}
+          onSubmit={async (payload) => {
+            submitted = payload;
+          }}
+        />,
+      ),
+      actions.fill(query.textbox("정답"), "사과"),
+      actions.fill(query.textbox("정답 메시지"), "정답이에요!"),
+      actions.fill(query.textbox("오답 메시지"), "다시 살펴보세요."),
+      actions.click(query.button("저장")),
+    );
+
+    expect(submitted?.values.correctMessage).toBe("정답이에요!");
+    expect(submitted?.values.wrongMessage).toBe("다시 살펴보세요.");
+  });
+
+  it("소개 단계는 정답/오답 메시지 입력을 보여주지 않는다", async () => {
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="INTRO"
+          submitLabel="저장"
+          defaultValues={EMPTY_STEP_EDITOR_VALUES}
+          onSubmit={noSubmit}
+        />,
+      ),
+      assertions.not.visible(query.textbox("정답 메시지")),
+      assertions.not.visible(query.textbox("오답 메시지")),
+    );
+  });
+});

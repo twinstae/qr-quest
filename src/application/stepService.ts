@@ -56,6 +56,8 @@ export type StepEditorInput = {
   answerSpec?: AnswerSpec;
   placeholder?: string;
   hint?: string;
+  correctMessage?: string;
+  wrongMessage?: string;
 };
 
 export type StepSummary = {
@@ -115,6 +117,8 @@ export async function createStep(
     answerSpec: input.answerSpec,
     placeholder: input.placeholder,
     hint: input.hint,
+    correctMessage: input.correctMessage,
+    wrongMessage: input.wrongMessage,
   });
 }
 
@@ -141,7 +145,7 @@ export async function updateStep(
     answerSpec: input.answerSpec,
     placeholder: input.placeholder,
     hint: input.hint,
-    correctMessage: existing.correctMessage,
-    wrongMessage: existing.wrongMessage,
+    correctMessage: input.correctMessage,
+    wrongMessage: input.wrongMessage,
   });
 }

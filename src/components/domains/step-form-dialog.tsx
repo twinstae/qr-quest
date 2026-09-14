@@ -84,6 +84,8 @@ export function EditStepDialog({ stepId }: { stepId: string }) {
           ...toAnswerFormValues(step.answerSpec),
           placeholder: step.placeholder ?? "",
           hint: step.hint ?? "",
+          correctMessage: step.correctMessage ?? "",
+          wrongMessage: step.wrongMessage ?? "",
           revealText: step.reveal.text ?? "",
           revealMedia: step.reveal.media,
           revealPreset: step.reveal.preset ?? "FADE_UP",

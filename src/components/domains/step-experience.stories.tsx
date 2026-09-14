@@ -39,9 +39,12 @@ export const Idle: Story = {
   },
 };
 
+const INCORRECT_MESSAGE = "아직 사건의 핵심에 도달하지 못했어요. 문장을 다시 살펴보세요.";
+const CORRECT_MESSAGE = "정답입니다. 새로운 단서가 발견되었습니다.";
+
 export const Incorrect: Story = {
   args: {
-    state: { status: "incorrect" },
+    state: { status: "incorrect", message: INCORRECT_MESSAGE },
   },
 };
 
@@ -49,6 +52,7 @@ export const CorrectWithReveal: Story = {
   args: {
     state: {
       status: "correct",
+      message: CORRECT_MESSAGE,
       reveal: {
         text: "새로운 단서가 발견되었습니다.",
         media: {
@@ -63,26 +67,56 @@ export const CorrectWithReveal: Story = {
 
 export const CorrectWithoutReveal: Story = {
   args: {
-    state: { status: "correct", reveal: {} },
+    state: { status: "correct", message: CORRECT_MESSAGE, reveal: {} },
   },
 };
 
 export const RevealUnroll: Story = {
-  args: { state: { status: "correct", reveal: { text: "두루마리가 펴지며 단서가 드러납니다.", preset: "UNROLL" } } },
+  args: {
+    state: {
+      status: "correct",
+      message: CORRECT_MESSAGE,
+      reveal: { text: "두루마리가 펴지며 단서가 드러납니다.", preset: "UNROLL" },
+    },
+  },
 };
 
 export const RevealFadeUp: Story = {
-  args: { state: { status: "correct", reveal: { text: "차분하게 떠오르는 단서입니다.", preset: "FADE_UP" } } },
+  args: {
+    state: {
+      status: "correct",
+      message: CORRECT_MESSAGE,
+      reveal: { text: "차분하게 떠오르는 단서입니다.", preset: "FADE_UP" },
+    },
+  },
 };
 
 export const RevealTypewriter: Story = {
-  args: { state: { status: "correct", reveal: { text: "한 글자씩 드러나는 단서입니다.", preset: "TYPEWRITER" } } },
+  args: {
+    state: {
+      status: "correct",
+      message: CORRECT_MESSAGE,
+      reveal: { text: "한 글자씩 드러나는 단서입니다.", preset: "TYPEWRITER" },
+    },
+  },
 };
 
 export const RevealTvScan: Story = {
-  args: { state: { status: "correct", reveal: { text: "브라운관처럼 스캔되며 나타납니다.", preset: "TV_SCAN" } } },
+  args: {
+    state: {
+      status: "correct",
+      message: CORRECT_MESSAGE,
+      reveal: { text: "브라운관처럼 스캔되며 나타납니다.", preset: "TV_SCAN" },
+    },
+  },
 };
 
 export const RevealGlitch: Story = {
-  args: { state: { status: "correct", reveal: { text: "순간적으로 어긋나는 단서입니다.", preset: "GLITCH" } } },
+  args: {
+    state: {
+      status: "correct",
+      message: CORRECT_MESSAGE,
+      reveal: { text: "순간적으로 어긋나는 단서입니다.", preset: "GLITCH" },
+    },
+  },
 };
