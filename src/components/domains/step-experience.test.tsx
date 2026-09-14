@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { actions, assertions, given, query, runSiheom } from "@siheom/react";
 
 import { StepExperience, type StepExperienceState } from "./step-experience.tsx";
@@ -45,10 +45,13 @@ describe("StepExperience > 오답", () => {
   });
 
   it("오답 횟수 제한 없이 계속 다시 시도할 수 있다", async () => {
-    const onSubmit = vi.fn(() => ({ status: "incorrect" }) as const);
+    let submitCount = 0;
 
     await runSiheom(
-      setup(onSubmit),
+      setup(() => {
+        submitCount += 1;
+        return { status: "incorrect" };
+      }),
       actions.fill(query.textbox("정답"), "1"),
       actions.click(query.button("제출하기")),
       actions.fill(query.textbox("정답"), "2"),
@@ -58,22 +61,27 @@ describe("StepExperience > 오답", () => {
       assertions.visible(query.button("제출하기")),
     );
 
-    expect(onSubmit).toHaveBeenCalledTimes(3);
+    expect(submitCount).toBe(3);
   });
 });
 
 describe("StepExperience > 정답", () => {
   it("공개할 단서를 보여주고, 다음 단서 찾기를 누르면 onContinue를 부른다", async () => {
-    const onContinue = vi.fn();
+    let continued = false;
 
     await runSiheom(
-      setup(() => ({ status: "correct", reveal: { text: "새 단서 발견" } }), onContinue),
+      setup(
+        () => ({ status: "correct", reveal: { text: "새 단서 발견" } }),
+        () => {
+          continued = true;
+        },
+      ),
       actions.fill(query.textbox("정답"), "정답"),
       actions.click(query.button("제출하기")),
       assertions.visible(query.heading("새 단서 발견")),
       actions.click(query.button("다음 단서 찾기")),
     );
 
-    expect(onContinue).toHaveBeenCalledTimes(1);
+    expect(continued).toBe(true);
   });
 });

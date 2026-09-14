@@ -2,31 +2,26 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button.tsx";
 import { describeLiveViolation, type CaseStatus, type LiveViolation } from "@/domain/case.ts";
-import { getApiClient } from "@/lib/api-client";
 import { css } from "styled-system/css";
 import { VStack } from "styled-system/jsx";
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+export type UpdateStatusResult =
+  | { kind: "OK"; status: CaseStatus }
+  | { kind: "REJECTED"; violations: LiveViolation[] };
 
-/** Eden Treaty는 실패를 `{ status, value: <서버 응답 바디> }`로 감싸서 준다. */
-function violationsOf(error: unknown): LiveViolation[] {
-  const payload = isRecord(error) && isRecord(error.value) ? error.value : error;
-  if (isRecord(payload) && Array.isArray(payload.violations)) {
-    return payload.violations as LiveViolation[];
-  }
-  return [];
-}
-
-/** LIVE로 바꾸기 전 서버 검증을 거친다(요구 30-9). 위반이 있으면 이유를 그대로 보여준다. */
+/**
+ * LIVE로 바꾸기 전 서버 검증을 거친다(요구 30-9). 위반이 있으면 이유를 그대로 보여준다.
+ * 실제 API 호출은 페이지에서 주입한다 — 이 컴포넌트는 네트워크를 모른다.
+ */
 export function CaseStatusControl({
   caseId,
   status,
+  updateStatus,
   onChanged,
 }: {
   caseId: string;
   status: CaseStatus;
+  updateStatus: (caseId: string, status: "LIVE") => Promise<UpdateStatusResult>;
   onChanged: (status: CaseStatus) => void;
 }) {
   const [busy, setBusy] = useState(false);
@@ -42,15 +37,13 @@ export function CaseStatusControl({
         onClick={async () => {
           setBusy(true);
           setViolations([]);
-          const { data, error } = await getApiClient().cases({ id: caseId }).status.patch({
-            status: "LIVE",
-          });
+          const result = await updateStatus(caseId, "LIVE");
           setBusy(false);
-          if (data) {
-            onChanged("LIVE");
+          if (result.kind === "OK") {
+            onChanged(result.status);
             return;
           }
-          setViolations(violationsOf(error));
+          setViolations(result.violations);
         }}
       >
         LIVE로 전환

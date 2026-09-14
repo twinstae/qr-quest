@@ -73,6 +73,10 @@ export function CaseListItem({ item }: { item: CaseSummary }) {
         <span className={overlayButton}>
           <CloneCaseButton
             caseId={item.id}
+            cloneCase={async (caseId) => {
+              const { data } = await getApiClient().cases({ id: caseId }).clone.post();
+              return data ?? undefined;
+            }}
             onCloned={(clonedCaseId) =>
               navigate({ to: "/admin/cases/$caseId", params: { caseId: clonedCaseId } })
             }

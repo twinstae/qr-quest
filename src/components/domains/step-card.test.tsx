@@ -1,7 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { actions, assertions, given, query, runSiheom } from "@siheom/react";
 
 import { StepCardForm, type StepCardData } from "./step-card.tsx";
+import type { AnswerSubmission } from "@/domain/step.ts";
 
 function baseStep(overrides: Partial<StepCardData> = {}): StepCardData {
   return {
@@ -13,49 +14,56 @@ function baseStep(overrides: Partial<StepCardData> = {}): StepCardData {
   };
 }
 
+const noSubmit = async () => {};
+const noHint = async () => undefined;
+
 describe("StepCardForm > SHORT_TEXT", () => {
   it("단답형 입력을 제출하면 TEXT 제출을 돌려준다", async () => {
-    const onSubmit = vi.fn(async () => {});
+    let submitted: AnswerSubmission | undefined;
 
     await runSiheom(
       given.render(
         <StepCardForm
           step={baseStep({ answerSpec: { type: "SHORT_TEXT" }, placeholder: "정답 입력" })}
-          onSubmit={onSubmit}
-          onRequestHint={async () => undefined}
+          onSubmit={async (submission) => {
+            submitted = submission;
+          }}
+          onRequestHint={noHint}
         />,
       ),
       actions.fill(query.textbox("정답"), "사과"),
       actions.click(query.button("제출하기")),
     );
 
-    expect(onSubmit).toHaveBeenCalledWith({ type: "TEXT", value: "사과" });
+    expect(submitted).toEqual({ type: "TEXT", value: "사과" });
   });
 });
 
 describe("StepCardForm > KEYWORDS", () => {
   it("키워드 입력도 TEXT 제출을 돌려준다", async () => {
-    const onSubmit = vi.fn(async () => {});
+    let submitted: AnswerSubmission | undefined;
 
     await runSiheom(
       given.render(
         <StepCardForm
           step={baseStep({ answerSpec: { type: "KEYWORDS" } })}
-          onSubmit={onSubmit}
-          onRequestHint={async () => undefined}
+          onSubmit={async (submission) => {
+            submitted = submission;
+          }}
+          onRequestHint={noHint}
         />,
       ),
       actions.fill(query.textbox("정답"), "사과, 빨강"),
       actions.click(query.button("제출하기")),
     );
 
-    expect(onSubmit).toHaveBeenCalledWith({ type: "TEXT", value: "사과, 빨강" });
+    expect(submitted).toEqual({ type: "TEXT", value: "사과, 빨강" });
   });
 });
 
 describe("StepCardForm > SINGLE_CHOICE", () => {
   it("보기를 고르고 제출하면 CHOICE 제출을 돌려준다", async () => {
-    const onSubmit = vi.fn(async () => {});
+    let submitted: AnswerSubmission | undefined;
     const step = baseStep({
       answerSpec: {
         type: "SINGLE_CHOICE",
@@ -67,12 +75,20 @@ describe("StepCardForm > SINGLE_CHOICE", () => {
     });
 
     await runSiheom(
-      given.render(<StepCardForm step={step} onSubmit={onSubmit} onRequestHint={async () => undefined} />),
+      given.render(
+        <StepCardForm
+          step={step}
+          onSubmit={async (submission) => {
+            submitted = submission;
+          }}
+          onRequestHint={noHint}
+        />,
+      ),
       actions.click(query.button("B. 계단 옆 서가")),
       actions.click(query.button("제출하기")),
     );
 
-    expect(onSubmit).toHaveBeenCalledWith({ type: "CHOICE", choiceIds: ["B"] });
+    expect(submitted).toEqual({ type: "CHOICE", choiceIds: ["B"] });
   });
 
   it("보기를 고르기 전에는 제출 버튼이 비활성화된다", async () => {
@@ -84,9 +100,7 @@ describe("StepCardForm > SINGLE_CHOICE", () => {
     });
 
     await runSiheom(
-      given.render(
-        <StepCardForm step={step} onSubmit={async () => {}} onRequestHint={async () => undefined} />,
-      ),
+      given.render(<StepCardForm step={step} onSubmit={noSubmit} onRequestHint={noHint} />),
       assertions.disabled(query.button("제출하기")),
     );
   });
@@ -98,7 +112,7 @@ describe("StepCardForm > 힌트", () => {
       given.render(
         <StepCardForm
           step={baseStep({ answerSpec: { type: "SHORT_TEXT" }, hasHint: false })}
-          onSubmit={async () => {}}
+          onSubmit={noSubmit}
           onRequestHint={async () => "안 쓰임"}
         />,
       ),
@@ -107,14 +121,17 @@ describe("StepCardForm > 힌트", () => {
   });
 
   it("힌트 버튼을 누르면 그때 요청하고, 받은 글자를 보여준다", async () => {
-    const onRequestHint = vi.fn(async () => "표지 안에 답이 있습니다.");
+    let requestCount = 0;
 
     await runSiheom(
       given.render(
         <StepCardForm
           step={baseStep({ answerSpec: { type: "SHORT_TEXT" }, hasHint: true })}
-          onSubmit={async () => {}}
-          onRequestHint={onRequestHint}
+          onSubmit={noSubmit}
+          onRequestHint={async () => {
+            requestCount += 1;
+            return "표지 안에 답이 있습니다.";
+          }}
         />,
       ),
       actions.click(query.button("힌트 보기")),
@@ -122,18 +139,21 @@ describe("StepCardForm > 힌트", () => {
       assertions.textContent(query.status("힌트"), "표지 안에 답이 있습니다."),
     );
 
-    expect(onRequestHint).toHaveBeenCalledTimes(1);
+    expect(requestCount).toBe(1);
   });
 
   it("다시 열어도 요청은 한 번만 한다", async () => {
-    const onRequestHint = vi.fn(async () => "힌트 글자");
+    let requestCount = 0;
 
     await runSiheom(
       given.render(
         <StepCardForm
           step={baseStep({ answerSpec: { type: "SHORT_TEXT" }, hasHint: true })}
-          onSubmit={async () => {}}
-          onRequestHint={onRequestHint}
+          onSubmit={noSubmit}
+          onRequestHint={async () => {
+            requestCount += 1;
+            return "힌트 글자";
+          }}
         />,
       ),
       actions.click(query.button("힌트 보기")),
@@ -141,6 +161,6 @@ describe("StepCardForm > 힌트", () => {
       actions.click(query.button("힌트 보기")),
     );
 
-    expect(onRequestHint).toHaveBeenCalledTimes(1);
+    expect(requestCount).toBe(1);
   });
 });

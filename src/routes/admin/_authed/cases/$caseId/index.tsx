@@ -6,8 +6,9 @@ import { EmptyState } from "@/components/domains/empty-state.tsx";
 import { CreateStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { StepListItem } from "@/components/domains/step-list-item.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
-import { formatCaseNumber } from "@/domain/case.ts";
+import { formatCaseNumber, type LiveViolation } from "@/domain/case.ts";
 import { getApiClient } from "@/lib/api-client";
+import { unwrapEdenError } from "@/lib/eden-error";
 import { css } from "styled-system/css";
 import { Flex, styled, VStack } from "styled-system/jsx";
 
@@ -85,6 +86,16 @@ function RouteComponent() {
           <CaseStatusControl
             caseId={caseItem.id}
             status={caseItem.status}
+            updateStatus={async (id, status) => {
+              const { data, error } = await getApiClient().cases({ id }).status.patch({ status });
+              if (data) return { kind: "OK", status: data.status };
+              const payload = unwrapEdenError(error);
+              const violations =
+                payload && typeof payload === "object" && "violations" in payload
+                  ? ((payload as { violations: LiveViolation[] }).violations ?? [])
+                  : [];
+              return { kind: "REJECTED", violations };
+            }}
             onChanged={() => router.invalidate()}
           />
         </Flex>

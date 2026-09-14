@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { actions, assertions, given, query, runSiheom } from "@siheom/react";
 
 import { StepListItem, type StepListItemData } from "./step-list-item.tsx";
@@ -16,19 +16,29 @@ const STEP: StepListItemData = {
 
 describe("StepListItem > 순서 이동", () => {
   it("위로/아래로 누르면 각각 콜백을 부른다", async () => {
-    const onMoveUp = vi.fn();
-    const onMoveDown = vi.fn();
+    let movedUp = 0;
+    let movedDown = 0;
 
     await runSiheom(
       given.render(
-        <StepListItem step={STEP} canMoveUp canMoveDown onMoveUp={onMoveUp} onMoveDown={onMoveDown} />,
+        <StepListItem
+          step={STEP}
+          canMoveUp
+          canMoveDown
+          onMoveUp={() => {
+            movedUp += 1;
+          }}
+          onMoveDown={() => {
+            movedDown += 1;
+          }}
+        />,
       ),
       actions.click(query.button("위로 이동")),
       actions.click(query.button("아래로 이동")),
     );
 
-    expect(onMoveUp).toHaveBeenCalledTimes(1);
-    expect(onMoveDown).toHaveBeenCalledTimes(1);
+    expect(movedUp).toBe(1);
+    expect(movedDown).toBe(1);
   });
 
   it("맨 앞 단계는 위로 이동 버튼이 비활성화된다", async () => {
