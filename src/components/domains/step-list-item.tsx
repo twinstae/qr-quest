@@ -1,7 +1,10 @@
+import { ArrowDown, ArrowUp } from "lucide-react";
+
 import { EditStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { StepQrCodeDownload } from "@/components/domains/step-qr-code.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import * as Card from "@/components/ui/card.tsx";
+import { IconButton } from "@/components/ui/icon-button.tsx";
 import { css } from "styled-system/css";
 import { Flex } from "styled-system/jsx";
 
@@ -16,17 +19,52 @@ export type StepListItemData = {
   hasAnswer: boolean;
 };
 
-export function StepListItem({ step }: { step: StepListItemData }) {
+export function StepListItem({
+  step,
+  canMoveUp,
+  canMoveDown,
+  onMoveUp,
+  onMoveDown,
+}: {
+  step: StepListItemData;
+  /** 순서 이동 버튼을 함께 보여줄 때만 넘긴다 — 단독 미리보기 등에서는 생략한다. */
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+}) {
   return (
     <Card.Root variant="outline">
       <Card.Header pb="2">
         <Flex justify="space-between" align="center" gap="2">
           <Card.Title>{step.name}</Card.Title>
-          <Flex gap="1" flexShrink="0">
+          <Flex gap="1" flexShrink="0" align="center">
             {!step.published && <Badge variant="outline">비공개</Badge>}
             <Badge variant={step.hasAnswer ? "solid" : "outline"}>
               {step.hasAnswer ? "정답 있음" : "정답 없음"}
             </Badge>
+            {onMoveUp && onMoveDown && (
+              <Flex gap="1" ml="1">
+                <IconButton
+                  variant="outline"
+                  size="xs"
+                  aria-label="위로 이동"
+                  disabled={!canMoveUp}
+                  onClick={onMoveUp}
+                >
+                  <ArrowUp />
+                </IconButton>
+                <IconButton
+                  variant="outline"
+                  size="xs"
+                  aria-label="아래로 이동"
+                  disabled={!canMoveDown}
+                  onClick={onMoveDown}
+                >
+                  <ArrowDown />
+                </IconButton>
+              </Flex>
+            )}
           </Flex>
         </Flex>
         <Card.Description>

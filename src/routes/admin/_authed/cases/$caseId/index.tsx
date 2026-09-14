@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import { ArrowLeft, MapPinPlus } from "lucide-react";
 
 import { EmptyState } from "@/components/domains/empty-state.tsx";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { formatCaseNumber } from "@/domain/case.ts";
 import { getApiClient } from "@/lib/api-client";
 import { css } from "styled-system/css";
-import { Flex, Grid, styled } from "styled-system/jsx";
+import { Flex, styled, VStack } from "styled-system/jsx";
 
 export const Route = createFileRoute("/admin/_authed/cases/$caseId/")({
   component: RouteComponent,
@@ -54,6 +54,20 @@ const PageTitle = styled("h1", {
 
 function RouteComponent() {
   const { caseItem, steps } = Route.useLoaderData();
+  const router = useRouter();
+  const sortedSteps = [...steps].sort((a, b) => a.order - b.order);
+
+  async function moveStep(fromIndex: number, toIndex: number) {
+    const reordered = [...sortedSteps];
+    const [moved] = reordered.splice(fromIndex, 1);
+    if (!moved) return;
+    reordered.splice(toIndex, 0, moved);
+
+    await getApiClient()
+      .cases({ id: caseItem.id })
+      .steps.reorder.patch({ orderedStepIds: reordered.map((step) => step.id) });
+    await router.invalidate();
+  }
 
   return (
     <Main>
@@ -79,11 +93,18 @@ function RouteComponent() {
           action={<CreateStepDialog caseId={caseItem.id} />}
         />
       ) : (
-        <Grid columns={{ base: 1, sm: 2, lg: 3 }} gap="4">
-          {steps.map((step) => (
-            <StepListItem key={step.id} step={step} />
+        <VStack gap="3" alignItems="stretch" maxWidth="2xl">
+          {sortedSteps.map((step, index) => (
+            <StepListItem
+              key={step.id}
+              step={step}
+              canMoveUp={index > 0}
+              canMoveDown={index < sortedSteps.length - 1}
+              onMoveUp={() => moveStep(index, index - 1)}
+              onMoveDown={() => moveStep(index, index + 1)}
+            />
           ))}
-        </Grid>
+        </VStack>
       )}
     </Main>
   );
