@@ -511,4 +511,31 @@ describe("CASE 편집기 (ticket 13)", () => {
       expect(await response.json()).toEqual({ kind: "UNKNOWN" });
     });
   });
+
+  describe("토큰 재발급", () => {
+    it("POST /api/cases/:id/entry-token/reissue는 새 시작 토큰을 돌려준다", async () => {
+      const { client } = await signedInClient();
+      const created = await (await client.post("/api/cases", toCaseRequestBody(TEST_CASE))).json();
+
+      const response = await client.post(`/api/cases/${created.id}/entry-token/reissue`);
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload.entryToken).not.toBe(created.entryToken);
+    });
+
+    it("POST /api/steps/:id/qr-token/reissue는 새 QR 토큰을 돌려준다", async () => {
+      const { client } = await signedInClient();
+      const created = await (await client.post("/api/cases", toCaseRequestBody(TEST_CASE))).json();
+      const steps = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+      const qrStep = steps.find((step: { qrToken: string | null }) => step.qrToken);
+
+      const response = await client.post(`/api/steps/${qrStep.id}/qr-token/reissue`);
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload.qrToken).not.toBe(qrStep.qrToken);
+      expect(payload.qrToken).toEqual(expect.any(String));
+    });
+  });
 });

@@ -4,6 +4,8 @@ import {
   checkQrToken,
   cloneCase,
   getStepForPreview,
+  reissueEntryToken,
+  reissueStepQrToken,
   reorderSteps,
   startTestSession,
   updateCaseStatus,
@@ -264,6 +266,30 @@ export function createApp(ctx: AppContext) {
           params: t.Object({ id: t.String() }),
           query: t.Object({ token: t.String() }),
           response: QrCheckResultSchema,
+        },
+      )
+      .post(
+        "/cases/:id/entry-token/reissue",
+        async ({ params }) => {
+          const updated = await reissueEntryToken(ctx, params.id);
+          return { id: updated.id, entryToken: updated.entryToken };
+        },
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          response: t.Object({ id: t.String(), entryToken: t.String() }),
+        },
+      )
+      .post(
+        "/steps/:id/qr-token/reissue",
+        async ({ params }) => {
+          const updated = await reissueStepQrToken(ctx, params.id);
+          return { id: updated.id, qrToken: updated.qrToken };
+        },
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          response: t.Object({ id: t.String(), qrToken: t.Union([t.String(), t.Null()]) }),
         },
       )
       .post("/uploads/presign", ({ body }) => presignUpload(ctx, body), {

@@ -14,6 +14,8 @@ import {
   cloneCase,
   checkLiveReadiness,
   getStepForPreview,
+  reissueEntryToken,
+  reissueStepQrToken,
   reorderSteps,
   startTestSession,
   updateCaseStatus,
@@ -363,5 +365,33 @@ describe("checkQrToken", () => {
     const result = await checkQrToken(ctx, TEST_CASE.id, "NOPE");
 
     expect(result).toEqual({ kind: "UNKNOWN" });
+  });
+});
+
+describe("토큰 재발급 (기존 인쇄물 무효화, 요구 22)", () => {
+  it("단계 QR 토큰을 재발급하면 새 값으로 바뀐다", async () => {
+    const ctx = contextWith({ steps: [TEST_STEP] });
+
+    const reissued = await reissueStepQrToken(ctx, TEST_STEP.id);
+
+    expect(reissued.qrToken).not.toBe(TEST_STEP.qrToken);
+    expect(reissued.qrToken).toEqual(expect.any(String));
+    expect(reissued.title).toBe(TEST_STEP.title);
+  });
+
+  it("QR이 없는 단계(INTRO 등)는 재발급할 수 없다", async () => {
+    const ctx = contextWith({ steps: [INTRO] });
+
+    await expect(reissueStepQrToken(ctx, INTRO.id)).rejects.toThrow();
+  });
+
+  it("CASE 시작 토큰을 재발급하면 새 값으로 바뀐다", async () => {
+    const ctx = contextWith();
+
+    const reissued = await reissueEntryToken(ctx, TEST_CASE.id);
+
+    expect(reissued.entryToken).not.toBe(TEST_CASE.entryToken);
+    expect(reissued.entryToken).toEqual(expect.any(String));
+    expect(reissued.title).toBe(TEST_CASE.title);
   });
 });

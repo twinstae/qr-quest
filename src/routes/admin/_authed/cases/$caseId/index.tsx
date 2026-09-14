@@ -3,6 +3,7 @@ import { ArrowLeft, MapPinPlus } from "lucide-react";
 
 import { CaseStatusControl } from "@/components/domains/case-status-control.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
+import { ReissueTokenButton } from "@/components/domains/reissue-token-button.tsx";
 import { StartTestModeButton } from "@/components/domains/start-test-mode-button.tsx";
 import { CreateStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { StepListItem } from "@/components/domains/step-list-item.tsx";
@@ -112,6 +113,17 @@ function RouteComponent() {
             }}
             onChanged={() => router.invalidate()}
           />
+          <ReissueTokenButton
+            label="시작 QR 재발급"
+            reissue={async () => {
+              const { data } = await getApiClient()
+                .cases({ id: caseItem.id })
+                ["entry-token"].reissue.post();
+              await router.invalidate();
+              return data?.entryToken ?? "";
+            }}
+            onReissued={() => {}}
+          />
         </Flex>
         <Flex gap="2">
           <StartTestModeButton
@@ -159,6 +171,17 @@ function RouteComponent() {
               canMoveDown={index < sortedSteps.length - 1}
               onMoveUp={() => moveStep(index, index - 1)}
               onMoveDown={() => moveStep(index, index + 1)}
+              reissueQrToken={
+                step.qrToken
+                  ? async () => {
+                      const { data } = await getApiClient()
+                        .steps({ id: step.id })
+                        ["qr-token"].reissue.post();
+                      await router.invalidate();
+                      return data?.qrToken ?? "";
+                    }
+                  : undefined
+              }
             />
           ))}
         </VStack>

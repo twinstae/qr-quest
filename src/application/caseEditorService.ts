@@ -184,3 +184,21 @@ export async function checkQrToken(
 
   return { kind: "UNKNOWN" };
 }
+
+/**
+ * QR 토큰을 새로 발급한다 — 기존 인쇄물이 즉시 무효가 되므로, 호출부(화면)가
+ * 반드시 경고를 띄운 뒤에만 불러야 한다(요구 22).
+ */
+export async function reissueStepQrToken(ctx: AppContext, stepId: string): Promise<Step> {
+  const { id: _id, caseId: _caseId, ...rest } = await getStepOrThrow(ctx, stepId);
+  if (!requiresQrToken(rest.kind)) {
+    throw new Error(`Step id=${stepId} has no QR token to reissue`);
+  }
+  return ctx.repo.step.update(stepId, { ...rest, qrToken: generateQrToken() });
+}
+
+/** 시작 QR 토큰을 새로 발급한다 — 기존 인쇄물이 즉시 무효가 된다. */
+export async function reissueEntryToken(ctx: AppContext, caseId: string): Promise<Case> {
+  const { id: _id, ...rest } = await getCaseOrThrow(ctx, caseId);
+  return ctx.repo.case.update(caseId, { ...rest, entryToken: generateQrToken() });
+}

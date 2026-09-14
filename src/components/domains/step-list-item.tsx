@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp } from "lucide-react";
 
 import { PreviewDialog } from "@/components/domains/preview-dialog.tsx";
+import { ReissueTokenButton } from "@/components/domains/reissue-token-button.tsx";
 import { EditStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { StepQrCodeDownload } from "@/components/domains/step-qr-code.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
@@ -26,6 +27,7 @@ export function StepListItem({
   canMoveDown,
   onMoveUp,
   onMoveDown,
+  reissueQrToken,
 }: {
   step: StepListItemData;
   /** 순서 이동 버튼을 함께 보여줄 때만 넘긴다 — 단독 미리보기 등에서는 생략한다. */
@@ -33,6 +35,8 @@ export function StepListItem({
   canMoveDown?: boolean;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
+  /** 넘기면 QR이 있는 단계에 [QR 재발급] 버튼이 보인다. */
+  reissueQrToken?: () => Promise<string>;
 }) {
   return (
     <Card.Root variant="outline">
@@ -75,7 +79,10 @@ export function StepListItem({
       </Card.Header>
       <Card.Footer justifyContent="space-between" alignItems="center">
         {step.qrToken ? (
-          <StepQrCodeDownload qrToken={step.qrToken} label={step.name} />
+          <Flex gap="2" align="center">
+            <StepQrCodeDownload qrToken={step.qrToken} label={step.name} />
+            {reissueQrToken && <ReissueTokenButton reissue={reissueQrToken} onReissued={() => {}} />}
+          </Flex>
         ) : (
           <span className={css({ textStyle: "xs", color: "fg.subtle" })}>QR 없음</span>
         )}
