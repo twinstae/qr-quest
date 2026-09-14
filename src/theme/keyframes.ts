@@ -122,4 +122,35 @@ export const keyframes = defineKeyframes({
       insetBlockStart: "var(--animate-to-y)",
     },
   },
+  // 단서 공개 연출 프리셋 (ticket 15). 정보 손실 없이 legible해야 하므로
+  // 1초 규칙을 지킨다 — prefers-reduced-motion에서는 레시피가 이 자체를 끈다.
+  "reveal-unroll": {
+    from: { clipPath: "inset(0 0 100% 0)", opacity: "0" },
+    "40%": { opacity: "1" },
+    to: { clipPath: "inset(0 0 0% 0)", opacity: "1" },
+  },
+  "reveal-fade-up": {
+    from: { opacity: "0", translate: "0 8px" },
+    to: { opacity: "1", translate: "0" },
+  },
+  "reveal-typewriter": {
+    from: { clipPath: "inset(0 100% 0 0)" },
+    to: { clipPath: "inset(0 0% 0 0)" },
+  },
+  "reveal-tv-scan": {
+    "0%": { opacity: "0" },
+    "10%": { opacity: "0.4" },
+    "20%": { opacity: "0.1" },
+    "35%": { opacity: "0.8" },
+    "50%": { opacity: "0.3" },
+    to: { opacity: "1" },
+  },
+  "reveal-glitch": {
+    "0%": { translate: "0 0", opacity: "0" },
+    "20%": { translate: "-4px 0", opacity: "1" },
+    "40%": { translate: "3px 0" },
+    "60%": { translate: "-2px 0" },
+    "80%": { translate: "2px 0" },
+    to: { translate: "0 0" },
+  },
 });

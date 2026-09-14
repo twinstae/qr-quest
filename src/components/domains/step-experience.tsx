@@ -3,11 +3,12 @@ import { MessageCircleQuestion } from "lucide-react";
 import { StepCardForm, StepMedia, type StepCardData } from "@/components/domains/step-card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import * as Card from "@/components/ui/card.tsx";
-import type { AnswerSubmission, Media } from "@/domain/step.ts";
+import type { AnswerSubmission, Media, RevealPreset } from "@/domain/step.ts";
 import { css } from "styled-system/css";
 import { VStack } from "styled-system/jsx";
+import { revealAnimation } from "styled-system/recipes";
 
-export type Reveal = { text?: string; media?: Media };
+export type Reveal = { text?: string; media?: Media; preset?: RevealPreset };
 
 export type StepExperienceState =
   | { status: "idle" }
@@ -41,7 +42,10 @@ export function StepExperience({
         >
           {state.reveal.media && <StepMedia media={state.reveal.media} />}
           <Card.Header alignItems="center">
-            <Card.Title textStyle="xl">
+            <Card.Title
+              textStyle="xl"
+              className={revealAnimation({ preset: state.reveal.preset ?? "FADE_UP" })}
+            >
               {state.reveal.text ?? "정답입니다. 새로운 단서가 발견되었습니다."}
             </Card.Title>
           </Card.Header>

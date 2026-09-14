@@ -66,3 +66,23 @@ export const CorrectWithoutReveal: Story = {
     state: { status: "correct", reveal: {} },
   },
 };
+
+export const RevealUnroll: Story = {
+  args: { state: { status: "correct", reveal: { text: "두루마리가 펴지며 단서가 드러납니다.", preset: "UNROLL" } } },
+};
+
+export const RevealFadeUp: Story = {
+  args: { state: { status: "correct", reveal: { text: "차분하게 떠오르는 단서입니다.", preset: "FADE_UP" } } },
+};
+
+export const RevealTypewriter: Story = {
+  args: { state: { status: "correct", reveal: { text: "한 글자씩 드러나는 단서입니다.", preset: "TYPEWRITER" } } },
+};
+
+export const RevealTvScan: Story = {
+  args: { state: { status: "correct", reveal: { text: "브라운관처럼 스캔되며 나타납니다.", preset: "TV_SCAN" } } },
+};
+
+export const RevealGlitch: Story = {
+  args: { state: { status: "correct", reveal: { text: "순간적으로 어긋나는 단서입니다.", preset: "GLITCH" } } },
+};

@@ -13,6 +13,7 @@ import { spinner } from "./spinner";
 import { absoluteCenter } from "./absolute-center";
 import { group } from "./group";
 import { button } from "./button";
+import { revealAnimation } from "./reveal-animation";
 export const recipes = {
   button,
   group,
@@ -29,5 +30,6 @@ export const recipes = {
   badge,
   fileUpload,
   clipboard,
+  revealAnimation,
 };
 export const slotRecipes = {};

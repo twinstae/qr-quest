@@ -1,6 +1,10 @@
 # 14. QR 운영 — 출력 시트와 설치 점검
 
-Status: Not started. Phase 2 (13과 함께 "혼자 운영" 완성).
+Status: 완료. 시작 QR + 단계 QR 인쇄 시트(A4, @media print), 설치 점검 화면(토큰
+수동 입력 — 카메라 스캔 대신, qrToken 알파벳이 애초에 사람이 읽고 타이핑하도록
+설계된 것이라 이 방향을 선택함), qrToken/entryToken 불변식 회귀 테스트, 토큰
+재발급(경고 다이얼로그 확인 후 실행) 모두 구현·테스트·실 서버 확인 완료.
+Phase 2 (13과 함께 "혼자 운영" 완성).
 PLAN.md item: 14
 상위 설계: [../plans/qr-mystery-tour.md](../plans/qr-mystery-tour.md) §7
 
