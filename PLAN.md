@@ -14,8 +14,8 @@
 
 10. [x] 업로드 실패 이유와 한도를 안내하고, 큰 이미지는 자동 압축한다 + 그룹을 삭제할 수 있다 ([ticket](docs/tickets/10-hotfix-uploads-and-group-delete.md))
 11. [x] CASE/STEP/참가 세션 모델로 데이터 구조를 정리한다 ([ticket](docs/tickets/11-case-step-session-model.md) — 도메인 규칙 + 전체 rename 완료, 세션 API는 12에서)
-12. [ ] 참가자가 시작 QR부터 사건 종결까지 순차적으로 투어를 진행한다 (서버 잠금·재개 포함) ([ticket](docs/tickets/12-player-tour-flow.md) — 세션/잠금/제출/힌트/완료 인증번호 백엔드+화면+siheom 테스트 구현 완료. 잠금 화면(GuidanceScreen) 자체의 siheom 테스트만 아직)
-13. [ ] 관리자가 개발자 없이 CASE를 만들고 STEP을 편집한다 (복제·미리보기·테스트 모드·상태) ([ticket](docs/tickets/13-admin-case-editor.md) — 대부분 구현됨, 남은 건 대시보드/정답·오답 메시지 편집/정답 보기 토글)
+12. [x] 참가자가 시작 QR부터 사건 종결까지 순차적으로 투어를 진행한다 (서버 잠금·재개 포함) ([ticket](docs/tickets/12-player-tour-flow.md))
+13. [x] 관리자가 개발자 없이 CASE를 만들고 STEP을 편집한다 (복제·미리보기·테스트 모드·상태) ([ticket](docs/tickets/13-admin-case-editor.md))
 14. [x] CASE별 QR을 인쇄하고 설치를 점검한다 (고정 URL 유지) ([ticket](docs/tickets/14-qr-operations.md))
 15. [x] 단서 공개 연출 프리셋과 동영상·효과음을 지원한다 ([ticket](docs/tickets/15-media-and-reveal.md))
 16. [ ] 완료 인증번호를 발급·리딤하고 참가 통계를 본다 ([ticket](docs/tickets/16-completion-code-and-stats.md))

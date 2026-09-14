@@ -1,8 +1,9 @@
 # 12. 참가자 투어 플로우 (시작 → 사건 종결)
 
-Status: 백엔드(playService/playRoutes, TDD 테스트 20+14개)와 화면(/s/$entryToken, /play/$caseId, /t/$qrToken, 완료 화면)
-구현 완료. 실 서버(pglite)에 대고 시작→QR 4개→FINAL→완료 코드 전체 동선과 잠금(423)·재개(같은 토큰)를 curl로 확인함.
-남은 것: 이 티켓이 요구하는 siheom 브라우저 테스트(오답 유지, 진행 점, 잠금 화면 등)와 실제 브라우저 육안 확인.
+Status: 완료. 백엔드(playService/playRoutes, TDD 테스트)와 화면(/s/$entryToken, /play/$caseId,
+/t/$qrToken, 완료 화면) 구현 완료. 실 서버(pglite)에 대고 시작→QR 4개→FINAL→완료 코드
+전체 동선과 잠금(423)·재개(같은 토큰)를 curl로 확인함. 잠금/안내 화면(GuidanceScreen)은
+두 라우트의 중복을 공유 컴포넌트로 추출하고 siheom 테스트로 고정했다(문구, 복귀 버튼).
 Phase 1의 핵심. 이 티켓이 끝나면 실제로 체험비를 받고 운영할 수 있다.
 PLAN.md item: 12
 상위 설계: [../plans/qr-mystery-tour.md](../plans/qr-mystery-tour.md) §4~§5
