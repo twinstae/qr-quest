@@ -1,6 +1,13 @@
 import { Elysia, status, t } from "elysia";
 
 import {
+  cloneCase,
+  getStepForPreview,
+  reorderSteps,
+  startTestSession,
+  updateCaseStatus,
+} from "../../application/caseEditorService.ts";
+import {
   createCase,
   deleteCase,
   getCaseByEntryToken,
@@ -10,18 +17,30 @@ import {
 } from "../../application/caseService.ts";
 import { createStep, getStepForEdit, listSteps, updateStep } from "../../application/stepService.ts";
 import { presignUpload } from "../../application/uploadService.ts";
-import { FileTooLargeError, NotExistError, UnsupportedFileTypeError } from "../../domain/errors.ts";
+import {
+  FileTooLargeError,
+  LiveReadinessError,
+  NotExistError,
+  UnsupportedFileTypeError,
+} from "../../domain/errors.ts";
 import type { AppContext } from "../context.ts";
 import { createAuthGuard } from "./authGuard.ts";
 import { createPlayRoutes } from "./playRoutes.ts";
-import { CaseFieldsSchema, CaseSchema, StepFieldsSchema, StepKindSchema } from "./schemas.ts";
+import {
+  CaseFieldsSchema,
+  CaseSchema,
+  LiveViolationSchema,
+  StepFieldsSchema,
+  StepKindSchema,
+  StepPreviewSchema,
+} from "./schemas.ts";
 
 export function createApp(ctx: AppContext) {
   return (
     new Elysia({ prefix: "/api" })
       .mount(ctx.auth.handler)
       .use(createAuthGuard(ctx))
-      .error({ NotExistError, FileTooLargeError, UnsupportedFileTypeError })
+      .error({ NotExistError, FileTooLargeError, UnsupportedFileTypeError, LiveReadinessError })
       .onError(({ code, error }) => {
         if (code === "NotExistError") return status("Not Found");
 
@@ -41,6 +60,15 @@ export function createApp(ctx: AppContext) {
             code: "UNSUPPORTED_FILE_TYPE",
             message: error.message,
             allowedTypes: [...error.allowedTypes],
+          });
+        }
+
+        // LIVE 전환 거부 — 위반 목록을 그대로 화면에 보여준다.
+        if (code === "LiveReadinessError") {
+          return status(400, {
+            code: "LIVE_NOT_READY",
+            message: error.message,
+            violations: error.violations,
           });
         }
       })
@@ -135,6 +163,85 @@ export function createApp(ctx: AppContext) {
           order: t.Number(),
           ...StepFieldsSchema,
         }),
+      })
+      .post("/cases/:id/clone", ({ params }) => cloneCase(ctx, params.id), {
+        auth: true,
+        params: t.Object({ id: t.String() }),
+        response: CaseSchema,
+      })
+      .patch(
+        "/cases/:id/status",
+        ({ params, body }) => updateCaseStatus(ctx, params.id, body.status),
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          body: t.Object({
+            status: t.Union([
+              t.Literal("DRAFT"),
+              t.Literal("TEST"),
+              t.Literal("LIVE"),
+              t.Literal("CLOSED"),
+            ]),
+          }),
+          response: {
+            200: CaseSchema,
+            400: t.Object({
+              code: t.Literal("LIVE_NOT_READY"),
+              message: t.String(),
+              violations: t.Array(LiveViolationSchema),
+            }),
+          },
+        },
+      )
+      .patch(
+        "/cases/:id/steps/reorder",
+        async ({ params, body }) => {
+          const steps = await reorderSteps(ctx, params.id, body.orderedStepIds);
+          return steps.map((step) => ({
+            id: step.id,
+            order: step.order,
+            kind: step.kind,
+            name: step.name,
+            qrToken: step.qrToken,
+            published: step.published,
+            title: step.title,
+            hasAnswer: step.answerSpec !== undefined,
+          }));
+        },
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          body: t.Object({ orderedStepIds: t.Array(t.String()) }),
+          response: t.Array(
+            t.Object({
+              id: t.String(),
+              order: t.Number(),
+              kind: StepKindSchema,
+              name: t.String(),
+              qrToken: t.Union([t.String(), t.Null()]),
+              published: t.Boolean(),
+              title: t.String(),
+              hasAnswer: t.Boolean(),
+            }),
+          ),
+        },
+      )
+      .post("/cases/:id/test-session", ({ params }) => startTestSession(ctx, params.id), {
+        auth: true,
+        params: t.Object({ id: t.String() }),
+        response: t.Object({
+          token: t.String(),
+          caseId: t.String(),
+          status: t.Union([t.Literal("IN_PROGRESS"), t.Literal("COMPLETED")]),
+          currentStepOrder: t.Number(),
+          completionCode: t.Optional(t.String()),
+          resumed: t.Boolean(),
+        }),
+      })
+      .get("/steps/:id/preview", ({ params }) => getStepForPreview(ctx, params.id), {
+        auth: true,
+        params: t.Object({ id: t.String() }),
+        response: StepPreviewSchema,
       })
       .post("/uploads/presign", ({ body }) => presignUpload(ctx, body), {
         auth: true,

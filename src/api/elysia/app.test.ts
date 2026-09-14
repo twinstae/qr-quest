@@ -349,3 +349,128 @@ describe("PATCH /api/steps/:id", () => {
     expect(edited.answerSpec).toEqual(ANOTHER_STEP.answerSpec);
   });
 });
+
+describe("CASE 편집기 (ticket 13)", () => {
+  async function createFullCase(client: ReturnType<typeof createTestClient>) {
+    const created = await (await client.post("/api/cases", toCaseRequestBody(TEST_CASE))).json();
+    const steps = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+
+    for (const step of steps) {
+      if (step.kind === "QR" || step.kind === "FINAL") {
+        await client.patch(`/api/steps/${step.id}`, {
+          name: step.name,
+          kind: step.kind,
+          title: "제목",
+          body: "본문",
+          reveal: {},
+          answerSpec: { type: "SHORT_TEXT", accepted: ["정답"], match: "EXACT" },
+        });
+      }
+      if (step.kind === "INTRO") {
+        await client.patch(`/api/steps/${step.id}`, {
+          name: step.name,
+          kind: step.kind,
+          title: step.title,
+          body: "사건이 시작됩니다.",
+          reveal: {},
+        });
+      }
+    }
+
+    return created;
+  }
+
+  describe("POST /api/cases/:id/clone", () => {
+    it("단계까지 통째로 복제하고 DRAFT로 시작한다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+
+      const response = await client.post(`/api/cases/${created.id}/clone`);
+      const cloned = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(cloned.id).not.toBe(created.id);
+      expect(cloned.status).toBe("DRAFT");
+      expect(cloned.entryToken).not.toBe(created.entryToken);
+
+      const clonedSteps = await (await client.get(`/api/cases/${cloned.id}/steps`)).json();
+      expect(clonedSteps).toHaveLength(7);
+    });
+  });
+
+  describe("PATCH /api/cases/:id/status", () => {
+    it("완전한 CASE는 LIVE로 바뀐다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+
+      const response = await client.patch(`/api/cases/${created.id}/status`, { status: "LIVE" });
+
+      expect(response.status).toBe(200);
+      expect((await response.json()).status).toBe("LIVE");
+    });
+
+    it("정답이 빠진 단계가 있으면 400과 위반 목록을 돌려주고 상태는 그대로다", async () => {
+      const { client } = await signedInClient();
+      const created = await (await client.post("/api/cases", toCaseRequestBody(TEST_CASE))).json();
+
+      const response = await client.patch(`/api/cases/${created.id}/status`, { status: "LIVE" });
+      const payload = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(payload.violations).toEqual(
+        expect.arrayContaining([expect.objectContaining({ kind: "MISSING_ANSWER" })]),
+      );
+
+      const stillDraft = await (await client.get(`/api/cases/${created.id}`)).json();
+      expect(stillDraft.status).toBe("DRAFT");
+    });
+  });
+
+  describe("PATCH /api/cases/:id/steps/reorder", () => {
+    it("주어진 순서대로 저장한다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+      const steps = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+      const reversedIds = [...steps].reverse().map((step: { id: string }) => step.id);
+
+      const response = await client.patch(`/api/cases/${created.id}/steps/reorder`, {
+        orderedStepIds: reversedIds,
+      });
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload.map((step: { id: string }) => step.id)).toEqual(reversedIds);
+      expect(payload.map((step: { order: number }) => step.order)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    });
+  });
+
+  describe("POST /api/cases/:id/test-session", () => {
+    it("isTest 세션을 만들어 토큰을 돌려준다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+
+      const response = await client.post(`/api/cases/${created.id}/test-session`);
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload.token).toEqual(expect.any(String));
+      expect(payload.caseId).toBe(created.id);
+    });
+  });
+
+  describe("GET /api/steps/:id/preview", () => {
+    it("공개하지 않은 단계도 초안을 그대로 보여준다", async () => {
+      const { client } = await signedInClient();
+      const created = await (await client.post("/api/cases", toCaseRequestBody(TEST_CASE))).json();
+      const steps = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+      const draftStep = steps.find((step: { kind: string }) => step.kind === "QR");
+
+      const response = await client.get(`/api/steps/${draftStep.id}/preview`);
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload.id).toBe(draftStep.id);
+      expect(JSON.stringify(payload)).not.toContain("accepted");
+    });
+  });
+});

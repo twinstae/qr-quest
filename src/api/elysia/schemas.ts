@@ -123,3 +123,27 @@ export const StepDisplaySchema = t.Object({
   hasHint: t.Boolean(),
 });
 
+// 미리보기는 관리자 전용이라 힌트 글자를 그대로 보여준다(정답 자체는 여전히 감춘다).
+export const StepPreviewSchema = t.Object({
+  id: t.String(),
+  caseId: t.String(),
+  name: t.String(),
+  kind: StepKindSchema,
+  order: t.Number(),
+  title: t.String(),
+  body: t.String(),
+  media: t.Optional(MediaSchema),
+  question: t.Optional(t.String()),
+  answerSpec: t.Optional(PublicAnswerSpecSchema),
+  placeholder: t.Optional(t.String()),
+  hint: t.Optional(t.String()),
+});
+
+export const LiveViolationSchema = t.Union([
+  t.Object({ kind: t.Literal("ORDER_GAP") }),
+  t.Object({ kind: t.Literal("MISSING_CLOSING") }),
+  t.Object({ kind: t.Literal("MISSING_INTRO_BODY") }),
+  t.Object({ kind: t.Literal("MISSING_ANSWER"), stepId: t.String(), stepName: t.String() }),
+  t.Object({ kind: t.Literal("MISSING_QR_TOKEN"), stepId: t.String(), stepName: t.String() }),
+]);
+
