@@ -6,13 +6,21 @@ import { SimpleCheckbox, SimpleImageUpload, SimpleInput } from "@/components/for
 import { SimpleForm } from "@/components/form/simple-form";
 import { Button } from "@/components/ui/button.tsx";
 import * as Fieldset from "@/components/ui/fieldset.tsx";
-import { requiresQrToken, type AnswerSpec, type Choice, type Media, type StepKind } from "@/domain/step.ts";
+import {
+  requiresQrToken,
+  type AnswerSpec,
+  type Choice,
+  type Media,
+  type MediaKind,
+  type StepKind,
+} from "@/domain/step.ts";
 import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 const ImageValueSchema = v.object({
   src: v.pipe(v.string()),
   alt: v.string(),
+  kind: v.optional(v.picklist(["image", "video"])),
 });
 
 const ANSWER_TYPES = ["SINGLE_CHOICE", "MULTI_CHOICE", "SHORT_TEXT", "NUMBER", "KEYWORDS"] as const;
@@ -225,8 +233,8 @@ export function toAnswerFormValues(
   }
 }
 
-export function toMedia(src: string, alt: string): Media | undefined {
-  return src ? { kind: "image", src, alt } : undefined;
+export function toMedia(src: string, alt: string, kind: MediaKind = "image"): Media | undefined {
+  return src ? { kind, src, alt } : undefined;
 }
 
 export type StepEditorSubmit = {
@@ -382,9 +390,9 @@ export function StepEditorForm({
         await onSubmit({
           kind,
           values,
-          media: toMedia(values.media.src, values.media.alt),
+          media: toMedia(values.media.src, values.media.alt, values.media.kind),
           revealMedia: values.revealMedia
-            ? toMedia(values.revealMedia.src, values.revealMedia.alt)
+            ? toMedia(values.revealMedia.src, values.revealMedia.alt, values.revealMedia.kind)
             : undefined,
           answerSpec,
         });
@@ -396,7 +404,7 @@ export function StepEditorForm({
           <SimpleInput name="name" label="단계 이름" placeholder="QR 02" />
           <SimpleInput name="title" label="제목" placeholder="이 QR을 찾으면 보이는 제목" />
           <SimpleInput name="body" label="본문 (선택)" />
-          <SimpleImageUpload name="media" label="이미지" />
+          <SimpleImageUpload name="media" label="이미지" allowVideo />
         </Fieldset.Content>
       </Fieldset.Root>
 
@@ -423,7 +431,7 @@ export function StepEditorForm({
         <Fieldset.Legend>정답 시 공개할 단서 (선택)</Fieldset.Legend>
         <Fieldset.Content>
           <SimpleInput name="revealText" label="문구" />
-          <SimpleImageUpload name="revealMedia" label="이미지" />
+          <SimpleImageUpload name="revealMedia" label="이미지" allowVideo />
         </Fieldset.Content>
       </Fieldset.Root>
 

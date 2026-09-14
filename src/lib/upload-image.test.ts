@@ -127,8 +127,21 @@ describe("uploadImageFile", () => {
     expect(fetchStub).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       status: "uploaded",
-      image: { src: "https://fake-storage.test/public/1-photo.jpg", alt: "표지.jpg" },
+      image: { src: "https://fake-storage.test/public/1-photo.jpg", alt: "표지.jpg", kind: "image" },
     });
+  });
+
+  it("동영상 파일이면 kind:video로 표시한다", async () => {
+    const { presign } = presignOk();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 200 })),
+    );
+    const file = new File([new Uint8Array(1024)], "clue.mp4", { type: "video/mp4" });
+
+    const result = await uploadImageFile(file, presign);
+
+    expect(result).toMatchObject({ status: "uploaded", image: { kind: "video" } });
   });
 
   it("한도 초과로 거부되면 스토리지에 올리지 않고 이유를 돌려준다", async () => {

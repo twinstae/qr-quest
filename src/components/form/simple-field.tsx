@@ -11,7 +11,13 @@ import { ImageDown, UploadIcon, XIcon } from "lucide-react";
 import { IconButton } from "../ui/icon-button";
 import { useFileUploadContext } from "@ark-ui/react/file-upload";
 import { css } from "styled-system/css";
-import { ALLOWED_IMAGE_TYPE_LABEL, DEFAULT_MAX_IMAGE_BYTES, formatBytes } from "@/domain/upload.ts";
+import {
+  ALLOWED_IMAGE_TYPE_LABEL,
+  ALLOWED_VIDEO_TYPE_LABEL,
+  DEFAULT_MAX_IMAGE_BYTES,
+  DEFAULT_MAX_VIDEO_BYTES,
+  formatBytes,
+} from "@/domain/upload.ts";
 import { compressImage } from "@/lib/compress-image.ts";
 import {
   COMPRESS_FAILED_MESSAGE,
@@ -147,12 +153,34 @@ const MAX_COMPRESS_ATTEMPTS = COMPRESS_MAX_EDGES.length;
 // 새로 선택한 파일이 있으면 그 미리보기를, 없으면 기존 값(수정 화면 등)의
 // 이미지를 보여준다 — react-hook-form의 field.value와 FileUpload의 내부
 // acceptedFiles 상태를 양방향으로 동기화하기 위한 분기.
+function ExistingMediaPreview({ value }: { value: SimpleImageValue }) {
+  if (value.kind === "video") {
+    return (
+      <video
+        src={value.src}
+        controls
+        muted
+        className={css({ maxH: "150px", borderRadius: "sm", display: "block" })}
+      />
+    );
+  }
+  return (
+    <img
+      src={value.src}
+      alt={value.alt}
+      className={css({ maxH: "150px", borderRadius: "sm", display: "block" })}
+    />
+  );
+}
+
 const FileUploadPreview = ({
   existingValue,
   onRemoveExisting,
+  allowVideo,
 }: {
   existingValue: SimpleImageValue | undefined;
   onRemoveExisting: () => void;
+  allowVideo?: boolean;
 }) => {
   const fileUpload = useFileUploadContext();
   const files = fileUpload.acceptedFiles;
@@ -183,11 +211,7 @@ const FileUploadPreview = ({
     return (
       <FileUpload.Dropzone className={css({ minHeight: "160px", p: "0.5" })}>
         <div className={css({ pos: "relative", w: "fit-content" })}>
-          <img
-            src={existingValue.src}
-            alt={existingValue.alt}
-            className={css({ maxH: "150px", borderRadius: "sm", display: "block" })}
-          />
+          <ExistingMediaPreview value={existingValue} />
           <IconButton
             size="2xs"
             borderRadius="full"
@@ -210,7 +234,7 @@ const FileUploadPreview = ({
   return (
     <FileUpload.Dropzone className={css({ minHeight: "160px" })}>
       <UploadIcon />
-      <p>이미지를 업로드하세요</p>
+      <p>{allowVideo ? "이미지 또는 동영상을 업로드하세요" : "이미지를 업로드하세요"}</p>
     </FileUpload.Dropzone>
   );
 };
@@ -221,11 +245,14 @@ export function SimpleImageUpload({
   label,
   hint,
   required,
+  allowVideo,
 }: {
   name: string;
   label: string;
   hint?: string;
   required?: boolean;
+  /** mp4도 받는다(요구, ticket 15). 동영상은 자동 압축하지 않는다 — 품질 손실이 크다. */
+  allowVideo?: boolean;
 }) {
   const { control } = useFormContext();
   const [busy, setBusy] = useState<"idle" | "uploading" | "compressing">("idle");
@@ -327,6 +354,7 @@ export function SimpleImageUpload({
               <FileUploadPreview
                 existingValue={field.value}
                 onRemoveExisting={() => field.onChange(undefined)}
+                allowVideo={allowVideo}
               />
             </FileUpload.Root>
             {isError ? (
@@ -336,12 +364,19 @@ export function SimpleImageUpload({
             ) : (
               <Field.HelperText id={descriptionId}>
                 {hint ??
-                  `${formatBytes(DEFAULT_MAX_IMAGE_BYTES)} 이하 · ${ALLOWED_IMAGE_TYPE_LABEL}`}
+                  (allowVideo
+                    ? `이미지 ${formatBytes(DEFAULT_MAX_IMAGE_BYTES)}·동영상 ${formatBytes(DEFAULT_MAX_VIDEO_BYTES)} 이하 · ${ALLOWED_IMAGE_TYPE_LABEL}, ${ALLOWED_VIDEO_TYPE_LABEL}`
+                    : `${formatBytes(DEFAULT_MAX_IMAGE_BYTES)} 이하 · ${ALLOWED_IMAGE_TYPE_LABEL}`)}
               </Field.HelperText>
             )}
             {issue?.kind === "too-large" &&
               retry &&
-              (retry.attempts < MAX_COMPRESS_ATTEMPTS ? (
+              (retry.file.type.startsWith("video/") ? (
+                // 동영상은 자동 압축하지 않는다 — 브라우저 압축은 품질 손실이 크다.
+                <p className={css({ textStyle: "sm", color: "fg.muted" })}>
+                  더 짧거나 작은 동영상을 골라 주세요.
+                </p>
+              ) : retry.attempts < MAX_COMPRESS_ATTEMPTS ? (
                 <Button
                   size="sm"
                   variant="outline"

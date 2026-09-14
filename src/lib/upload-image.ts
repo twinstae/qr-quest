@@ -1,6 +1,7 @@
 import { ALLOWED_IMAGE_TYPE_LABEL, formatBytes } from "@/domain/upload";
+import type { MediaKind } from "@/domain/step";
 
-export type UploadedImage = { src: string; alt: string };
+export type UploadedImage = { src: string; alt: string; kind: MediaKind };
 
 export type UploadIssue =
   | { kind: "too-large"; message: string; limitBytes: number; actualBytes: number }
@@ -101,5 +102,6 @@ export async function uploadImageFile(
     return { status: "issue", issue: { kind: "failed", message: UPLOAD_FAILED_MESSAGE } };
   }
 
-  return { status: "uploaded", image: { src: data.publicUrl, alt: file.name } };
+  const kind: MediaKind = file.type.startsWith("video/") ? "video" : "image";
+  return { status: "uploaded", image: { src: data.publicUrl, alt: file.name, kind } };
 }

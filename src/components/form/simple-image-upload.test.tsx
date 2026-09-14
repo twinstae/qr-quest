@@ -31,6 +31,14 @@ function renderField() {
   );
 }
 
+function renderMediaField() {
+  return (
+    <FormFieldStory defaultValues={{ image: undefined }}>
+      <SimpleImageUpload name="image" label="문제 이미지" allowVideo />
+    </FormFieldStory>
+  );
+}
+
 /**
  * 숨겨진 file input에는 접근성 role이 없어 siheom locator로 잡을 수 없다.
  * 파일 선택창이 하는 일(파일 목록 설정 + change 이벤트)을 그대로 흉내낸다.
@@ -147,5 +155,43 @@ describe("SimpleImageUpload", () => {
     await selectFile(new File([new Uint8Array(8)], "doc.pdf", { type: "application/pdf" }));
 
     await vi.waitFor(() => expect(alertText()).toBe("JPG, PNG, WebP, GIF 파일만 올릴 수 있어요."));
+  });
+
+  it("allowVideo면 이미지·동영상 한도를 함께 안내한다", async () => {
+    await runSiheom(given.render(renderMediaField()));
+
+    expect(document.body.textContent).toContain("이미지 5MB·동영상 25MB 이하 · JPG, PNG, WebP, GIF, MP4");
+  });
+
+  it("allowVideo면 mp4를 올릴 수 있고, 한도를 넘어도 자동 압축을 제안하지 않는다", async () => {
+    presignPost.mockResolvedValue({
+      data: null,
+      error: tooLargeError(30 * 1024 * 1024),
+    });
+
+    await runSiheom(given.render(renderMediaField()));
+    await selectFile(new File([new Uint8Array(64)], "clue.mp4", { type: "video/mp4" }));
+
+    await vi.waitFor(() =>
+      expect(alertText()).toBe("5MB 이하만 올릴 수 있어요. 선택한 파일은 8.2MB예요."),
+    );
+    // 압축 버튼이 아니라 "더 작은 동영상을 골라 주세요" 안내만 보인다.
+    expect(document.body.textContent).toContain("더 짧거나 작은 동영상을 골라 주세요.");
+    expect(document.body.textContent).not.toContain("자동 압축해서 올리기");
+  });
+
+  it("기존 값이 동영상이면 video 태그로 미리 보여준다", async () => {
+    await runSiheom(
+      given.render(
+        <FormFieldStory
+          defaultValues={{ image: { src: "https://example.com/clue.mp4", alt: "단서", kind: "video" } }}
+        >
+          <SimpleImageUpload name="image" label="문제 이미지" allowVideo />
+        </FormFieldStory>,
+      ),
+    );
+
+    expect(document.querySelector("video")).not.toBeNull();
+    expect(document.querySelector("img")).toBeNull();
   });
 });
