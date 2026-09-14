@@ -3,10 +3,15 @@ import { describe, expect, it } from "vitest";
 import { FileTooLargeError, UnsupportedFileTypeError } from "./errors.ts";
 import {
   ALLOWED_IMAGE_TYPE_LABEL,
+  ALLOWED_VIDEO_TYPE_LABEL,
   DEFAULT_MAX_IMAGE_BYTES,
+  DEFAULT_MAX_VIDEO_BYTES,
   formatBytes,
   isAllowedImageContentType,
+  isAllowedVideoContentType,
   validateImageUpload,
+  validateMediaUpload,
+  validateVideoUpload,
 } from "./upload.ts";
 
 describe("formatBytes", () => {
@@ -105,5 +110,87 @@ describe("validateImageUpload", () => {
         byteSize: 100 * 1024 * 1024,
       }),
     ).toThrow(UnsupportedFileTypeError);
+  });
+});
+
+describe("isAllowedVideoContentType", () => {
+  it("mp4만 허용한다", () => {
+    expect(isAllowedVideoContentType("video/mp4")).toBe(true);
+    expect(isAllowedVideoContentType("video/webm")).toBe(false);
+    expect(isAllowedVideoContentType("video/quicktime")).toBe(false);
+  });
+});
+
+describe("validateVideoUpload", () => {
+  const baseInput = {
+    contentType: "video/mp4",
+    byteSize: 1024,
+    maxBytes: DEFAULT_MAX_VIDEO_BYTES,
+  };
+
+  it("mp4이고 한도 이내면 통과한다", () => {
+    expect(() => validateVideoUpload(baseInput)).not.toThrow();
+  });
+
+  it("한도를 넘으면 압축 재시도 없이 바로 FileTooLargeError를 던진다", () => {
+    const actualBytes = 30 * 1024 * 1024;
+
+    expect(() => validateVideoUpload({ ...baseInput, byteSize: actualBytes })).toThrow(
+      FileTooLargeError,
+    );
+  });
+
+  it("mp4가 아니면 UnsupportedFileTypeError를 던진다", () => {
+    expect(() => validateVideoUpload({ ...baseInput, contentType: "video/webm" })).toThrow(
+      UnsupportedFileTypeError,
+    );
+  });
+});
+
+describe("validateMediaUpload", () => {
+  it("이미지 형식이면 이미지 한도로, 동영상 형식이면 동영상 한도로 검증한다", () => {
+    expect(() =>
+      validateMediaUpload({
+        contentType: "image/png",
+        byteSize: DEFAULT_MAX_IMAGE_BYTES + 1,
+        maxImageBytes: DEFAULT_MAX_IMAGE_BYTES,
+        maxVideoBytes: DEFAULT_MAX_VIDEO_BYTES,
+      }),
+    ).toThrow(FileTooLargeError);
+
+    expect(() =>
+      validateMediaUpload({
+        contentType: "video/mp4",
+        byteSize: DEFAULT_MAX_IMAGE_BYTES + 1, // 이미지 한도는 넘지만 동영상 한도는 안 넘음
+        maxImageBytes: DEFAULT_MAX_IMAGE_BYTES,
+        maxVideoBytes: DEFAULT_MAX_VIDEO_BYTES,
+      }),
+    ).not.toThrow();
+  });
+
+  it("이미지도 동영상도 아니면 지원 형식 안내에 둘 다 담는다", () => {
+    const error = (() => {
+      try {
+        validateMediaUpload({
+          contentType: "application/pdf",
+          byteSize: 100,
+          maxImageBytes: DEFAULT_MAX_IMAGE_BYTES,
+          maxVideoBytes: DEFAULT_MAX_VIDEO_BYTES,
+        });
+      } catch (thrown) {
+        return thrown;
+      }
+      return undefined;
+    })();
+
+    expect(error).toBeInstanceOf(UnsupportedFileTypeError);
+    expect((error as UnsupportedFileTypeError).allowedTypes).toContain("image/webp");
+    expect((error as UnsupportedFileTypeError).allowedTypes).toContain("video/mp4");
+  });
+});
+
+describe("ALLOWED_VIDEO_TYPE_LABEL", () => {
+  it("MP4를 안내 문구로 쓴다", () => {
+    expect(ALLOWED_VIDEO_TYPE_LABEL).toBe("MP4");
   });
 });

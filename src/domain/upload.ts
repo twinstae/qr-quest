@@ -42,6 +42,75 @@ export function isAllowedImageContentType(
   return (ALLOWED_IMAGE_CONTENT_TYPES as readonly string[]).includes(contentType);
 }
 
+// mp4(H.264)만 받는다 — 재생 호환성이 가장 넓고, 브라우저에서 controls 없이
+// playsInline으로 바로 재생하기에 안전하다(요구, ticket 15).
+export const ALLOWED_VIDEO_CONTENT_TYPES = ["video/mp4"] as const;
+export type AllowedVideoContentType = (typeof ALLOWED_VIDEO_CONTENT_TYPES)[number];
+export const DEFAULT_MAX_VIDEO_BYTES = 25 * 1024 * 1024;
+export const ALLOWED_VIDEO_TYPE_LABEL = "MP4";
+
+export function isAllowedVideoContentType(
+  contentType: string,
+): contentType is AllowedVideoContentType {
+  return (ALLOWED_VIDEO_CONTENT_TYPES as readonly string[]).includes(contentType);
+}
+
+/**
+ * 동영상은 한도를 넘어도 이미지처럼 자동 압축하지 않는다 — 브라우저 압축은 품질
+ * 손실이 크다. 대신 권장 길이/용량 안내로 다시 고르게 한다(호출부의 몫).
+ */
+export function validateVideoUpload(input: {
+  contentType: string;
+  byteSize: number;
+  maxBytes: number;
+}): void {
+  if (!isAllowedVideoContentType(input.contentType)) {
+    throw new UnsupportedFileTypeError(
+      `${ALLOWED_VIDEO_TYPE_LABEL} 파일만 올릴 수 있어요.`,
+      ALLOWED_VIDEO_CONTENT_TYPES,
+    );
+  }
+
+  if (input.byteSize > input.maxBytes) {
+    throw new FileTooLargeError(
+      `${formatBytes(input.maxBytes)} 이하만 올릴 수 있어요. 선택한 파일은 ${formatBytes(
+        input.byteSize,
+      )}예요.`,
+      input.maxBytes,
+      input.byteSize,
+    );
+  }
+}
+
+/** 이미지·동영상을 함께 받는 미디어 필드에서 쓴다. 형식으로 어느 쪽인지 판단한다. */
+export function validateMediaUpload(input: {
+  contentType: string;
+  byteSize: number;
+  maxImageBytes: number;
+  maxVideoBytes: number;
+}): void {
+  if (isAllowedImageContentType(input.contentType)) {
+    validateImageUpload({
+      contentType: input.contentType,
+      byteSize: input.byteSize,
+      maxBytes: input.maxImageBytes,
+    });
+    return;
+  }
+  if (isAllowedVideoContentType(input.contentType)) {
+    validateVideoUpload({
+      contentType: input.contentType,
+      byteSize: input.byteSize,
+      maxBytes: input.maxVideoBytes,
+    });
+    return;
+  }
+  throw new UnsupportedFileTypeError(
+    `${ALLOWED_IMAGE_TYPE_LABEL} 또는 ${ALLOWED_VIDEO_TYPE_LABEL} 파일만 올릴 수 있어요.`,
+    [...ALLOWED_IMAGE_CONTENT_TYPES, ...ALLOWED_VIDEO_CONTENT_TYPES],
+  );
+}
+
 /**
  * 업로드 직전 검증. 실패하면 실제 한도와 실제 크기를 담은 도메인 에러를 던지므로
  * 화면에서 "5MB 이하만 올릴 수 있어요. 선택한 파일은 8.2MB예요."처럼 숫자를 보여줄 수 있다.
