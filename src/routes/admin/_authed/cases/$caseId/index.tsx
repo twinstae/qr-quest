@@ -125,6 +125,13 @@ function RouteComponent() {
             }}
           />
           <Link
+            to="/admin/cases/$caseId/print"
+            params={{ caseId: caseItem.id }}
+            className={actionLinkStyle}
+          >
+            인쇄 시트
+          </Link>
+          <Link
             to="/admin/cases/$caseId/check"
             params={{ caseId: caseItem.id }}
             className={actionLinkStyle}
