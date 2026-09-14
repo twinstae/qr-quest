@@ -1,6 +1,10 @@
 # 15. 미디어와 공개 연출 (두루마리·영상·효과음)
 
-Status: Not started. Phase 3 (12 직후에 일부만 먼저 해도 된다).
+Status: 완료. 공개 연출 5종(Panda keyframes+recipe, prefers-reduced-motion에서 정보 손실
+없이 즉시 표시 — 컴파일된 CSS로 직접 확인함), 동영상 업로드(mp4 25MB, 이미지와 별도
+한도·압축 없음), 효과음 3종(WebAudio 합성, 기본 꺼짐, sessionStorage에 기억) 모두 구현.
+관리자 편집기에 정답 유형 버튼과 같은 패턴으로 프리셋/효과음 선택 + 미리듣기를 붙였다.
+Phase 3 (12 직후에 일부만 먼저 해도 된다).
 PLAN.md item: 15
 상위 설계: [../plans/qr-mystery-tour.md](../plans/qr-mystery-tour.md) §8
 
