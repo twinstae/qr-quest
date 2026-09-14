@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import { ArrowLeft, MapPinPlus } from "lucide-react";
 
+import { CaseStatusControl } from "@/components/domains/case-status-control.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
 import { CreateStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { StepListItem } from "@/components/domains/step-list-item.tsx";
@@ -81,6 +82,11 @@ function RouteComponent() {
             {formatCaseNumber(caseItem.number)} {caseItem.title}
           </PageTitle>
           <Badge variant="outline">{caseItem.status}</Badge>
+          <CaseStatusControl
+            caseId={caseItem.id}
+            status={caseItem.status}
+            onChanged={() => router.invalidate()}
+          />
         </Flex>
         <CreateStepDialog caseId={caseItem.id} />
       </Flex>

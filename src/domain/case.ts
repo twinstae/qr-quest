@@ -95,3 +95,19 @@ export function checkCaseLiveReadiness(steps: Step[]): LiveViolation[] {
 
   return violations;
 }
+
+/** 위반을 관리자 화면에 그대로 보여줄 한 줄 문구로 바꾼다. */
+export function describeLiveViolation(violation: LiveViolation): string {
+  switch (violation.kind) {
+    case "ORDER_GAP":
+      return "단계 순서에 빈 자리가 있어요.";
+    case "MISSING_CLOSING":
+      return "사건 종결 화면이 없어요.";
+    case "MISSING_INTRO_BODY":
+      return "사건 소개 본문이 비어 있어요.";
+    case "MISSING_ANSWER":
+      return `${violation.stepName} 단계에 정답이 없어요.`;
+    case "MISSING_QR_TOKEN":
+      return `${violation.stepName} 단계에 QR 코드가 없어요.`;
+  }
+}
