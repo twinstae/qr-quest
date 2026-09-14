@@ -23,6 +23,7 @@ export async function signInAndGetCookie(
 
 export type TestResponse = {
   status: number;
+  headers: Headers;
   json: () => Promise<any>;
   text: () => Promise<string>;
 };
@@ -52,7 +53,12 @@ export function createTestClient(
         body: body !== undefined ? JSON.stringify(body) : undefined,
       }),
     );
-    return { status: response.status, json: () => response.json(), text: () => response.text() };
+    return {
+      status: response.status,
+      headers: response.headers,
+      json: () => response.json(),
+      text: () => response.text(),
+    };
   }
 
   return {

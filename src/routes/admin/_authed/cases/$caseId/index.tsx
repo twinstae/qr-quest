@@ -3,6 +3,7 @@ import { ArrowLeft, MapPinPlus } from "lucide-react";
 
 import { CaseStatusControl } from "@/components/domains/case-status-control.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
+import { StartTestModeButton } from "@/components/domains/start-test-mode-button.tsx";
 import { CreateStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { StepListItem } from "@/components/domains/step-list-item.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
@@ -99,7 +100,19 @@ function RouteComponent() {
             onChanged={() => router.invalidate()}
           />
         </Flex>
-        <CreateStepDialog caseId={caseItem.id} />
+        <Flex gap="2">
+          <StartTestModeButton
+            caseId={caseItem.id}
+            startTestSession={async (id) => {
+              const { data } = await getApiClient().cases({ id })["test-session"].post();
+              return Boolean(data);
+            }}
+            onStarted={() => {
+              window.open(`/play/${caseItem.id}`, "_blank");
+            }}
+          />
+          <CreateStepDialog caseId={caseItem.id} />
+        </Flex>
       </Flex>
 
       {steps.length === 0 ? (

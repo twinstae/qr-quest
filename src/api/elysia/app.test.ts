@@ -456,6 +456,18 @@ describe("CASE 편집기 (ticket 13)", () => {
       expect(payload.token).toEqual(expect.any(String));
       expect(payload.caseId).toBe(created.id);
     });
+
+    it("참가 세션 쿠키를 그대로 심어준다 — 관리자가 /play로 바로 넘어갈 수 있게", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+
+      const response = await client.post(`/api/cases/${created.id}/test-session`);
+      const payload = await response.json();
+      const setCookie = response.headers.get("set-cookie") ?? "";
+
+      expect(setCookie).toContain(`qr_play_session=${payload.token}`);
+      expect(setCookie).toContain("HttpOnly");
+    });
   });
 
   describe("GET /api/steps/:id/preview", () => {
