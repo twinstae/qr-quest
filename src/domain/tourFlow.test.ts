@@ -20,6 +20,29 @@ function session(overrides: Partial<PlaySession> = {}): PlaySession {
   };
 }
 
+describe("openStep > 테스트 세션(요구 30-8)", () => {
+  it("잠금을 건너뛰고 모든 단계에 들어갈 수 있다", () => {
+    expect(
+      openStep({ session: session({ isTest: true, currentStepOrder: 0 }), step: step(5) }),
+    ).toEqual({ kind: "ALLOWED" });
+  });
+
+  it("다른 사건의 QR은 여전히 막는다", () => {
+    expect(
+      openStep({ session: session({ isTest: true }), step: step(1, "case-2") }).kind,
+    ).toBe("OTHER_CASE");
+  });
+
+  it("완료된 테스트 세션은 여전히 완료로 본다", () => {
+    expect(
+      openStep({
+        session: session({ isTest: true, status: "COMPLETED", currentStepOrder: 5 }),
+        step: step(2),
+      }).kind,
+    ).toBe("COMPLETED");
+  });
+});
+
 function step(order: number, caseId = CASE_ID) {
   return { caseId, order };
 }

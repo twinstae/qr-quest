@@ -242,7 +242,12 @@ describe("reorderSteps", () => {
     const step1 = await ctx.repo.step.getById("step-1");
     if (!step3 || !step1) throw new Error("steps not found");
 
-    const session = { caseId: TEST_CASE.id, status: "IN_PROGRESS" as const, currentStepOrder: 1 };
+    const session = {
+      caseId: TEST_CASE.id,
+      status: "IN_PROGRESS" as const,
+      currentStepOrder: 1,
+      isTest: false,
+    };
     expect(openStep({ session, step: step3 }).kind).toBe("ALLOWED");
     expect(openStep({ session, step: step1 }).kind).toBe("LOCKED");
   });

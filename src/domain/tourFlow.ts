@@ -13,7 +13,7 @@ export type OpenStepResult =
   /** 다른 사건의 QR을 찍었다. */
   | { kind: "OTHER_CASE"; sessionCaseId: string };
 
-type SessionState = Pick<PlaySession, "caseId" | "status" | "currentStepOrder">;
+type SessionState = Pick<PlaySession, "caseId" | "status" | "currentStepOrder" | "isTest">;
 type StepLocation = Pick<Step, "caseId" | "order">;
 
 /**
@@ -33,7 +33,8 @@ export function openStep(input: {
     return { kind: "OTHER_CASE", sessionCaseId: session.caseId };
   }
   if (session.status === "COMPLETED") return { kind: "COMPLETED" };
-  if (step.order > session.currentStepOrder) {
+  // 테스트 모드(요구 30-8)는 관리자가 순서를 신경 쓰지 않고 모든 단계를 확인해야 한다.
+  if (!session.isTest && step.order > session.currentStepOrder) {
     return {
       kind: "LOCKED",
       currentStepOrder: session.currentStepOrder,
