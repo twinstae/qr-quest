@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 
 import { CompletionScreen } from "@/components/domains/completion-screen.tsx";
+import { GuidanceScreen } from "@/components/domains/guidance-screen.tsx";
 import { ProgressDots } from "@/components/domains/progress-dots.tsx";
 import { StepMedia } from "@/components/domains/step-card.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -19,14 +20,6 @@ export const Route = createFileRoute("/play/$caseId")({
     return { progress: unwrapPlayResult<PlayProgressResult>(response) };
   },
 });
-
-function GuidanceScreen({ text }: { text: string }) {
-  return (
-    <VStack minHeight="screen" justify="center" p="4" textAlign="center">
-      <p className={css({ textStyle: "lg" })}>{text}</p>
-    </VStack>
-  );
-}
 
 function RouteComponent() {
   const { progress } = Route.useLoaderData();
