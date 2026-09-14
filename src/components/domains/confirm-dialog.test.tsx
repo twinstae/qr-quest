@@ -7,8 +7,8 @@ import { ConfirmDialog } from "./confirm-dialog.tsx";
 function renderDialog(onConfirm: () => Promise<void> | void = () => {}) {
   return (
     <ConfirmDialog
-      title="그룹 삭제"
-      description="이 그룹의 Quest도 함께 삭제돼요."
+      title="CASE 삭제"
+      description="이 CASE의 단계도 함께 삭제되고 되돌릴 수 없어요."
       confirmLabel="삭제하기"
       onConfirm={onConfirm}
       trigger={<Button variant="outline">삭제</Button>}
@@ -27,7 +27,7 @@ describe("ConfirmDialog", () => {
     await runSiheom(
       given.render(renderDialog()),
       actions.click(query.button("삭제")),
-      assertions.visible(query.dialog("그룹 삭제")),
+      assertions.visible(query.dialog("CASE 삭제")),
       assertions.visible(query.button("취소")),
       assertions.visible(query.button("삭제하기")),
     );

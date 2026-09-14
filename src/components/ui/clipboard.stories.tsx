@@ -23,7 +23,7 @@ const meta = {
   title: "UI/Clipboard",
   component: Clipboard.Root,
   args: {
-    value: "https://qr-quest.example.com/quest/quest-123",
+    value: "https://book79-1.example.com/t/K7QPM2XR9T",
   },
   render: (args) => <ClipboardExample {...args} />,
 } satisfies Meta<typeof Clipboard.Root>;

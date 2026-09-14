@@ -30,6 +30,32 @@ export type AnswerSubmission =
   | { type: "CHOICE"; choiceIds: string[] }
   | { type: "TEXT"; value: string };
 
+/**
+ * 참가자 화면에 내려보내도 되는 모양. 보기는 보여줘야 하지만
+ * 정답(correctChoiceIds/accepted/keywords)은 절대 담지 않는다.
+ */
+export type PublicAnswerSpec =
+  | { type: "SINGLE_CHOICE"; choices: Choice[] }
+  | { type: "MULTI_CHOICE"; choices: Choice[] }
+  | { type: "SHORT_TEXT" }
+  | { type: "NUMBER" }
+  | { type: "KEYWORDS" };
+
+export function toPublicAnswerSpec(spec: AnswerSpec): PublicAnswerSpec {
+  switch (spec.type) {
+    case "SINGLE_CHOICE":
+      return { type: "SINGLE_CHOICE", choices: spec.choices };
+    case "MULTI_CHOICE":
+      return { type: "MULTI_CHOICE", choices: spec.choices };
+    case "SHORT_TEXT":
+      return { type: "SHORT_TEXT" };
+    case "NUMBER":
+      return { type: "NUMBER" };
+    case "KEYWORDS":
+      return { type: "KEYWORDS" };
+  }
+}
+
 export type RevealPreset = "FADE_UP" | "UNROLL" | "TYPEWRITER" | "TV_SCAN" | "GLITCH";
 
 export type SoundKey = "paper" | "radio" | "chime";
@@ -105,7 +131,10 @@ export function matchAnswer(spec: AnswerSpec, submission: AnswerSubmission): boo
   switch (spec.type) {
     case "SINGLE_CHOICE":
       if (submission.type !== "CHOICE") return false;
-      return submission.choiceIds.length === 1 && spec.correctChoiceIds.includes(submission.choiceIds[0] ?? "");
+      return (
+        submission.choiceIds.length === 1 &&
+        spec.correctChoiceIds.includes(submission.choiceIds[0] ?? "")
+      );
     case "MULTI_CHOICE":
       if (submission.type !== "CHOICE") return false;
       return sameSet(submission.choiceIds, spec.correctChoiceIds);

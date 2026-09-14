@@ -34,7 +34,7 @@ export const Empty: Story = {};
 
 export const WithFile: Story = {
   args: {
-    defaultAcceptedFiles: [makeFile("quest-hint.png", "image/png", 42_000)],
+    defaultAcceptedFiles: [makeFile("clue.png", "image/png", 42_000)],
   },
 };
 

@@ -54,7 +54,7 @@ function RouteComponent() {
                 return;
               }
               setError(undefined);
-              await navigate({ to: "/admin/groups" });
+              await navigate({ to: "/admin/cases" });
             }}
           >
             <SimpleInput name="email" label="이메일" placeholder="admin@example.com" />

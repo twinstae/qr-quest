@@ -2,14 +2,27 @@ import { describe, expect, it } from "vitest";
 
 import { createFakeContext } from "../context.ts";
 import { createTestClient, signInAndGetCookie } from "../testHelpers.ts";
-import { ANOTHER_QUEST, TEST_ADMIN, TEST_QUEST } from "../../domain/fixtures.ts";
-import type { Quest } from "../../domain/quest.ts";
+import type { Case } from "../../domain/case.ts";
+import {
+  ANOTHER_CASE,
+  ANOTHER_STEP,
+  TEST_ADMIN,
+  TEST_CASE,
+  TEST_STEP,
+} from "../../domain/fixtures.ts";
+import type { Step } from "../../domain/step.ts";
 import { DEFAULT_MAX_IMAGE_BYTES } from "../../domain/upload.ts";
-import createFakeQuestRepo from "../../persistence/FakeQuestRepo.ts";
+import createFakeCaseRepo from "../../persistence/FakeCaseRepo.ts";
+import createFakeStepRepo from "../../persistence/FakeStepRepo.ts";
 import { createApp } from "./app.ts";
 
-function appWithQuest(quest: Quest) {
-  const ctx = createFakeContext({ repo: { quest: createFakeQuestRepo({ [quest.id]: quest }) } });
+function appWith(caseItem: Case, steps: Step[] = []) {
+  const ctx = createFakeContext({
+    repo: {
+      case: createFakeCaseRepo({ [caseItem.id]: caseItem }),
+      step: createFakeStepRepo(Object.fromEntries(steps.map((step) => [step.id, step]))),
+    },
+  });
   return createApp(ctx);
 }
 
@@ -19,70 +32,146 @@ async function signedInClient(ctx = createFakeContext()) {
   return { ctx, app, client: createTestClient(app, { cookie }) };
 }
 
-// POST /api/quests와 PATCH /api/quests/:id의 요청 바디는 reward가 평탄화된
-// 별도 모양이라 도메인 Quest를 그대로 재사용할 수 없다 - 값만 가져온다.
-function toQuestRequestBody(quest: Quest) {
+// POST /api/cases와 PATCH /api/cases/:id의 요청 바디는 도메인 Case와 같은 모양이라
+// 값만 그대로 옮긴다.
+function toCaseRequestBody(item: Case) {
   return {
-    groupId: quest.groupId,
-    content: quest.content,
-    image: quest.image,
-    answer: quest.answer,
-    placeholder: quest.placeholder,
-    hint: quest.hint,
-    rewardText: quest.reward.text,
-    rewardImage: quest.reward.image,
+    number: item.number,
+    title: item.title,
+    teaser: item.teaser,
+    intro: item.intro,
+    estimatedMinutes: item.estimatedMinutes,
+    thumbnail: item.thumbnail,
+    finalBookTitle: item.finalBookTitle,
+    rewardNote: item.rewardNote,
   };
 }
 
-describe("GET /api/quests/:id", () => {
-  it("퀘스트 내용을 반환하지만 정답은 노출하지 않는다", async () => {
-    const client = createTestClient(appWithQuest(TEST_QUEST));
+function toStepRequestBody(step: Step) {
+  return {
+    name: step.name,
+    kind: step.kind,
+    title: step.title,
+    body: step.body,
+    media: step.media,
+    reveal: step.reveal,
+    question: step.question,
+    answerSpec: step.answerSpec,
+    placeholder: step.placeholder,
+    hint: step.hint,
+  };
+}
 
-    const response = await client.get(`/api/quests/${TEST_QUEST.id}`);
+describe("GET /api/steps/qr/:qrToken", () => {
+  it("QR 토큰으로 단계를 찾아주지만 정답은 내려보내지 않는다", async () => {
+    const client = createTestClient(appWith(TEST_CASE, [TEST_STEP]));
+
+    const response = await client.get(`/api/steps/qr/${TEST_STEP.qrToken}`);
     const payload = await response.json();
+    const raw = JSON.stringify(payload);
 
     expect(response.status).toBe(200);
-    expect(payload).toEqual({
-      content: TEST_QUEST.content,
-      image: TEST_QUEST.image,
-      placeholder: TEST_QUEST.placeholder,
-      hint: TEST_QUEST.hint,
+    expect(payload).toMatchObject({
+      id: TEST_STEP.id,
+      name: TEST_STEP.name,
+      kind: "QR",
+      order: TEST_STEP.order,
+      title: TEST_STEP.title,
+      body: TEST_STEP.body,
+      media: TEST_STEP.media,
+      question: TEST_STEP.question,
+      placeholder: TEST_STEP.placeholder,
+      hint: TEST_STEP.hint,
     });
-    expect(payload.answer).toBeUndefined();
+    expect(payload.answerSpec).toEqual({ type: "SHORT_TEXT" });
+
+    // 정답 문자열은 어떤 모양으로도 응답에 담기지 않는다
+    expect(raw).not.toContain("이민열");
+    expect(raw).not.toContain("accepted");
+    expect(raw).not.toContain("correctChoiceIds");
   });
 
-  it("존재하지 않는 퀘스트는 404를 반환한다", async () => {
+  it("없는 QR 토큰은 404를 반환한다", async () => {
     const client = createTestClient(createApp(createFakeContext()));
 
-    const response = await client.get("/api/quests/missing");
+    const response = await client.get("/api/steps/qr/NOPE");
 
     expect(response.status).toBe(404);
   });
 });
 
-describe("POST /api/quests/:id/submit-answer", () => {
-  it("정답을 맞추면 보상을 반환한다", async () => {
-    const client = createTestClient(appWithQuest(TEST_QUEST));
+describe("POST /api/steps/:id/submit-answer", () => {
+  it("정답을 맞추면 공개할 단서를 반환한다", async () => {
+    const client = createTestClient(appWith(TEST_CASE, [TEST_STEP]));
 
-    const response = await client.post(`/api/quests/${TEST_QUEST.id}/submit-answer`, {
-      answer: `  ${TEST_QUEST.answer}  `,
+    const response = await client.post(`/api/steps/${TEST_STEP.id}/submit-answer`, {
+      answer: `  ${TEST_STEP.answerSpec?.type === "SHORT_TEXT" ? TEST_STEP.answerSpec.accepted[0] : ""}  `,
     });
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload).toEqual({ correct: true, reward: TEST_QUEST.reward });
+    expect(payload).toEqual({ correct: true, reveal: TEST_STEP.reveal });
   });
 
-  it("오답을 제출하면 오답 결과를 반환한다", async () => {
-    const client = createTestClient(appWithQuest(TEST_QUEST));
+  it("오답은 실패가 아니라 correct:false로 돌려준다", async () => {
+    const client = createTestClient(appWith(TEST_CASE, [TEST_STEP]));
 
-    const response = await client.post(`/api/quests/${TEST_QUEST.id}/submit-answer`, {
-      answer: TEST_QUEST.alternatives[0] ?? "",
+    const response = await client.post(`/api/steps/${TEST_STEP.id}/submit-answer`, {
+      answer: "틀린 답",
     });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ correct: false });
+  });
+
+  it("객관식은 고른 보기 id로 채점한다", async () => {
+    const choiceStep: Step = {
+      ...TEST_STEP,
+      id: "step-choice",
+      qrToken: "QRTOKEN003",
+      answerSpec: {
+        type: "SINGLE_CHOICE",
+        choices: [
+          { id: "A", label: "첫 번째" },
+          { id: "B", label: "두 번째" },
+        ],
+        correctChoiceIds: ["B"],
+      },
+    };
+    const client = createTestClient(appWith(TEST_CASE, [choiceStep]));
+
+    const wrong = await client.post(`/api/steps/${choiceStep.id}/submit-answer`, {
+      choiceIds: ["A"],
+    });
+    expect(await wrong.json()).toEqual({ correct: false });
+
+    const right = await client.post(`/api/steps/${choiceStep.id}/submit-answer`, {
+      choiceIds: ["B"],
+    });
+    expect(await right.json()).toEqual({ correct: true, reveal: TEST_STEP.reveal });
+  });
+});
+
+describe("GET /api/cases/by-entry/:entryToken", () => {
+  it("시작 토큰으로 CASE를 찾아준다", async () => {
+    const client = createTestClient(appWith(TEST_CASE));
+
+    const response = await client.get(`/api/cases/by-entry/${TEST_CASE.entryToken}`);
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload).toEqual({ correct: false });
+    expect(payload).toMatchObject({
+      id: TEST_CASE.id,
+      number: TEST_CASE.number,
+      title: TEST_CASE.title,
+      entryToken: TEST_CASE.entryToken,
+    });
+  });
+
+  it("없는 토큰은 404를 반환한다", async () => {
+    const client = createTestClient(appWith(TEST_CASE));
+
+    expect((await client.get("/api/cases/by-entry/NOPE")).status).toBe(404);
   });
 });
 
@@ -104,68 +193,7 @@ describe("/api/auth/* (better-auth mount)", () => {
   });
 });
 
-describe("/api/groups", () => {
-  it("세션이 없으면 401을 반환한다", async () => {
-    const client = createTestClient(createApp(createFakeContext()));
-
-    expect((await client.get("/api/groups")).status).toBe(401);
-    expect((await client.post("/api/groups", { name: "Library Event 2026" })).status).toBe(401);
-  });
-
-  it("로그인한 상태면 그룹을 생성하고 목록을 조회할 수 있다", async () => {
-    const { client } = await signedInClient();
-
-    const createResponse = await client.post("/api/groups", {
-      name: "Library Event 2026",
-      description: "가을 행사",
-    });
-    const created = await createResponse.json();
-    expect(createResponse.status).toBe(200);
-    expect(created).toEqual({
-      id: created.id,
-      name: "Library Event 2026",
-      description: "가을 행사",
-    });
-
-    const listResponse = await client.get("/api/groups");
-    const groups = await listResponse.json();
-
-    expect(listResponse.status).toBe(200);
-    expect(groups).toContainEqual(created);
-  });
-});
-
-describe("GET /api/groups/:id/quests", () => {
-  it("세션이 없으면 401을 반환한다", async () => {
-    const client = createTestClient(createApp(createFakeContext()));
-
-    const response = await client.get(`/api/groups/${TEST_QUEST.groupId}/quests`);
-
-    expect(response.status).toBe(401);
-  });
-
-  it("로그인한 상태면 그룹의 퀘스트 요약을 반환한다 (정답 미포함)", async () => {
-    const ctx = createFakeContext({
-      repo: { quest: createFakeQuestRepo({ [TEST_QUEST.id]: TEST_QUEST }) },
-    });
-    const { client } = await signedInClient(ctx);
-
-    const response = await client.get(`/api/groups/${TEST_QUEST.groupId}/quests`);
-    const payload = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(payload).toEqual([
-      {
-        id: TEST_QUEST.id,
-        content: TEST_QUEST.content,
-        image: TEST_QUEST.image,
-        answer: TEST_QUEST.answer,
-      },
-    ]);
-  });
-});
-
-describe("POST /api/uploads/presign", () => {
+describe("/api/uploads/presign", () => {
   it("세션이 없으면 401을 반환한다", async () => {
     const client = createTestClient(createApp(createFakeContext()));
 
@@ -249,151 +277,176 @@ describe("POST /api/uploads/presign", () => {
   });
 });
 
-describe("DELETE /api/groups/:id", () => {
-  async function signedInWithGroup() {
-    const { client } = await signedInClient();
-    const created = await (await client.post("/api/groups", { name: "정리할 그룹" })).json();
-    await client.post("/api/quests", { ...toQuestRequestBody(TEST_QUEST), groupId: created.id });
-    return { client, group: created };
-  }
-
+describe("/api/cases", () => {
   it("세션이 없으면 401을 반환한다", async () => {
     const client = createTestClient(createApp(createFakeContext()));
 
-    expect((await client.delete("/api/groups/some-id")).status).toBe(401);
+    expect((await client.get("/api/cases")).status).toBe(401);
+    expect((await client.post("/api/cases", toCaseRequestBody(TEST_CASE))).status).toBe(401);
   });
 
-  it("그룹을 지우면 그룹의 퀘스트도 함께 사라진다", async () => {
-    const { client, group } = await signedInWithGroup();
-
-    const response = await client.delete(`/api/groups/${group.id}`);
-
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ deleted: true });
-
-    const groups = await (await client.get("/api/groups")).json();
-    expect(groups).toEqual([]);
-
-    const quests = await (await client.get(`/api/groups/${group.id}/quests`)).json();
-    expect(quests).toEqual([]);
-  });
-});
-
-describe("POST /api/quests", () => {
-  const NEW_QUEST_BODY = toQuestRequestBody(ANOTHER_QUEST);
-
-  it("세션이 없으면 401을 반환한다", async () => {
-    const client = createTestClient(createApp(createFakeContext()));
-
-    const response = await client.post("/api/quests", NEW_QUEST_BODY);
-
-    expect(response.status).toBe(401);
-  });
-
-  it("로그인한 상태면 퀘스트를 생성하고, 즉시 풀 수 있다", async () => {
+  it("CASE를 만들면 단계 뼈대가 함께 생긴다 (QR 단계에는 토큰까지)", async () => {
     const { client } = await signedInClient();
 
-    const createResponse = await client.post("/api/quests", NEW_QUEST_BODY);
+    const createResponse = await client.post("/api/cases", toCaseRequestBody(ANOTHER_CASE));
     const created = await createResponse.json();
 
     expect(createResponse.status).toBe(200);
-    expect(created).toEqual({
-      id: created.id,
-      groupId: NEW_QUEST_BODY.groupId,
-      content: NEW_QUEST_BODY.content,
-      image: NEW_QUEST_BODY.image,
-      answer: NEW_QUEST_BODY.answer,
-      alternatives: [],
-      placeholder: NEW_QUEST_BODY.placeholder,
-      hint: NEW_QUEST_BODY.hint,
-      reward: { text: NEW_QUEST_BODY.rewardText },
+    expect(created).toMatchObject({
+      number: ANOTHER_CASE.number,
+      title: ANOTHER_CASE.title,
+      teaser: ANOTHER_CASE.teaser,
+      intro: ANOTHER_CASE.intro,
+      status: "DRAFT",
     });
+    expect(created.entryToken).toEqual(expect.any(String));
 
-    // 방금 만든 퀘스트가 공개 API로 바로 풀 수 있는지 확인 (ticket 03과의 연결)
-    const displayResponse = await client.get(`/api/quests/${created.id}`);
-    expect(displayResponse.status).toBe(200);
+    const steps = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+    expect(steps.map((step: { kind: string }) => step.kind)).toEqual([
+      "INTRO",
+      "QR",
+      "QR",
+      "QR",
+      "QR",
+      "FINAL",
+      "CLOSING",
+    ]);
+    expect(steps[0]).toMatchObject({ order: 0, name: "사건 소개", qrToken: null });
+    expect(steps[1].qrToken).toEqual(expect.any(String));
+    expect(steps[5]).toMatchObject({ name: "마지막 단서", kind: "FINAL" });
+    expect(steps[6]).toMatchObject({ name: "사건 종결", qrToken: null });
 
-    const submitResponse = await client.post(`/api/quests/${created.id}/submit-answer`, {
-      answer: NEW_QUEST_BODY.answer,
-    });
-    const submitPayload = await submitResponse.json();
-
-    expect(submitPayload).toEqual({
-      correct: true,
-      reward: { text: NEW_QUEST_BODY.rewardText },
-    });
-  });
-});
-
-describe("GET /api/quests/:id/edit", () => {
-  it("세션이 없으면 401을 반환한다", async () => {
-    const client = createTestClient(appWithQuest(TEST_QUEST));
-
-    const response = await client.get(`/api/quests/${TEST_QUEST.id}/edit`);
-
-    expect(response.status).toBe(401);
+    const list = await (await client.get("/api/cases")).json();
+    expect(list).toContainEqual(created);
   });
 
-  it("로그인한 상태면 정답/보상을 포함한 전체 퀘스트를 반환한다", async () => {
-    const ctx = createFakeContext({
-      repo: { quest: createFakeQuestRepo({ [TEST_QUEST.id]: TEST_QUEST }) },
-    });
-    const { client } = await signedInClient(ctx);
+  it("CASE를 지우면 단계도 함께 사라진다", async () => {
+    const { client } = await signedInClient();
+    const created = await (await client.post("/api/cases", toCaseRequestBody(ANOTHER_CASE))).json();
 
-    const response = await client.get(`/api/quests/${TEST_QUEST.id}/edit`);
+    const response = await client.delete(`/api/cases/${created.id}`);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ deleted: true });
+    expect(await (await client.get("/api/cases")).json()).toEqual([]);
+    expect(await (await client.get(`/api/cases/${created.id}/steps`)).json()).toEqual([]);
+  });
+
+  it("로그인한 상태면 수정할 수 있다", async () => {
+    const { client } = await signedInClient(
+      createFakeContext({
+        repo: { case: createFakeCaseRepo({ [TEST_CASE.id]: TEST_CASE }) },
+      }),
+    );
+
+    const response = await client.patch(
+      `/api/cases/${TEST_CASE.id}`,
+      toCaseRequestBody(ANOTHER_CASE),
+    );
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload).toEqual(TEST_QUEST);
+    expect(payload).toMatchObject({
+      id: TEST_CASE.id,
+      title: ANOTHER_CASE.title,
+      // 시작 토큰은 수정해도 그대로다 — 인쇄한 시작 QR이 계속 살아 있다
+      entryToken: TEST_CASE.entryToken,
+    });
   });
 });
 
-describe("PATCH /api/quests/:id", () => {
-  const UPDATE_BODY = toQuestRequestBody(ANOTHER_QUEST);
+describe("GET /api/steps/:id/edit", () => {
+  it("세션이 없으면 401을 반환한다", async () => {
+    const client = createTestClient(appWith(TEST_CASE, [TEST_STEP]));
+
+    expect((await client.get(`/api/steps/${TEST_STEP.id}/edit`)).status).toBe(401);
+  });
+
+  it("관리자에게는 정답을 포함한 전체 단계를 반환한다", async () => {
+    const { client } = await signedInClient(
+      createFakeContext({
+        repo: {
+          case: createFakeCaseRepo({ [TEST_CASE.id]: TEST_CASE }),
+          step: createFakeStepRepo({ [TEST_STEP.id]: TEST_STEP }),
+        },
+      }),
+    );
+
+    const response = await client.get(`/api/steps/${TEST_STEP.id}/edit`);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({
+      id: TEST_STEP.id,
+      caseId: TEST_CASE.id,
+      order: TEST_STEP.order,
+      name: TEST_STEP.name,
+      title: TEST_STEP.title,
+      answerSpec: TEST_STEP.answerSpec,
+      reveal: TEST_STEP.reveal,
+    });
+  });
+
+  it("없는 단계는 404를 반환한다", async () => {
+    const { client } = await signedInClient();
+
+    expect((await client.get("/api/steps/missing/edit")).status).toBe(404);
+  });
+});
+
+describe("PATCH /api/steps/:id", () => {
+  function ctxWithStep() {
+    return createFakeContext({
+      repo: {
+        case: createFakeCaseRepo({ [TEST_CASE.id]: TEST_CASE }),
+        step: createFakeStepRepo({ [TEST_STEP.id]: TEST_STEP }),
+      },
+    });
+  }
 
   it("세션이 없으면 401을 반환한다", async () => {
-    const client = createTestClient(appWithQuest(TEST_QUEST));
+    const client = createTestClient(appWith(TEST_CASE, [TEST_STEP]));
 
-    const response = await client.patch(`/api/quests/${TEST_QUEST.id}`, UPDATE_BODY);
+    const response = await client.patch(`/api/steps/${TEST_STEP.id}`, toStepRequestBody(TEST_STEP));
 
     expect(response.status).toBe(401);
   });
 
-  it("로그인한 상태면 수정하고, 새 정답으로만 풀 수 있다", async () => {
-    const ctx = createFakeContext({
-      repo: { quest: createFakeQuestRepo({ [TEST_QUEST.id]: TEST_QUEST }) },
+  it("내용을 고쳐도 QR 토큰과 순서는 그대로다 (요구 23)", async () => {
+    const { client } = await signedInClient(ctxWithStep());
+
+    const response = await client.patch(`/api/steps/${TEST_STEP.id}`, {
+      ...toStepRequestBody(ANOTHER_STEP),
+      name: TEST_STEP.name,
     });
-    const { client } = await signedInClient(ctx);
+    const payload = await response.json();
 
-    const updateResponse = await client.patch(`/api/quests/${TEST_QUEST.id}`, UPDATE_BODY);
-    const updated = await updateResponse.json();
-
-    expect(updateResponse.status).toBe(200);
-    expect(updated).toEqual({
-      id: TEST_QUEST.id,
-      groupId: TEST_QUEST.groupId,
-      content: UPDATE_BODY.content,
-      image: UPDATE_BODY.image,
-      answer: UPDATE_BODY.answer,
-      alternatives: [],
-      placeholder: UPDATE_BODY.placeholder,
-      hint: UPDATE_BODY.hint,
-      reward: { text: UPDATE_BODY.rewardText },
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({
+      id: TEST_STEP.id,
+      caseId: TEST_CASE.id,
+      order: TEST_STEP.order,
+      title: ANOTHER_STEP.title,
     });
 
-    // 옛날 정답은 더 이상 통하지 않는다
-    const oldAnswerResponse = await client.post(`/api/quests/${TEST_QUEST.id}/submit-answer`, {
-      answer: TEST_QUEST.answer,
-    });
-    expect(await oldAnswerResponse.json()).toEqual({ correct: false });
+    const steps = await (await client.get(`/api/cases/${TEST_CASE.id}/steps`)).json();
+    expect(steps).toEqual([
+      expect.objectContaining({ id: TEST_STEP.id, qrToken: TEST_STEP.qrToken }),
+    ]);
 
-    // 새 정답으로 풀 수 있다
-    const newAnswerResponse = await client.post(`/api/quests/${TEST_QUEST.id}/submit-answer`, {
-      answer: UPDATE_BODY.answer,
-    });
-    expect(await newAnswerResponse.json()).toEqual({
-      correct: true,
-      reward: { text: UPDATE_BODY.rewardText },
-    });
+    // 새 정답으로만 풀 수 있다
+    expect(
+      await (
+        await client.post(`/api/steps/${TEST_STEP.id}/submit-answer`, {
+          answer: TEST_STEP.answerSpec?.type === "SHORT_TEXT" ? "이민열, 김도균" : "",
+        })
+      ).json(),
+    ).toEqual({ correct: false });
+
+    expect(
+      await (
+        await client.post(`/api/steps/${TEST_STEP.id}/submit-answer`, { answer: "다른 정답" })
+      ).json(),
+    ).toMatchObject({ correct: true });
   });
 });

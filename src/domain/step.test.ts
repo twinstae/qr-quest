@@ -85,8 +85,14 @@ describe("matchAnswer — 단답형", () => {
   });
 
   it("CONTAINS는 정답이 들어 있으면 통과한다", () => {
-    const contains: AnswerSpec = { type: "SHORT_TEXT", accepted: ["헌법논증이론"], match: "CONTAINS" };
-    expect(matchAnswer(contains, { type: "TEXT", value: "책 제목은 헌법논증이론입니다" })).toBe(true);
+    const contains: AnswerSpec = {
+      type: "SHORT_TEXT",
+      accepted: ["헌법논증이론"],
+      match: "CONTAINS",
+    };
+    expect(matchAnswer(contains, { type: "TEXT", value: "책 제목은 헌법논증이론입니다" })).toBe(
+      true,
+    );
     expect(matchAnswer(contains, { type: "TEXT", value: "헌법" })).toBe(false);
   });
 });
@@ -99,7 +105,9 @@ describe("matchAnswer — 숫자", () => {
   });
 
   it("쉼표와 공백을 흡수한다", () => {
-    expect(matchAnswer({ type: "NUMBER", accepted: [1200] }, { type: "TEXT", value: "1,200" })).toBe(true);
+    expect(
+      matchAnswer({ type: "NUMBER", accepted: [1200] }, { type: "TEXT", value: "1,200" }),
+    ).toBe(true);
   });
 
   it("숫자가 아니면 통과하지 못한다", () => {

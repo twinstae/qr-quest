@@ -1,11 +1,11 @@
 {
-  "id": "c53cd790-8e97-4352-a3ba-ae5ea10a5aa0",
+  "id": "abf96d87-dfaa-4aa7-ae26-81b6c3040455",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.quest_groups": {
-      "name": "quest_groups",
+    "public.cases": {
+      "name": "cases",
       "schema": "",
       "columns": {
         "id": {
@@ -15,14 +15,64 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "name": {
-          "name": "name",
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
+        "teaser": {
+          "name": "teaser",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "intro": {
+          "name": "intro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "thumbnail": {
+          "name": "thumbnail",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estimated_minutes": {
+          "name": "estimated_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 20
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'DRAFT'"
+        },
+        "entry_token": {
+          "name": "entry_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "final_book_title": {
+          "name": "final_book_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reward_note": {
+          "name": "reward_note",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -45,13 +95,19 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "cases_entry_token_unique": {
+          "name": "cases_entry_token_unique",
+          "nullsNotDistinct": false,
+          "columns": ["entry_token"]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.quests": {
-      "name": "quests",
+    "public.play_sessions": {
+      "name": "play_sessions",
       "schema": "",
       "columns": {
         "id": {
@@ -61,69 +117,278 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "group_id": {
-          "name": "group_id",
+        "case_id": {
+          "name": "case_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "content": {
-          "name": "content",
+        "token": {
+          "name": "token",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "image_src": {
-          "name": "image_src",
+        "status": {
+          "name": "status",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "image_alt": {
-          "name": "image_alt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "answer": {
-          "name": "answer",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "alternatives": {
-          "name": "alternatives",
-          "type": "text[]",
           "primaryKey": false,
           "notNull": true,
-          "default": "'{}'"
+          "default": "'IN_PROGRESS'"
+        },
+        "current_step_order": {
+          "name": "current_step_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completion_code": {
+          "name": "completion_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "redeemed_at": {
+          "name": "redeemed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_test": {
+          "name": "is_test",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "play_sessions_case_id_cases_id_fk": {
+          "name": "play_sessions_case_id_cases_id_fk",
+          "tableFrom": "play_sessions",
+          "tableTo": "cases",
+          "columnsFrom": ["case_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "play_sessions_token_unique": {
+          "name": "play_sessions_token_unique",
+          "nullsNotDistinct": false,
+          "columns": ["token"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.step_attempts": {
+      "name": "step_attempts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "step_id": {
+          "name": "step_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "submitted": {
+          "name": "submitted",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "correct": {
+          "name": "correct",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "used_hint": {
+          "name": "used_hint",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "step_attempts_session_id_play_sessions_id_fk": {
+          "name": "step_attempts_session_id_play_sessions_id_fk",
+          "tableFrom": "step_attempts",
+          "tableTo": "play_sessions",
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "step_attempts_step_id_steps_id_fk": {
+          "name": "step_attempts_step_id_steps_id_fk",
+          "tableFrom": "step_attempts",
+          "tableTo": "steps",
+          "columnsFrom": ["step_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.steps": {
+      "name": "steps",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "qr_token": {
+          "name": "qr_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "published": {
+          "name": "published",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media": {
+          "name": "media",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reveal": {
+          "name": "reveal",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "question": {
+          "name": "question",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "answer_spec": {
+          "name": "answer_spec",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "placeholder": {
           "name": "placeholder",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "hint": {
           "name": "hint",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "reward_text": {
-          "name": "reward_text",
+        "correct_message": {
+          "name": "correct_message",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "reward_image_src": {
-          "name": "reward_image_src",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reward_image_alt": {
-          "name": "reward_image_alt",
+        "wrong_message": {
+          "name": "wrong_message",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -143,20 +408,48 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "steps_case_id_order_idx": {
+          "name": "steps_case_id_order_idx",
+          "columns": [
+            {
+              "expression": "case_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "quests_group_id_quest_groups_id_fk": {
-          "name": "quests_group_id_quest_groups_id_fk",
-          "tableFrom": "quests",
-          "tableTo": "quest_groups",
-          "columnsFrom": ["group_id"],
+        "steps_case_id_cases_id_fk": {
+          "name": "steps_case_id_cases_id_fk",
+          "tableFrom": "steps",
+          "tableTo": "cases",
+          "columnsFrom": ["case_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "steps_qr_token_unique": {
+          "name": "steps_qr_token_unique",
+          "nullsNotDistinct": false,
+          "columns": ["qr_token"]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

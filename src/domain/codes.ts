@@ -50,7 +50,9 @@ export function normalizeCompletionCode(code: string): string {
 
 export function isValidCompletionCode(code: string): boolean {
   const normalized = normalizeCompletionCode(code);
-  return normalized.length === COMPLETION_CODE_PREFIX.length + 1 + COMPLETION_CODE_LENGTH
-    && normalized.startsWith(`${COMPLETION_CODE_PREFIX}-`)
-    && /^[23456789A-HJ-NP-Z]+$/.test(normalized.slice(COMPLETION_CODE_PREFIX.length + 1));
+  return (
+    normalized.length === COMPLETION_CODE_PREFIX.length + 1 + COMPLETION_CODE_LENGTH &&
+    normalized.startsWith(`${COMPLETION_CODE_PREFIX}-`) &&
+    /^[23456789A-HJ-NP-Z]+$/.test(normalized.slice(COMPLETION_CODE_PREFIX.length + 1))
+  );
 }

@@ -1,19 +1,42 @@
-import type { Quest } from "../domain/quest.ts";
-import type { QuestGroup } from "../domain/questGroup.ts";
+import type { Case } from "../domain/case.ts";
+import type { PlaySession, StepAttempt } from "../domain/playSession.ts";
+import type { Step } from "../domain/step.ts";
 
-export interface QuestRepo {
-  getById(id: Quest["id"]): Promise<Quest | undefined>;
-  create(input: Omit<Quest, "id">): Promise<Quest>;
-  update(id: Quest["id"], input: Omit<Quest, "id" | "groupId">): Promise<Quest>;
-  listByGroupId(groupId: Quest["groupId"]): Promise<Quest[]>;
-  /** 그룹을 지울 때 자식부터 지운다 (스키마의 FK는 RESTRICT라 순서가 필요하다). */
-  deleteByGroupId(groupId: Quest["groupId"]): Promise<void>;
+export interface CaseRepo {
+  create(input: Omit<Case, "id">): Promise<Case>;
+  getById(id: Case["id"]): Promise<Case | undefined>;
+  getByEntryToken(token: string): Promise<Case | undefined>;
+  list(): Promise<Case[]>;
+  update(id: Case["id"], input: Omit<Case, "id">): Promise<Case>;
+  /** CASE를 지우면 단계도 함께 지운다 (StepRepo.deleteByCaseId를 먼저 호출한다). */
+  delete(id: Case["id"]): Promise<void>;
 }
 
-export interface QuestGroupRepo {
-  create(input: Omit<QuestGroup, "id">): Promise<QuestGroup>;
-  list(): Promise<QuestGroup[]>;
-  delete(id: QuestGroup["id"]): Promise<void>;
+export interface StepRepo {
+  create(input: Omit<Step, "id">): Promise<Step>;
+  getById(id: Step["id"]): Promise<Step | undefined>;
+  getByQrToken(token: string): Promise<Step | undefined>;
+  listByCaseId(caseId: Step["caseId"]): Promise<Step[]>;
+  update(id: Step["id"], input: Omit<Step, "id" | "caseId">): Promise<Step>;
+  deleteByCaseId(caseId: Step["caseId"]): Promise<void>;
+  /** 아직 단계가 없는 CASE에 새 단계를 붙일 때 쓸 순서. */
+  nextOrder(caseId: Step["caseId"]): Promise<number>;
+}
+
+export interface PlaySessionRepo {
+  create(input: Omit<PlaySession, "id">): Promise<PlaySession>;
+  getById(id: PlaySession["id"]): Promise<PlaySession | undefined>;
+  getByToken(token: string): Promise<PlaySession | undefined>;
+  update(
+    id: PlaySession["id"],
+    input: Partial<Omit<PlaySession, "id" | "caseId" | "token">>,
+  ): Promise<PlaySession>;
+  listByCaseId(caseId: PlaySession["caseId"]): Promise<PlaySession[]>;
+}
+
+export interface StepAttemptRepo {
+  create(input: Omit<StepAttempt, "id">): Promise<StepAttempt>;
+  listBySessionId(sessionId: StepAttempt["sessionId"]): Promise<StepAttempt[]>;
 }
 
 export interface ImageStorage {

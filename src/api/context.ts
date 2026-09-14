@@ -1,16 +1,28 @@
 import { memoryAdapter } from "better-auth/adapters/memory";
 
 import { DEFAULT_MAX_IMAGE_BYTES } from "../domain/upload.ts";
+import createFakeCaseRepo from "../persistence/FakeCaseRepo.ts";
 import createFakeImageStorage from "../persistence/FakeImageStorage.ts";
-import createFakeQuestGroupRepo from "../persistence/FakeQuestGroupRepo.ts";
-import createFakeQuestRepo from "../persistence/FakeQuestRepo.ts";
-import type { ImageStorage, QuestGroupRepo, QuestRepo } from "../persistence/types.ts";
+import {
+  createFakePlaySessionRepo,
+  createFakeStepAttemptRepo,
+} from "../persistence/FakePlaySessionRepo.ts";
+import createFakeStepRepo from "../persistence/FakeStepRepo.ts";
+import type {
+  CaseRepo,
+  ImageStorage,
+  PlaySessionRepo,
+  StepAttemptRepo,
+  StepRepo,
+} from "../persistence/types.ts";
 import { createAuth } from "./auth.ts";
 
 export interface AppContext {
   repo: {
-    quest: QuestRepo;
-    questGroup: QuestGroupRepo;
+    case: CaseRepo;
+    step: StepRepo;
+    playSession: PlaySessionRepo;
+    stepAttempt: StepAttemptRepo;
   };
   auth: ReturnType<typeof createAuth>;
   imageStorage: ImageStorage;
@@ -27,8 +39,10 @@ export function createFakeContext(
     uploadLimits: { maxImageBytes: DEFAULT_MAX_IMAGE_BYTES },
     ...override,
     repo: {
-      quest: createFakeQuestRepo({}),
-      questGroup: createFakeQuestGroupRepo({}),
+      case: createFakeCaseRepo({}),
+      step: createFakeStepRepo({}),
+      playSession: createFakePlaySessionRepo(),
+      stepAttempt: createFakeStepAttemptRepo(),
       ...override.repo,
     },
   };

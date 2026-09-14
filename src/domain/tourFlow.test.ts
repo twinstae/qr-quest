@@ -49,9 +49,9 @@ describe("openStep", () => {
   });
 
   it("이미 완주한 세션은 완료로 본다", () => {
-    expect(openStep({ session: session({ status: "COMPLETED", currentStepOrder: 5 }), step: step(2) })).toEqual(
-      { kind: "COMPLETED" },
-    );
+    expect(
+      openStep({ session: session({ status: "COMPLETED", currentStepOrder: 5 }), step: step(2) }),
+    ).toEqual({ kind: "COMPLETED" });
   });
 
   it("다른 사건의 QR을 찍으면 알려준다", () => {

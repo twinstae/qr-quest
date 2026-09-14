@@ -1,3 +1,5 @@
+export type PlaySessionStatus = "IN_PROGRESS" | "COMPLETED";
+
 /**
  * 참가 세션 (요구 12). 개인정보는 수집하지 않는다 — 무엇을 언제 풀었는지만 남겨
  * 진행·재개·통계에 쓴다.
@@ -7,7 +9,7 @@ export type PlaySession = {
   caseId: string;
   /** httpOnly 쿠키로 내려보내는 추측 불가 토큰. */
   token: string;
-  status: "IN_PROGRESS" | "COMPLETED";
+  status: PlaySessionStatus;
   /** 이 순서까지 열 수 있다. 단계를 통과할 때마다 전진한다. */
   currentStepOrder: number;
   startedAt: string;
