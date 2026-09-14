@@ -6,7 +6,7 @@ import { DialogShell } from "@/components/domains/dialog-shell.tsx";
 import {
   EMPTY_STEP_EDITOR_VALUES,
   StepEditorForm,
-  toAnswerInput,
+  toAnswerFormValues,
   toStepRequestBody,
   type StepEditorDefaultValues,
 } from "@/components/domains/step-editor-form.tsx";
@@ -81,7 +81,7 @@ export function EditStepDialog({ stepId }: { stepId: string }) {
           body: step.body,
           media: { src: step.media?.src ?? "", alt: step.media?.alt ?? "" },
           question: step.question ?? "",
-          answer: toAnswerInput(step.answerSpec),
+          ...toAnswerFormValues(step.answerSpec),
           placeholder: step.placeholder ?? "",
           hint: step.hint ?? "",
           revealText: step.reveal.text ?? "",

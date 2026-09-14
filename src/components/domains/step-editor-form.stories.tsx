@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { EMPTY_STEP_EDITOR_VALUES, StepEditorForm } from "./step-editor-form.tsx";
+import { EMPTY_STEP_EDITOR_VALUES, StepEditorForm, toAnswerFormValues } from "./step-editor-form.tsx";
 
 const meta = {
   title: "Domains/StepEditorForm",
@@ -39,7 +39,7 @@ export const Edit: Story = {
         alt: "책 표지",
       },
       question: "저자의 이름은?",
-      answer: "이민열, 김도균",
+      ...toAnswerFormValues({ type: "SHORT_TEXT", accepted: ["이민열, 김도균"], match: "EXACT" }),
       placeholder: "정답을 입력하세요",
       hint: "표지 안에 답이 있습니다.",
       revealText: "새로운 단서가 발견되었습니다.",

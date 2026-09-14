@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import * as v from "valibot";
 
-import { SimpleImageUpload, SimpleInput } from "@/components/form/simple-field";
+import { SimpleCheckbox, SimpleImageUpload, SimpleInput } from "@/components/form/simple-field";
 import { SimpleForm } from "@/components/form/simple-form";
 import { Button } from "@/components/ui/button.tsx";
 import * as Fieldset from "@/components/ui/fieldset.tsx";
-import { requiresQrToken, type AnswerSpec, type Media, type StepKind } from "@/domain/step.ts";
+import { requiresQrToken, type AnswerSpec, type Choice, type Media, type StepKind } from "@/domain/step.ts";
+import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 const ImageValueSchema = v.object({
@@ -13,13 +15,41 @@ const ImageValueSchema = v.object({
   alt: v.string(),
 });
 
+const ANSWER_TYPES = ["SINGLE_CHOICE", "MULTI_CHOICE", "SHORT_TEXT", "NUMBER", "KEYWORDS"] as const;
+type AnswerType = (typeof ANSWER_TYPES)[number];
+
+const ANSWER_TYPE_LABELS: Record<AnswerType, string> = {
+  SINGLE_CHOICE: "객관식(단일 선택)",
+  MULTI_CHOICE: "객관식(복수 선택)",
+  SHORT_TEXT: "단답형",
+  NUMBER: "숫자",
+  KEYWORDS: "키워드",
+};
+
+const CHOICE_IDS = ["A", "B", "C", "D"] as const;
+
 const StepEditorEntries = {
   name: v.pipe(v.string(), v.minLength(1, "단계 이름을 입력해주세요")),
   title: v.pipe(v.string(), v.minLength(1, "제목을 입력해주세요")),
   body: v.string(),
   media: ImageValueSchema,
   question: v.string(),
-  answer: v.pipe(v.string(), v.minLength(1, "정답을 입력해주세요")),
+  answerType: v.picklist(ANSWER_TYPES),
+  choiceALabel: v.string(),
+  choiceBLabel: v.string(),
+  choiceCLabel: v.string(),
+  choiceDLabel: v.string(),
+  correctA: v.boolean(),
+  correctB: v.boolean(),
+  correctC: v.boolean(),
+  correctD: v.boolean(),
+  // 쉼표로 여러 값을 받는다 — 단답형은 정답 여러 개(표기 차이 흡수), 키워드는 키워드 목록.
+  acceptedText: v.string(),
+  matchMode: v.picklist(["EXACT", "CONTAINS"]),
+  numberValue: v.string(),
+  tolerance: v.string(),
+  keywordsText: v.string(),
+  keywordMatch: v.picklist(["ALL", "ANY"]),
   placeholder: v.string(),
   hint: v.string(),
   revealText: v.string(),
@@ -27,10 +57,6 @@ const StepEditorEntries = {
 };
 
 const StepEditorSchema = v.object(StepEditorEntries);
-
-// 소개·종결 단계는 참가자에게 문제를 내지 않으므로 정답을 요구하지 않는다.
-// (그 단계에서 정답을 요구하면 관리자가 저장을 위해 없는 답을 지어내야 한다.)
-const StepEditorSchemaWithoutAnswer = v.object({ ...StepEditorEntries, answer: v.string() });
 
 export type StepEditorFormValues = v.InferOutput<typeof StepEditorSchema>;
 export type StepEditorDefaultValues = v.InferInput<typeof StepEditorSchema>;
@@ -41,7 +67,21 @@ export const EMPTY_STEP_EDITOR_VALUES: StepEditorDefaultValues = {
   body: "",
   media: { src: "", alt: "" },
   question: "",
-  answer: "",
+  answerType: "SHORT_TEXT",
+  choiceALabel: "",
+  choiceBLabel: "",
+  choiceCLabel: "",
+  choiceDLabel: "",
+  correctA: false,
+  correctB: false,
+  correctC: false,
+  correctD: false,
+  acceptedText: "",
+  matchMode: "EXACT",
+  numberValue: "",
+  tolerance: "",
+  keywordsText: "",
+  keywordMatch: "ALL",
   placeholder: "",
   hint: "",
   revealText: "",
@@ -53,23 +93,136 @@ export function isQuestionKind(kind: StepKind): boolean {
   return requiresQrToken(kind);
 }
 
-function stepEditorSchema(kind: StepKind) {
-  return isQuestionKind(kind) ? StepEditorSchema : StepEditorSchemaWithoutAnswer;
+function splitList(text: string): string[] {
+  return text
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item !== "");
 }
 
 /**
- * 관리자 화면의 값 ↔ 도메인 값 변환.
- *
- * 지금은 답이 하나인 단답형만 편집한다. 유형별 편집(객관식/숫자/키워드)은
- * 티켓 13-5에서 이 자리에 들어온다.
+ * 편집기 값 → AnswerSpec. 필수 항목이 비어 있으면 undefined를 돌려주고,
+ * 호출부(StepEditorForm)가 이를 "정답이 비어 있다"는 신호로 써서 저장을 막는다.
  */
-export function toAnswerSpec(answer: string): AnswerSpec {
-  return { type: "SHORT_TEXT", accepted: [answer], match: "EXACT" };
+export function toAnswerSpec(values: StepEditorFormValues): AnswerSpec | undefined {
+  switch (values.answerType) {
+    case "SINGLE_CHOICE":
+    case "MULTI_CHOICE": {
+      const labels: Record<(typeof CHOICE_IDS)[number], string> = {
+        A: values.choiceALabel,
+        B: values.choiceBLabel,
+        C: values.choiceCLabel,
+        D: values.choiceDLabel,
+      };
+      const corrects: Record<(typeof CHOICE_IDS)[number], boolean> = {
+        A: values.correctA,
+        B: values.correctB,
+        C: values.correctC,
+        D: values.correctD,
+      };
+      const usedIds = CHOICE_IDS.filter((id) => labels[id].trim() !== "");
+      const choices: Choice[] = usedIds.map((id) => ({ id, label: labels[id] }));
+      const correctChoiceIds: string[] = usedIds.filter((id) => corrects[id]);
+      if (choices.length === 0 || correctChoiceIds.length === 0) return undefined;
+      return { type: values.answerType, choices, correctChoiceIds };
+    }
+    case "SHORT_TEXT": {
+      const accepted = splitList(values.acceptedText);
+      if (accepted.length === 0) return undefined;
+      return { type: "SHORT_TEXT", accepted, match: values.matchMode };
+    }
+    case "NUMBER": {
+      const raw = values.numberValue.trim();
+      if (raw === "") return undefined;
+      const value = Number(raw);
+      if (Number.isNaN(value)) return undefined;
+      const toleranceRaw = values.tolerance.trim();
+      const tolerance = toleranceRaw === "" ? undefined : Number(toleranceRaw);
+      return { type: "NUMBER", accepted: [value], tolerance };
+    }
+    case "KEYWORDS": {
+      const keywords = splitList(values.keywordsText);
+      if (keywords.length === 0) return undefined;
+      return { type: "KEYWORDS", keywords, match: values.keywordMatch };
+    }
+  }
 }
 
-export function toAnswerInput(spec: AnswerSpec | undefined): string {
-  if (spec?.type === "SHORT_TEXT") return spec.accepted[0] ?? "";
-  return "";
+/** AnswerSpec → 편집기 값. 기존 단계를 열었을 때 되돌리는 방향. */
+export function toAnswerFormValues(
+  spec: AnswerSpec | undefined,
+): Pick<
+  StepEditorDefaultValues,
+  | "answerType"
+  | "choiceALabel"
+  | "choiceBLabel"
+  | "choiceCLabel"
+  | "choiceDLabel"
+  | "correctA"
+  | "correctB"
+  | "correctC"
+  | "correctD"
+  | "acceptedText"
+  | "matchMode"
+  | "numberValue"
+  | "tolerance"
+  | "keywordsText"
+  | "keywordMatch"
+> {
+  const empty = {
+    choiceALabel: "",
+    choiceBLabel: "",
+    choiceCLabel: "",
+    choiceDLabel: "",
+    correctA: false,
+    correctB: false,
+    correctC: false,
+    correctD: false,
+    acceptedText: "",
+    matchMode: "EXACT" as const,
+    numberValue: "",
+    tolerance: "",
+    keywordsText: "",
+    keywordMatch: "ALL" as const,
+  };
+
+  if (!spec) return { answerType: "SHORT_TEXT", ...empty };
+
+  switch (spec.type) {
+    case "SINGLE_CHOICE":
+    case "MULTI_CHOICE": {
+      const byId = Object.fromEntries(spec.choices.map((choice) => [choice.id, choice.label]));
+      const correctSet = new Set(spec.correctChoiceIds);
+      return {
+        answerType: spec.type,
+        ...empty,
+        choiceALabel: byId.A ?? "",
+        choiceBLabel: byId.B ?? "",
+        choiceCLabel: byId.C ?? "",
+        choiceDLabel: byId.D ?? "",
+        correctA: correctSet.has("A"),
+        correctB: correctSet.has("B"),
+        correctC: correctSet.has("C"),
+        correctD: correctSet.has("D"),
+      };
+    }
+    case "SHORT_TEXT":
+      return { answerType: "SHORT_TEXT", ...empty, acceptedText: spec.accepted.join(", "), matchMode: spec.match };
+    case "NUMBER":
+      return {
+        answerType: "NUMBER",
+        ...empty,
+        numberValue: String(spec.accepted[0] ?? ""),
+        tolerance: spec.tolerance !== undefined ? String(spec.tolerance) : "",
+      };
+    case "KEYWORDS":
+      return {
+        answerType: "KEYWORDS",
+        ...empty,
+        keywordsText: spec.keywords.join(", "),
+        keywordMatch: spec.match,
+      };
+  }
 }
 
 export function toMedia(src: string, alt: string): Media | undefined {
@@ -129,6 +282,74 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AnswerTypeFields() {
+  const { watch, setValue } = useFormContext<StepEditorFormValues>();
+  const answerType = watch("answerType");
+
+  return (
+    <>
+      <div className={css({ display: "flex", flexWrap: "wrap", gap: "2" })}>
+        {ANSWER_TYPES.map((type) => (
+          <Button
+            key={type}
+            type="button"
+            size="sm"
+            variant={answerType === type ? "solid" : "outline"}
+            aria-pressed={answerType === type}
+            onClick={() => setValue("answerType", type)}
+          >
+            {ANSWER_TYPE_LABELS[type]}
+          </Button>
+        ))}
+      </div>
+
+      {(answerType === "SINGLE_CHOICE" || answerType === "MULTI_CHOICE") && (
+        <Fieldset.Content>
+          {CHOICE_IDS.map((id) => (
+            <div key={id} className={css({ display: "flex", alignItems: "flex-end", gap: "3" })}>
+              <div className={css({ flex: "1" })}>
+                <SimpleInput
+                  name={`choice${id}Label` as const}
+                  label={`보기 ${id}`}
+                  placeholder={`보기 ${id} 내용`}
+                />
+              </div>
+              <SimpleCheckbox name={`correct${id}` as const} label={`보기 ${id}를 정답으로 표시`} />
+            </div>
+          ))}
+        </Fieldset.Content>
+      )}
+
+      {answerType === "SHORT_TEXT" && (
+        <Fieldset.Content>
+          <SimpleInput
+            name="acceptedText"
+            label="정답"
+            placeholder="쉼표로 여러 개 입력할 수 있어요 (예: 사과, apple)"
+          />
+        </Fieldset.Content>
+      )}
+
+      {answerType === "NUMBER" && (
+        <Fieldset.Content>
+          <SimpleInput name="numberValue" label="정답" inputMode="decimal" />
+          <SimpleInput name="tolerance" label="허용 오차 (선택)" inputMode="decimal" />
+        </Fieldset.Content>
+      )}
+
+      {answerType === "KEYWORDS" && (
+        <Fieldset.Content>
+          <SimpleInput
+            name="keywordsText"
+            label="키워드"
+            placeholder="쉼표로 여러 개 입력할 수 있어요"
+          />
+        </Fieldset.Content>
+      )}
+    </>
+  );
+}
+
 export function StepEditorForm({
   kind,
   submitLabel,
@@ -136,7 +357,7 @@ export function StepEditorForm({
   onSubmit,
   onCancel,
 }: {
-  /** 이 단계의 종류. 편집기는 종류를 바꾸지 않는다 — 13에서 선택 UI가 붙는다. */
+  /** 이 단계의 종류. 편집기는 종류를 바꾸지 않는다. */
   kind: StepKind;
   submitLabel: string;
   defaultValues: StepEditorDefaultValues;
@@ -144,22 +365,30 @@ export function StepEditorForm({
   onCancel?: () => void;
 }) {
   const isQuestion = isQuestionKind(kind);
+  const [answerError, setAnswerError] = useState<string>();
 
   return (
     <SimpleForm<StepEditorFormValues>
-      schema={stepEditorSchema(kind)}
+      schema={StepEditorSchema}
       defaultValues={defaultValues}
-      onSubmit={async (values) =>
-        onSubmit({
+      onSubmit={async (values) => {
+        const answerSpec = isQuestion ? toAnswerSpec(values) : undefined;
+        if (isQuestion && !answerSpec) {
+          setAnswerError("정답을 입력해주세요.");
+          return;
+        }
+        setAnswerError(undefined);
+
+        await onSubmit({
           kind,
           values,
           media: toMedia(values.media.src, values.media.alt),
           revealMedia: values.revealMedia
             ? toMedia(values.revealMedia.src, values.revealMedia.alt)
             : undefined,
-          answerSpec: isQuestion ? toAnswerSpec(values.answer) : undefined,
-        })
-      }
+          answerSpec,
+        });
+      }}
     >
       <Fieldset.Root>
         <Fieldset.Legend>단계</Fieldset.Legend>
@@ -176,7 +405,14 @@ export function StepEditorForm({
           <Fieldset.Legend>문제와 정답</Fieldset.Legend>
           <Fieldset.Content>
             <SimpleInput name="question" label="문제 (선택)" />
-            <SimpleInput name="answer" label="정답" />
+          </Fieldset.Content>
+          <AnswerTypeFields />
+          {answerError && (
+            <p role="status" aria-label="안내" className={css({ textStyle: "sm", color: "fg.muted" })}>
+              {answerError}
+            </p>
+          )}
+          <Fieldset.Content>
             <SimpleInput name="placeholder" label="입력창 안내 문구 (선택)" />
             <SimpleInput name="hint" label="힌트" />
           </Fieldset.Content>
