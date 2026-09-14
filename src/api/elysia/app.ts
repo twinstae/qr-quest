@@ -8,129 +8,13 @@ import {
   listCases,
   updateCase,
 } from "../../application/caseService.ts";
-import {
-  createStep,
-  getStepForDisplay,
-  getStepForEdit,
-  listSteps,
-  submitStepAnswer,
-  updateStep,
-} from "../../application/stepService.ts";
+import { createStep, getStepForEdit, listSteps, updateStep } from "../../application/stepService.ts";
 import { presignUpload } from "../../application/uploadService.ts";
 import { FileTooLargeError, NotExistError, UnsupportedFileTypeError } from "../../domain/errors.ts";
-import type { AnswerSubmission } from "../../domain/step.ts";
 import type { AppContext } from "../context.ts";
 import { createAuthGuard } from "./authGuard.ts";
-
-const MediaSchema = t.Object({
-  kind: t.Union([t.Literal("image"), t.Literal("video")]),
-  src: t.String(),
-  alt: t.String(),
-});
-
-const ChoiceSchema = t.Object({ id: t.String(), label: t.String() });
-
-const AnswerSpecSchema = t.Union([
-  t.Object({
-    type: t.Literal("SINGLE_CHOICE"),
-    choices: t.Array(ChoiceSchema),
-    correctChoiceIds: t.Array(t.String()),
-  }),
-  t.Object({
-    type: t.Literal("MULTI_CHOICE"),
-    choices: t.Array(ChoiceSchema),
-    correctChoiceIds: t.Array(t.String()),
-  }),
-  t.Object({
-    type: t.Literal("SHORT_TEXT"),
-    accepted: t.Array(t.String()),
-    match: t.Union([t.Literal("EXACT"), t.Literal("CONTAINS")]),
-  }),
-  t.Object({
-    type: t.Literal("NUMBER"),
-    accepted: t.Array(t.Number()),
-    tolerance: t.Optional(t.Number()),
-  }),
-  t.Object({
-    type: t.Literal("KEYWORDS"),
-    keywords: t.Array(t.String()),
-    match: t.Union([t.Literal("ALL"), t.Literal("ANY")]),
-  }),
-]);
-
-// 참가자에게는 정답 없는 모양만 나간다.
-const PublicAnswerSpecSchema = t.Union([
-  t.Object({ type: t.Literal("SINGLE_CHOICE"), choices: t.Array(ChoiceSchema) }),
-  t.Object({ type: t.Literal("MULTI_CHOICE"), choices: t.Array(ChoiceSchema) }),
-  t.Object({ type: t.Literal("SHORT_TEXT") }),
-  t.Object({ type: t.Literal("NUMBER") }),
-  t.Object({ type: t.Literal("KEYWORDS") }),
-]);
-
-const StepKindSchema = t.Union([
-  t.Literal("INTRO"),
-  t.Literal("QR"),
-  t.Literal("FINAL"),
-  t.Literal("CLOSING"),
-]);
-
-const CaseSchema = t.Object({
-  id: t.String(),
-  number: t.Number(),
-  title: t.String(),
-  teaser: t.String(),
-  intro: t.String(),
-  thumbnail: t.Optional(MediaSchema),
-  estimatedMinutes: t.Number(),
-  status: t.Union([t.Literal("DRAFT"), t.Literal("TEST"), t.Literal("LIVE"), t.Literal("CLOSED")]),
-  entryToken: t.String(),
-  finalBookTitle: t.Optional(t.String()),
-  rewardNote: t.Optional(t.String()),
-});
-
-const CaseFieldsSchema = {
-  number: t.Number(),
-  title: t.String(),
-  teaser: t.String(),
-  intro: t.String(),
-  estimatedMinutes: t.Optional(t.Number()),
-  thumbnail: t.Optional(MediaSchema),
-  finalBookTitle: t.Optional(t.String()),
-  rewardNote: t.Optional(t.String()),
-};
-
-const RevealSchema = t.Object({
-  text: t.Optional(t.String()),
-  media: t.Optional(MediaSchema),
-  preset: t.Optional(
-    t.Union([
-      t.Literal("FADE_UP"),
-      t.Literal("UNROLL"),
-      t.Literal("TYPEWRITER"),
-      t.Literal("TV_SCAN"),
-      t.Literal("GLITCH"),
-    ]),
-  ),
-  sound: t.Optional(t.Union([t.Literal("paper"), t.Literal("radio"), t.Literal("chime")])),
-});
-
-const StepFieldsSchema = {
-  name: t.String(),
-  kind: StepKindSchema,
-  title: t.String(),
-  body: t.String(),
-  media: t.Optional(MediaSchema),
-  reveal: RevealSchema,
-  question: t.Optional(t.String()),
-  answerSpec: t.Optional(AnswerSpecSchema),
-  placeholder: t.Optional(t.String()),
-  hint: t.Optional(t.String()),
-};
-
-function toSubmission(body: { answer?: string; choiceIds?: string[] }): AnswerSubmission {
-  if (body.choiceIds) return { type: "CHOICE", choiceIds: body.choiceIds };
-  return { type: "TEXT", value: body.answer ?? "" };
-}
+import { createPlayRoutes } from "./playRoutes.ts";
+import { CaseFieldsSchema, CaseSchema, StepFieldsSchema, StepKindSchema } from "./schemas.ts";
 
 export function createApp(ctx: AppContext) {
   return (
@@ -161,37 +45,7 @@ export function createApp(ctx: AppContext) {
         }
       })
       // ── 참가자 ────────────────────────────────────────────────
-      .get("/steps/qr/:qrToken", ({ params }) => getStepForDisplay(ctx, params.qrToken), {
-        params: t.Object({ qrToken: t.String() }),
-        response: t.Object({
-          id: t.String(),
-          name: t.String(),
-          kind: StepKindSchema,
-          order: t.Number(),
-          title: t.String(),
-          body: t.String(),
-          media: t.Optional(MediaSchema),
-          question: t.Optional(t.String()),
-          answerSpec: t.Optional(PublicAnswerSpecSchema),
-          placeholder: t.Optional(t.String()),
-          hint: t.Optional(t.String()),
-        }),
-      })
-      .post(
-        "/steps/:id/submit-answer",
-        ({ params, body }) => submitStepAnswer(ctx, params.id, toSubmission(body)),
-        {
-          params: t.Object({ id: t.String() }),
-          body: t.Object({
-            answer: t.Optional(t.String()),
-            choiceIds: t.Optional(t.Array(t.String())),
-          }),
-          response: t.Union([
-            t.Object({ correct: t.Literal(false) }),
-            t.Object({ correct: t.Literal(true), reveal: RevealSchema }),
-          ]),
-        },
-      )
+      .use(createPlayRoutes(ctx))
       .get(
         "/cases/by-entry/:entryToken",
         ({ params }) => getCaseByEntryToken(ctx, params.entryToken),

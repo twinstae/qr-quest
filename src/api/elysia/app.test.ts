@@ -62,96 +62,6 @@ function toStepRequestBody(step: Step) {
   };
 }
 
-describe("GET /api/steps/qr/:qrToken", () => {
-  it("QR 토큰으로 단계를 찾아주지만 정답은 내려보내지 않는다", async () => {
-    const client = createTestClient(appWith(TEST_CASE, [TEST_STEP]));
-
-    const response = await client.get(`/api/steps/qr/${TEST_STEP.qrToken}`);
-    const payload = await response.json();
-    const raw = JSON.stringify(payload);
-
-    expect(response.status).toBe(200);
-    expect(payload).toMatchObject({
-      id: TEST_STEP.id,
-      name: TEST_STEP.name,
-      kind: "QR",
-      order: TEST_STEP.order,
-      title: TEST_STEP.title,
-      body: TEST_STEP.body,
-      media: TEST_STEP.media,
-      question: TEST_STEP.question,
-      placeholder: TEST_STEP.placeholder,
-      hint: TEST_STEP.hint,
-    });
-    expect(payload.answerSpec).toEqual({ type: "SHORT_TEXT" });
-
-    // 정답 문자열은 어떤 모양으로도 응답에 담기지 않는다
-    expect(raw).not.toContain("이민열");
-    expect(raw).not.toContain("accepted");
-    expect(raw).not.toContain("correctChoiceIds");
-  });
-
-  it("없는 QR 토큰은 404를 반환한다", async () => {
-    const client = createTestClient(createApp(createFakeContext()));
-
-    const response = await client.get("/api/steps/qr/NOPE");
-
-    expect(response.status).toBe(404);
-  });
-});
-
-describe("POST /api/steps/:id/submit-answer", () => {
-  it("정답을 맞추면 공개할 단서를 반환한다", async () => {
-    const client = createTestClient(appWith(TEST_CASE, [TEST_STEP]));
-
-    const response = await client.post(`/api/steps/${TEST_STEP.id}/submit-answer`, {
-      answer: `  ${TEST_STEP.answerSpec?.type === "SHORT_TEXT" ? TEST_STEP.answerSpec.accepted[0] : ""}  `,
-    });
-    const payload = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(payload).toEqual({ correct: true, reveal: TEST_STEP.reveal });
-  });
-
-  it("오답은 실패가 아니라 correct:false로 돌려준다", async () => {
-    const client = createTestClient(appWith(TEST_CASE, [TEST_STEP]));
-
-    const response = await client.post(`/api/steps/${TEST_STEP.id}/submit-answer`, {
-      answer: "틀린 답",
-    });
-
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ correct: false });
-  });
-
-  it("객관식은 고른 보기 id로 채점한다", async () => {
-    const choiceStep: Step = {
-      ...TEST_STEP,
-      id: "step-choice",
-      qrToken: "QRTOKEN003",
-      answerSpec: {
-        type: "SINGLE_CHOICE",
-        choices: [
-          { id: "A", label: "첫 번째" },
-          { id: "B", label: "두 번째" },
-        ],
-        correctChoiceIds: ["B"],
-      },
-    };
-    const client = createTestClient(appWith(TEST_CASE, [choiceStep]));
-
-    const wrong = await client.post(`/api/steps/${choiceStep.id}/submit-answer`, {
-      choiceIds: ["A"],
-    });
-    expect(await wrong.json()).toEqual({ correct: false });
-
-    const right = await client.post(`/api/steps/${choiceStep.id}/submit-answer`, {
-      choiceIds: ["B"],
-    });
-    expect(await right.json()).toEqual({ correct: true, reveal: TEST_STEP.reveal });
-  });
-});
-
 describe("GET /api/cases/by-entry/:entryToken", () => {
   it("시작 토큰으로 CASE를 찾아준다", async () => {
     const client = createTestClient(appWith(TEST_CASE));
@@ -434,19 +344,8 @@ describe("PATCH /api/steps/:id", () => {
       expect.objectContaining({ id: TEST_STEP.id, qrToken: TEST_STEP.qrToken }),
     ]);
 
-    // 새 정답으로만 풀 수 있다
-    expect(
-      await (
-        await client.post(`/api/steps/${TEST_STEP.id}/submit-answer`, {
-          answer: TEST_STEP.answerSpec?.type === "SHORT_TEXT" ? "이민열, 김도균" : "",
-        })
-      ).json(),
-    ).toEqual({ correct: false });
-
-    expect(
-      await (
-        await client.post(`/api/steps/${TEST_STEP.id}/submit-answer`, { answer: "다른 정답" })
-      ).json(),
-    ).toMatchObject({ correct: true });
+    // 새 정답으로 바뀌어 저장된다 (참가자 제출 판정은 playRoutes.test.ts에서 검증한다)
+    const edited = await (await client.get(`/api/steps/${TEST_STEP.id}/edit`)).json();
+    expect(edited.answerSpec).toEqual(ANOTHER_STEP.answerSpec);
   });
 });

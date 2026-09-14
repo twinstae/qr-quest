@@ -21,6 +21,6 @@ storybook-static
 ## Panda
 styled-system
 styled-system-studio
-src/stories/__screenshots__/
+**/__screenshots__/
 .vitest-attachments
 .env.production

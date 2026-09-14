@@ -20,7 +20,7 @@ export type StepCardData = {
   question?: string;
   answerSpec?: PublicAnswerSpec;
   placeholder?: string;
-  hint?: string;
+  hasHint?: boolean;
 };
 
 /** 이미지와 동영상을 같은 자리에서 보여준다. */
@@ -46,11 +46,27 @@ export function StepMedia({ media }: { media: Media }) {
   return <img src={media.src} alt={media.alt} className={className} />;
 }
 
-function HintDisclosure({ hint }: { hint: string }) {
+/**
+ * 힌트는 열 때마다 requestHint를 부른다 — 글자를 미리 받지 않고 여기서만 받아야
+ * "썼는지"를 통계로 잡을 수 있다. 한 번 받으면 다시 부르지 않고 화면에 남긴다.
+ */
+function HintDisclosure({ requestHint }: { requestHint: () => Promise<string | undefined> }) {
   const [open, setOpen] = useState(false);
+  const [hint, setHint] = useState<string>();
+  const [loading, setLoading] = useState(false);
+
+  async function handleOpenChange(details: { open: boolean }) {
+    setOpen(details.open);
+    if (details.open && hint === undefined) {
+      setLoading(true);
+      const value = await requestHint();
+      setHint(value ?? "");
+      setLoading(false);
+    }
+  }
 
   return (
-    <Collapsible.Root open={open} onOpenChange={(details) => setOpen(details.open)}>
+    <Collapsible.Root open={open} onOpenChange={handleOpenChange}>
       <Collapsible.Trigger className={css({ cursor: "pointer" })}>
         <Badge variant="outline" size="lg">
           <Lightbulb />
@@ -64,13 +80,15 @@ function HintDisclosure({ hint }: { hint: string }) {
         </Badge>
       </Collapsible.Trigger>
       <Collapsible.Content>
-        <Card.Description pt="2">{hint}</Card.Description>
+        <Card.Description role="status" aria-label="힌트" pt="2">
+          {loading ? "불러오는 중…" : hint}
+        </Card.Description>
       </Collapsible.Content>
     </Collapsible.Root>
   );
 }
 
-function ChoiceAnswerForm({
+export function ChoiceFields({
   choices,
   multiple,
   onSubmit,
@@ -116,12 +134,93 @@ function ChoiceAnswerForm({
   );
 }
 
+/** SHORT_TEXT/NUMBER 공용 — 단답 하나를 받는다. */
+export function TextAnswerField({
+  placeholder,
+  numeric,
+  onSubmit,
+}: {
+  placeholder?: string;
+  numeric?: boolean;
+  onSubmit: (submission: AnswerSubmission) => Promise<void>;
+}) {
+  return (
+    <SimpleForm
+      schema={v.object({ answer: v.pipe(v.string(), v.minLength(1, "정답을 입력해주세요")) })}
+      defaultValues={{ answer: "" }}
+      onSubmit={async ({ answer }) => onSubmit({ type: "TEXT", value: answer })}
+    >
+      <SimpleInput
+        name="answer"
+        label="정답"
+        placeholder={placeholder}
+        inputMode={numeric ? "decimal" : undefined}
+      />
+      <Button type="submit" size="lg" width="full">
+        제출하기
+      </Button>
+    </SimpleForm>
+  );
+}
+
+/** KEYWORDS 전용 — 단답형과 입력창은 같지만 "키워드가 들어가면 된다"는 안내를 곁들인다. */
+export function KeywordAnswerField({
+  placeholder,
+  onSubmit,
+}: {
+  placeholder?: string;
+  onSubmit: (submission: AnswerSubmission) => Promise<void>;
+}) {
+  return (
+    <SimpleForm
+      schema={v.object({ answer: v.pipe(v.string(), v.minLength(1, "정답을 입력해주세요")) })}
+      defaultValues={{ answer: "" }}
+      onSubmit={async ({ answer }) => onSubmit({ type: "TEXT", value: answer })}
+    >
+      <SimpleInput name="answer" label="정답" placeholder={placeholder ?? "핵심 단어를 입력하세요"} />
+      <Button type="submit" size="lg" width="full">
+        제출하기
+      </Button>
+    </SimpleForm>
+  );
+}
+
+function AnswerFields({
+  answerSpec,
+  placeholder,
+  onSubmit,
+}: {
+  answerSpec: PublicAnswerSpec;
+  placeholder?: string;
+  onSubmit: (submission: AnswerSubmission) => Promise<void>;
+}) {
+  switch (answerSpec.type) {
+    case "SINGLE_CHOICE":
+    case "MULTI_CHOICE":
+      return (
+        <ChoiceFields
+          choices={answerSpec.choices}
+          multiple={answerSpec.type === "MULTI_CHOICE"}
+          onSubmit={onSubmit}
+        />
+      );
+    case "NUMBER":
+      return <TextAnswerField placeholder={placeholder} numeric onSubmit={onSubmit} />;
+    case "KEYWORDS":
+      return <KeywordAnswerField placeholder={placeholder} onSubmit={onSubmit} />;
+    case "SHORT_TEXT":
+      return <TextAnswerField placeholder={placeholder} onSubmit={onSubmit} />;
+  }
+}
+
 export function StepCardForm({
   step,
   onSubmit,
+  onRequestHint,
 }: {
   step: StepCardData;
   onSubmit: (submission: AnswerSubmission) => Promise<void>;
+  onRequestHint: () => Promise<string | undefined>;
 }) {
   const answerSpec = step.answerSpec;
 
@@ -136,32 +235,15 @@ export function StepCardForm({
           </span>
         </Flex>
         {step.body && <Card.Description>{step.body}</Card.Description>}
-        {step.hint && <HintDisclosure hint={step.hint} />}
+        {step.hasHint && <HintDisclosure requestHint={onRequestHint} />}
       </Card.Header>
       <Card.Body>
         {step.question && (
           <p className={css({ textStyle: "md", fontWeight: "medium", mb: "3" })}>{step.question}</p>
         )}
 
-        {answerSpec?.type === "SINGLE_CHOICE" || answerSpec?.type === "MULTI_CHOICE" ? (
-          <ChoiceAnswerForm
-            choices={answerSpec.choices}
-            multiple={answerSpec.type === "MULTI_CHOICE"}
-            onSubmit={onSubmit}
-          />
-        ) : (
-          <SimpleForm
-            schema={v.object({
-              answer: v.pipe(v.string(), v.minLength(1, "정답을 입력해주세요")),
-            })}
-            defaultValues={{ answer: "" }}
-            onSubmit={async ({ answer }) => onSubmit({ type: "TEXT", value: answer })}
-          >
-            <SimpleInput name="answer" label="정답" placeholder={step.placeholder} />
-            <Button type="submit" size="lg" width="full">
-              제출하기
-            </Button>
-          </SimpleForm>
+        {answerSpec && (
+          <AnswerFields answerSpec={answerSpec} placeholder={step.placeholder} onSubmit={onSubmit} />
         )}
       </Card.Body>
     </Card.Root>

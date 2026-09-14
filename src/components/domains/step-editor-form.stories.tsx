@@ -20,6 +20,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Create: Story = {
   args: {
+    kind: "QR",
     submitLabel: "단계 만들기",
     defaultValues: EMPTY_STEP_EDITOR_VALUES,
   },
@@ -27,6 +28,7 @@ export const Create: Story = {
 
 export const Edit: Story = {
   args: {
+    kind: "QR",
     submitLabel: "저장",
     defaultValues: {
       name: "QR 02",
@@ -48,6 +50,7 @@ export const Edit: Story = {
 
 export const WithoutCancel: Story = {
   args: {
+    kind: "QR",
     submitLabel: "단계 만들기",
     defaultValues: EMPTY_STEP_EDITOR_VALUES,
     onCancel: undefined,

@@ -5,10 +5,12 @@ import {
   COMPLETION_CODE_PREFIX,
   generateCompletionCode,
   generateQrToken,
+  generateSessionToken,
   isQrToken,
   isValidCompletionCode,
   normalizeCompletionCode,
   QR_TOKEN_LENGTH,
+  SESSION_TOKEN_LENGTH,
 } from "./codes.ts";
 
 describe("generateQrToken", () => {
@@ -49,6 +51,17 @@ describe("generateCompletionCode", () => {
     for (let index = 0; index < 200; index++) {
       expect(generateCompletionCode().slice(prefixLength)).not.toMatch(/[O0I1L]/);
     }
+  });
+});
+
+describe("generateSessionToken", () => {
+  it("정해진 길이의 토큰을 만든다", () => {
+    expect(generateSessionToken()).toHaveLength(SESSION_TOKEN_LENGTH);
+  });
+
+  it("서로 다른 세션은 서로 다른 토큰을 받는다", () => {
+    const tokens = new Set(Array.from({ length: 200 }, () => generateSessionToken()));
+    expect(tokens.size).toBe(200);
   });
 });
 

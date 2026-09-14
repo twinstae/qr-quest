@@ -7,11 +7,12 @@ import {
   EMPTY_STEP_EDITOR_VALUES,
   StepEditorForm,
   toAnswerInput,
+  toStepRequestBody,
   type StepEditorDefaultValues,
-  type StepEditorSubmit,
 } from "@/components/domains/step-editor-form.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
+import type { StepKind } from "@/domain/step.ts";
 import { getApiClient } from "@/lib/api-client";
 import { styled } from "styled-system/jsx";
 
@@ -23,23 +24,8 @@ const LoadingBody = styled("div", {
   },
 });
 
-function toRequestBody(payload: StepEditorSubmit) {
-  return {
-    name: payload.values.name,
-    kind: "QR" as const,
-    title: payload.values.title,
-    body: payload.values.body,
-    media: payload.media,
-    reveal: {
-      text: payload.values.revealText || undefined,
-      media: payload.revealMedia,
-    },
-    question: payload.values.question || undefined,
-    answerSpec: payload.answerSpec,
-    placeholder: payload.values.placeholder || undefined,
-    hint: payload.values.hint || undefined,
-  };
-}
+/** 새로 만드는 단계는 지금 항상 QR 단계다 — 종류 선택은 티켓 13에서 붙는다. */
+const DEFAULT_STEP_KIND: StepKind = "QR";
 
 export function CreateStepDialog({ caseId }: { caseId: string }) {
   const [open, setOpen] = useState(false);
@@ -57,12 +43,13 @@ export function CreateStepDialog({ caseId }: { caseId: string }) {
       }
     >
       <StepEditorForm
+        kind={DEFAULT_STEP_KIND}
         submitLabel="단계 만들기"
         defaultValues={EMPTY_STEP_EDITOR_VALUES}
         onCancel={() => setOpen(false)}
         onSubmit={async (payload) => {
           const client = getApiClient();
-          await client.cases({ id: caseId }).steps.post(toRequestBody(payload));
+          await client.cases({ id: caseId }).steps.post(toStepRequestBody(payload));
           setOpen(false);
           await router.invalidate();
         }}
@@ -71,28 +58,35 @@ export function CreateStepDialog({ caseId }: { caseId: string }) {
   );
 }
 
+type LoadedStep = { kind: StepKind; defaultValues: StepEditorDefaultValues };
+
 export function EditStepDialog({ stepId }: { stepId: string }) {
   const [open, setOpen] = useState(false);
-  const [defaultValues, setDefaultValues] = useState<StepEditorDefaultValues | null>(null);
+  const [loaded, setLoaded] = useState<LoadedStep | null>(null);
   const router = useRouter();
 
   async function handleOpenChange(next: boolean) {
     setOpen(next);
-    if (next && !defaultValues) {
+    if (next && !loaded) {
       const client = getApiClient();
       const { data: step } = await client.steps({ id: stepId }).edit.get();
       if (!step) return;
-      setDefaultValues({
-        name: step.name,
-        title: step.title,
-        body: step.body,
-        media: { src: step.media?.src ?? "", alt: step.media?.alt ?? "" },
-        question: step.question ?? "",
-        answer: toAnswerInput(step.answerSpec),
-        placeholder: step.placeholder ?? "",
-        hint: step.hint ?? "",
-        revealText: step.reveal.text ?? "",
-        revealMedia: step.reveal.media,
+      setLoaded({
+        // 종류는 화면에 보여주지 않지만 그대로 되돌려 보낸다 — 소개 단계를
+        // 열어 저장했다고 QR 단계로 바뀌면 안 된다.
+        kind: step.kind,
+        defaultValues: {
+          name: step.name,
+          title: step.title,
+          body: step.body,
+          media: { src: step.media?.src ?? "", alt: step.media?.alt ?? "" },
+          question: step.question ?? "",
+          answer: toAnswerInput(step.answerSpec),
+          placeholder: step.placeholder ?? "",
+          hint: step.hint ?? "",
+          revealText: step.reveal.text ?? "",
+          revealMedia: step.reveal.media,
+        },
       });
     }
   }
@@ -108,14 +102,15 @@ export function EditStepDialog({ stepId }: { stepId: string }) {
         </Button>
       }
     >
-      {defaultValues ? (
+      {loaded ? (
         <StepEditorForm
+          kind={loaded.kind}
           submitLabel="저장"
-          defaultValues={defaultValues}
+          defaultValues={loaded.defaultValues}
           onCancel={() => setOpen(false)}
           onSubmit={async (payload) => {
             const client = getApiClient();
-            await client.steps({ id: stepId }).patch(toRequestBody(payload));
+            await client.steps({ id: stepId }).patch(toStepRequestBody(payload));
             setOpen(false);
             await router.invalidate();
           }}

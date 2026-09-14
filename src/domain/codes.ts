@@ -5,6 +5,7 @@ const SAFE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 export const QR_TOKEN_LENGTH = 10;
 export const COMPLETION_CODE_PREFIX = "79-1";
 export const COMPLETION_CODE_LENGTH = 4;
+export const SESSION_TOKEN_LENGTH = 32;
 
 /** 테스트에서 결정적인 값을 만들 수 있도록 난수원을 주입받는다. */
 export type RandomSource = () => number;
@@ -28,6 +29,14 @@ export function generateQrToken(random: RandomSource = Math.random): string {
 
 export function isQrToken(value: string): boolean {
   return value.length === QR_TOKEN_LENGTH && /^[23456789A-HJ-NP-Z]+$/.test(value);
+}
+
+/**
+ * 참가 세션 쿠키에 담는 추측 불가 토큰(요구 12). 사람이 읽지 않으므로
+ * 혼동 글자를 뺄 필요는 없지만, 같은 글자 집합·생성 방식을 그대로 재사용한다.
+ */
+export function generateSessionToken(random: RandomSource = Math.random): string {
+  return pickFrom(SAFE_ALPHABET, SESSION_TOKEN_LENGTH, random);
 }
 
 /** 완주 인증번호 `79-1-XXXX`. 직원이 화면에서 읽고 리딤 화면에 입력한다. */

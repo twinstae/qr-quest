@@ -5,14 +5,7 @@ import { NotExistError } from "../domain/errors.ts";
 import { ANOTHER_STEP, TEST_CASE, TEST_STEP } from "../domain/fixtures.ts";
 import type { Step } from "../domain/step.ts";
 import createFakeStepRepo from "../persistence/FakeStepRepo.ts";
-import {
-  createStep,
-  getStepForDisplay,
-  getStepForEdit,
-  listSteps,
-  submitStepAnswer,
-  updateStep,
-} from "./stepService.ts";
+import { createStep, getStepForEdit, listSteps, updateStep } from "./stepService.ts";
 
 function contextWith(steps: Step[] = []) {
   return createFakeContext({
@@ -30,103 +23,6 @@ const EDITOR_INPUT = {
   answerSpec: { type: "SHORT_TEXT" as const, accepted: ["정답"], match: "EXACT" as const },
   hint: "표지를 보세요",
 };
-
-describe("getStepForDisplay", () => {
-  it("정답을 뺀 참가자용 내용을 돌려준다", async () => {
-    const ctx = contextWith([TEST_STEP]);
-
-    const display = await getStepForDisplay(ctx, TEST_STEP.qrToken ?? "");
-
-    expect(display).toMatchObject({
-      id: TEST_STEP.id,
-      name: TEST_STEP.name,
-      kind: "QR",
-      order: TEST_STEP.order,
-      title: TEST_STEP.title,
-      body: TEST_STEP.body,
-      media: TEST_STEP.media,
-      question: TEST_STEP.question,
-      placeholder: TEST_STEP.placeholder,
-      hint: TEST_STEP.hint,
-    });
-    expect(display.answerSpec).toEqual({ type: "SHORT_TEXT" });
-    expect(display).not.toHaveProperty("reveal");
-    expect(display).not.toHaveProperty("correctMessage");
-  });
-
-  it("객관식은 보기만 남기고 정답 보기는 감춘다", async () => {
-    const choiceStep: Step = {
-      ...TEST_STEP,
-      id: "step-choice",
-      qrToken: "QRTOKEN009",
-      answerSpec: {
-        type: "SINGLE_CHOICE",
-        choices: [
-          { id: "A", label: "첫 번째" },
-          { id: "B", label: "두 번째" },
-        ],
-        correctChoiceIds: ["B"],
-      },
-    };
-    const ctx = contextWith([choiceStep]);
-
-    const display = await getStepForDisplay(ctx, "QRTOKEN009");
-
-    expect(display.answerSpec).toEqual({
-      type: "SINGLE_CHOICE",
-      choices: [
-        { id: "A", label: "첫 번째" },
-        { id: "B", label: "두 번째" },
-      ],
-    });
-    // 보기 id는 화면에 "B. 두 번째"로 보여야 하므로 남고, 정답 표시만 사라진다
-    expect(Object.keys(display.answerSpec ?? {})).toEqual(["type", "choices"]);
-    expect(JSON.stringify(display)).not.toContain("correctChoiceIds");
-  });
-
-  it("없는 QR 토큰은 NotExistError를 던진다", async () => {
-    const ctx = contextWith();
-
-    await expect(getStepForDisplay(ctx, "NOPE")).rejects.toThrow(NotExistError);
-  });
-});
-
-describe("submitStepAnswer", () => {
-  it("정답이면 공개할 단서를 돌려준다", async () => {
-    const ctx = contextWith([TEST_STEP]);
-
-    const result = await submitStepAnswer(ctx, TEST_STEP.id, {
-      type: "TEXT",
-      value: "이민열, 김도균",
-    });
-
-    expect(result).toEqual({ correct: true, reveal: TEST_STEP.reveal });
-  });
-
-  it("오답이면 correct:false만 돌려준다 (단서를 흘리지 않는다)", async () => {
-    const ctx = contextWith([TEST_STEP]);
-
-    const result = await submitStepAnswer(ctx, TEST_STEP.id, { type: "TEXT", value: "엉뚱한 답" });
-
-    expect(result).toEqual({ correct: false });
-  });
-
-  it("문제가 없는 단계는 어떤 답을 넣어도 정답이 아니다", async () => {
-    const ctx = contextWith([{ ...TEST_STEP, answerSpec: undefined }]);
-
-    const result = await submitStepAnswer(ctx, TEST_STEP.id, { type: "TEXT", value: "아무거나" });
-
-    expect(result).toEqual({ correct: false });
-  });
-
-  it("없는 단계는 NotExistError를 던진다", async () => {
-    const ctx = contextWith();
-
-    await expect(
-      submitStepAnswer(ctx, "missing", { type: "TEXT", value: "anything" }),
-    ).rejects.toThrow(NotExistError);
-  });
-});
 
 describe("listSteps", () => {
   it("관리자 목록은 순서대로 정렬하고 정답 보유 여부만 알려준다", async () => {

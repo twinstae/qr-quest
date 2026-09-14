@@ -9,6 +9,10 @@ const meta = {
     onSubmit: async (submission) => {
       console.log(submission);
     },
+    onRequestHint: async () => {
+      console.log("hint requested");
+      return "표지 안에 답이 있습니다.";
+    },
   },
 } satisfies Meta<typeof StepCardForm>;
 
@@ -29,7 +33,7 @@ export const ShortText: Story = {
       question: "저자의 이름은?",
       answerSpec: { type: "SHORT_TEXT" },
       placeholder: "정답을 입력하세요",
-      hint: "표지 안에 답이 있습니다.",
+      hasHint: true,
     },
   },
 };
