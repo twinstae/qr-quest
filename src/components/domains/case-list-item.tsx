@@ -1,6 +1,7 @@
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { ChevronRight, Trash2 } from "lucide-react";
 
+import { CloneCaseButton } from "@/components/domains/clone-case-button.tsx";
 import { ConfirmDialog } from "@/components/domains/confirm-dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
@@ -20,8 +21,8 @@ export type CaseSummary = {
 };
 
 // 카드 전체가 링크 오버레이(::before, zIndex 0)로 덮여 있어서
-// 삭제 버튼은 그 위로 올려야 클릭이 링크에 먹히지 않는다.
-const deleteButton = css({ position: "relative", zIndex: "1" });
+// 복제·삭제 버튼은 그 위로 올려야 클릭이 링크에 먹히지 않는다.
+const overlayButton = css({ position: "relative", zIndex: "1" });
 
 function DeleteCaseButton({ item }: { item: CaseSummary }) {
   const router = useRouter();
@@ -32,7 +33,7 @@ function DeleteCaseButton({ item }: { item: CaseSummary }) {
       description={`${formatCaseNumber(item.number)} "${item.title}"을(를) 삭제할까요? 이 사건의 단계도 함께 삭제되고 되돌릴 수 없어요.`}
       confirmLabel="삭제하기"
       trigger={
-        <Button variant="outline" size="sm" className={deleteButton}>
+        <Button variant="outline" size="sm" className={overlayButton}>
           <Trash2 /> 삭제
         </Button>
       }
@@ -45,6 +46,8 @@ function DeleteCaseButton({ item }: { item: CaseSummary }) {
 }
 
 export function CaseListItem({ item }: { item: CaseSummary }) {
+  const navigate = useNavigate();
+
   return (
     <Card.Root
       variant="outline"
@@ -66,7 +69,15 @@ export function CaseListItem({ item }: { item: CaseSummary }) {
         </Flex>
         {item.teaser && <Card.Description>{item.teaser}</Card.Description>}
       </Card.Header>
-      <Card.Footer justifyContent="flex-end">
+      <Card.Footer justifyContent="flex-end" alignItems="center" gap="2">
+        <span className={overlayButton}>
+          <CloneCaseButton
+            caseId={item.id}
+            onCloned={(clonedCaseId) =>
+              navigate({ to: "/admin/cases/$caseId", params: { caseId: clonedCaseId } })
+            }
+          />
+        </span>
         <DeleteCaseButton item={item} />
       </Card.Footer>
     </Card.Root>
