@@ -81,7 +81,9 @@ export function StepListItem({
         {step.qrToken ? (
           <Flex gap="2" align="center">
             <StepQrCodeDownload qrToken={step.qrToken} label={step.name} />
-            {reissueQrToken && <ReissueTokenButton reissue={reissueQrToken} onReissued={() => {}} />}
+            {reissueQrToken && (
+              <ReissueTokenButton reissue={reissueQrToken} onReissued={() => {}} />
+            )}
           </Flex>
         ) : (
           <span className={css({ textStyle: "xs", color: "fg.subtle" })}>QR 없음</span>

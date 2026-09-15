@@ -160,7 +160,9 @@ describe("SimpleImageUpload", () => {
   it("allowVideo면 이미지·동영상 한도를 함께 안내한다", async () => {
     await runSiheom(given.render(renderMediaField()));
 
-    expect(document.body.textContent).toContain("이미지 5MB·동영상 25MB 이하 · JPG, PNG, WebP, GIF, MP4");
+    expect(document.body.textContent).toContain(
+      "이미지 5MB·동영상 25MB 이하 · JPG, PNG, WebP, GIF, MP4",
+    );
   });
 
   it("allowVideo면 mp4를 올릴 수 있고, 한도를 넘어도 자동 압축을 제안하지 않는다", async () => {
@@ -184,7 +186,9 @@ describe("SimpleImageUpload", () => {
     await runSiheom(
       given.render(
         <FormFieldStory
-          defaultValues={{ image: { src: "https://example.com/clue.mp4", alt: "단서", kind: "video" } }}
+          defaultValues={{
+            image: { src: "https://example.com/clue.mp4", alt: "단서", kind: "video" },
+          }}
         >
           <SimpleImageUpload name="image" label="문제 이미지" allowVideo />
         </FormFieldStory>,

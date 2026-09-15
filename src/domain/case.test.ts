@@ -94,10 +94,25 @@ describe("checkCaseLiveReadiness", () => {
 
   it("완전한 CASE는 위반이 없다", () => {
     const steps: Step[] = [
-      { ...baseStep, id: "intro", order: 0, kind: "INTRO", qrToken: null, body: "소개", answerSpec: undefined },
+      {
+        ...baseStep,
+        id: "intro",
+        order: 0,
+        kind: "INTRO",
+        qrToken: null,
+        body: "소개",
+        answerSpec: undefined,
+      },
       { ...baseStep, id: "qr1", order: 1 },
       { ...baseStep, id: "final", order: 2, kind: "FINAL" },
-      { ...baseStep, id: "closing", order: 3, kind: "CLOSING", qrToken: null, answerSpec: undefined },
+      {
+        ...baseStep,
+        id: "closing",
+        order: 3,
+        kind: "CLOSING",
+        qrToken: null,
+        answerSpec: undefined,
+      },
     ];
 
     expect(checkCaseLiveReadiness(steps)).toEqual([]);
@@ -110,10 +125,7 @@ describe("describeLiveViolation", () => {
       [{ kind: "ORDER_GAP" }, "단계 순서에 빈 자리가 있어요."],
       [{ kind: "MISSING_CLOSING" }, "사건 종결 화면이 없어요."],
       [{ kind: "MISSING_INTRO_BODY" }, "사건 소개 본문이 비어 있어요."],
-      [
-        { kind: "MISSING_ANSWER", stepId: "s1", stepName: "QR 02" },
-        "QR 02 단계에 정답이 없어요.",
-      ],
+      [{ kind: "MISSING_ANSWER", stepId: "s1", stepName: "QR 02" }, "QR 02 단계에 정답이 없어요."],
       [
         { kind: "MISSING_QR_TOKEN", stepId: "s1", stepName: "QR 02" },
         "QR 02 단계에 QR 코드가 없어요.",

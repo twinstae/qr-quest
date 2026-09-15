@@ -127,7 +127,11 @@ describe("uploadImageFile", () => {
     expect(fetchStub).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       status: "uploaded",
-      image: { src: "https://fake-storage.test/public/1-photo.jpg", alt: "표지.jpg", kind: "image" },
+      image: {
+        src: "https://fake-storage.test/public/1-photo.jpg",
+        alt: "표지.jpg",
+        kind: "image",
+      },
     });
   });
 

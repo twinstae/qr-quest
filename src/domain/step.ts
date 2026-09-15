@@ -91,7 +91,8 @@ export type Step = {
 };
 
 export const DEFAULT_CORRECT_MESSAGE = "정답입니다. 새로운 단서가 발견되었습니다.";
-export const DEFAULT_WRONG_MESSAGE = "아직 사건의 핵심에 도달하지 못했어요. 문장을 다시 살펴보세요.";
+export const DEFAULT_WRONG_MESSAGE =
+  "아직 사건의 핵심에 도달하지 못했어요. 문장을 다시 살펴보세요.";
 
 export function resolveCorrectMessage(step: Pick<Step, "correctMessage">): string {
   return step.correctMessage?.trim() ? step.correctMessage : DEFAULT_CORRECT_MESSAGE;

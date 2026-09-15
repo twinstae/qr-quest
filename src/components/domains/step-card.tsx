@@ -206,7 +206,11 @@ export function KeywordAnswerField({
       defaultValues={{ answer: "" }}
       onSubmit={async ({ answer }) => onSubmit({ type: "TEXT", value: answer })}
     >
-      <SimpleInput name="answer" label="정답" placeholder={placeholder ?? "핵심 단어를 입력하세요"} />
+      <SimpleInput
+        name="answer"
+        label="정답"
+        placeholder={placeholder ?? "핵심 단어를 입력하세요"}
+      />
       <Button type="submit" size="lg" width="full">
         제출하기
       </Button>
@@ -273,7 +277,11 @@ export function StepCardForm({
         )}
 
         {answerSpec && (
-          <AnswerFields answerSpec={answerSpec} placeholder={step.placeholder} onSubmit={onSubmit} />
+          <AnswerFields
+            answerSpec={answerSpec}
+            placeholder={step.placeholder}
+            onSubmit={onSubmit}
+          />
         )}
       </Card.Body>
     </Card.Root>

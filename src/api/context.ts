@@ -36,7 +36,10 @@ export function createFakeContext(
   return {
     auth: createAuth(memoryAdapter({ user: [], session: [], account: [], verification: [] })),
     imageStorage: createFakeImageStorage(),
-    uploadLimits: { maxImageBytes: DEFAULT_MAX_IMAGE_BYTES, maxVideoBytes: DEFAULT_MAX_VIDEO_BYTES },
+    uploadLimits: {
+      maxImageBytes: DEFAULT_MAX_IMAGE_BYTES,
+      maxVideoBytes: DEFAULT_MAX_VIDEO_BYTES,
+    },
     ...override,
     repo: {
       case: createFakeCaseRepo({}),

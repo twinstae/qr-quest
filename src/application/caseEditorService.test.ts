@@ -6,7 +6,10 @@ import { ANOTHER_CASE, TEST_CASE, TEST_STEP } from "../domain/fixtures.ts";
 import type { PlaySession } from "../domain/playSession.ts";
 import type { Step } from "../domain/step.ts";
 import createFakeCaseRepo from "../persistence/FakeCaseRepo.ts";
-import { createFakePlaySessionRepo, createFakeStepAttemptRepo } from "../persistence/FakePlaySessionRepo.ts";
+import {
+  createFakePlaySessionRepo,
+  createFakeStepAttemptRepo,
+} from "../persistence/FakePlaySessionRepo.ts";
 import createFakeStepRepo from "../persistence/FakeStepRepo.ts";
 import { createStep, updateStep } from "./stepService.ts";
 import { LiveReadinessError } from "../domain/errors.ts";
@@ -25,7 +28,11 @@ import {
 } from "./caseEditorService.ts";
 
 function contextWith(
-  input: { cases?: Record<string, typeof TEST_CASE>; steps?: Step[]; sessions?: PlaySession[] } = {},
+  input: {
+    cases?: Record<string, typeof TEST_CASE>;
+    steps?: Step[];
+    sessions?: PlaySession[];
+  } = {},
 ) {
   const steps = input.steps ?? [];
   const sessions = input.sessions ?? [];
@@ -88,7 +95,14 @@ function fullCaseSteps(): Step[] {
     { ...TEST_STEP, id: "step-1", order: 1, name: "QR 01", qrToken: "QRTOKEN001" },
     { ...TEST_STEP, id: "step-2", order: 2, name: "QR 02", qrToken: "QRTOKEN002" },
     { ...TEST_STEP, id: "step-3", order: 3, name: "QR 03", qrToken: "QRTOKEN003" },
-    { ...TEST_STEP, id: "step-final", order: 4, kind: "FINAL", name: "마지막 단서", qrToken: "QRTOKENFIN" },
+    {
+      ...TEST_STEP,
+      id: "step-final",
+      order: 4,
+      kind: "FINAL",
+      name: "마지막 단서",
+      qrToken: "QRTOKENFIN",
+    },
     CLOSING,
   ];
 }
@@ -116,7 +130,9 @@ describe("cloneCase", () => {
     expect(clonedIds.every((id) => !originalIds.includes(id))).toBe(true);
 
     const clonedQrTokens = clonedSteps.filter((step) => step.qrToken).map((step) => step.qrToken);
-    const originalQrTokens = originalSteps.filter((step) => step.qrToken).map((step) => step.qrToken);
+    const originalQrTokens = originalSteps
+      .filter((step) => step.qrToken)
+      .map((step) => step.qrToken);
     expect(clonedQrTokens.some((token) => originalQrTokens.includes(token))).toBe(false);
   });
 
@@ -191,7 +207,9 @@ describe("checkLiveReadiness", () => {
   });
 
   it("INTRO 본문이 비어 있으면 위반으로 잡는다", async () => {
-    const steps = fullCaseSteps().map((step) => (step.kind === "INTRO" ? { ...step, body: "" } : step));
+    const steps = fullCaseSteps().map((step) =>
+      step.kind === "INTRO" ? { ...step, body: "" } : step,
+    );
     const ctx = contextWith({ steps });
 
     const violations = await checkLiveReadiness(ctx, TEST_CASE.id);

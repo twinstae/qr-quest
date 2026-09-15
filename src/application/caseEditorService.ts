@@ -1,5 +1,10 @@
 import type { AppContext } from "../api/context.ts";
-import { checkCaseLiveReadiness, type Case, type CaseStatus, type LiveViolation } from "../domain/case.ts";
+import {
+  checkCaseLiveReadiness,
+  type Case,
+  type CaseStatus,
+  type LiveViolation,
+} from "../domain/case.ts";
 import { generateQrToken, generateSessionToken } from "../domain/codes.ts";
 import { LiveReadinessError, NotExistError } from "../domain/errors.ts";
 import type { PlaySession } from "../domain/playSession.ts";
@@ -71,7 +76,10 @@ export async function cloneCase(ctx: AppContext, caseId: string): Promise<Case> 
  * LIVE로 바꾸기 전 검사(요구 30). 위반이 하나라도 있으면 빈 배열이 아니다 —
  * 호출부는 결과가 비어 있는지로만 판단하고, 목록은 화면에 그대로 보여준다.
  */
-export async function checkLiveReadiness(ctx: AppContext, caseId: string): Promise<LiveViolation[]> {
+export async function checkLiveReadiness(
+  ctx: AppContext,
+  caseId: string,
+): Promise<LiveViolation[]> {
   const steps = await ctx.repo.step.listByCaseId(caseId);
   return checkCaseLiveReadiness(steps);
 }
@@ -118,7 +126,10 @@ export async function reorderSteps(
  * 관리자가 실제 참가자처럼 처음부터 끝까지 진행해 볼 때 쓴다(요구 30-8).
  * isTest=true로 표시해 통계에서 제외한다(16).
  */
-export async function startTestSession(ctx: AppContext, caseId: string): Promise<StartSessionResult> {
+export async function startTestSession(
+  ctx: AppContext,
+  caseId: string,
+): Promise<StartSessionResult> {
   const steps = await ctx.repo.step.listByCaseId(caseId);
   const introStep = steps.find((step) => step.kind === "INTRO");
   const now = new Date().toISOString();
@@ -144,9 +155,14 @@ export async function startTestSession(ctx: AppContext, caseId: string): Promise
 }
 
 /** 가장 최근에 시작한 테스트 세션. 여러 개 있어도 가장 최근 것 하나만 다룬다. */
-async function findActiveTestSession(ctx: AppContext, caseId: string): Promise<PlaySession | undefined> {
+async function findActiveTestSession(
+  ctx: AppContext,
+  caseId: string,
+): Promise<PlaySession | undefined> {
   const sessions = await ctx.repo.playSession.listByCaseId(caseId);
-  return sessions.filter((session) => session.isTest).sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0];
+  return sessions
+    .filter((session) => session.isTest)
+    .sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0];
 }
 
 /**

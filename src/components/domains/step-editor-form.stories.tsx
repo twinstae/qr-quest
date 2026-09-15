@@ -1,6 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { EMPTY_STEP_EDITOR_VALUES, StepEditorForm, toAnswerFormValues } from "./step-editor-form.tsx";
+import {
+  EMPTY_STEP_EDITOR_VALUES,
+  StepEditorForm,
+  toAnswerFormValues,
+} from "./step-editor-form.tsx";
 
 const meta = {
   title: "Domains/StepEditorForm",

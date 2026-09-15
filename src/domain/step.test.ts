@@ -42,9 +42,9 @@ describe("describeAnswerForDebug", () => {
       describeAnswerForDebug({ type: "SHORT_TEXT", accepted: ["사과", "apple"], match: "EXACT" }),
     ).toBe("사과, apple");
     expect(describeAnswerForDebug({ type: "NUMBER", accepted: [42] })).toBe("42");
-    expect(describeAnswerForDebug({ type: "KEYWORDS", keywords: ["사라진", "책"], match: "ALL" })).toBe(
-      "사라진, 책",
-    );
+    expect(
+      describeAnswerForDebug({ type: "KEYWORDS", keywords: ["사라진", "책"], match: "ALL" }),
+    ).toBe("사라진, 책");
   });
 });
 

@@ -42,7 +42,11 @@ function appWith(steps: Step[] = [INTRO_STEP, TEST_STEP, FINAL_STEP]) {
 
 // 세션 토큰마다 쿠키가 달라지므로, 매 요청 헤더를 직접 넣을 수 있는 얇은 클라이언트를 쓴다.
 function rawClient(app: ReturnType<typeof createApp>) {
-  async function request(method: string, path: string, options: { body?: unknown; token?: string } = {}) {
+  async function request(
+    method: string,
+    path: string,
+    options: { body?: unknown; token?: string } = {},
+  ) {
     const headers: Record<string, string> = {};
     if (options.body !== undefined) headers["Content-Type"] = "application/json";
     if (options.token) headers.cookie = `${PLAY_SESSION_COOKIE}=${options.token}`;
@@ -59,7 +63,8 @@ function rawClient(app: ReturnType<typeof createApp>) {
 
   return {
     get: (path: string, token?: string) => request("GET", path, { token }),
-    post: (path: string, body: unknown = {}, token?: string) => request("POST", path, { body, token }),
+    post: (path: string, body: unknown = {}, token?: string) =>
+      request("POST", path, { body, token }),
   };
 }
 
@@ -230,7 +235,10 @@ describe("POST /api/play/sessions", () => {
       await app.handle(
         new Request("http://localhost/api/play/sessions", {
           method: "POST",
-          headers: { "Content-Type": "application/json", cookie: `${PLAY_SESSION_COOKIE}=${first.token}` },
+          headers: {
+            "Content-Type": "application/json",
+            cookie: `${PLAY_SESSION_COOKIE}=${first.token}`,
+          },
           body: JSON.stringify({ entryToken: TEST_CASE.entryToken }),
         }),
       )

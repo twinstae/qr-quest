@@ -78,12 +78,20 @@ export function QrCheckPanel({
       </form>
 
       {lastResult && (
-        <p role="status" aria-label="확인 결과" className={css({ textStyle: "md", fontWeight: "medium" })}>
+        <p
+          role="status"
+          aria-label="확인 결과"
+          className={css({ textStyle: "md", fontWeight: "medium" })}
+        >
           {lastResult}
         </p>
       )}
 
-      <p role="status" aria-label="진행 상황" className={css({ textStyle: "sm", color: "fg.subtle" })}>
+      <p
+        role="status"
+        aria-label="진행 상황"
+        className={css({ textStyle: "sm", color: "fg.subtle" })}
+      >
         {checkedTokens.size}/{totalCount} 확인됨
       </p>
     </VStack>

@@ -29,11 +29,16 @@ function RouteComponent() {
   const navigate = useNavigate();
 
   const resumeUrl =
-    typeof window !== "undefined" ? `${window.location.origin}/s/${entryToken}` : `/s/${entryToken}`;
+    typeof window !== "undefined"
+      ? `${window.location.origin}/s/${entryToken}`
+      : `/s/${entryToken}`;
 
   if (session.status === "COMPLETED") {
     return (
-      <CompletionScreen closingTitle="이미 사건을 해결했어요" completionCode={session.completionCode} />
+      <CompletionScreen
+        closingTitle="이미 사건을 해결했어요"
+        completionCode={session.completionCode}
+      />
     );
   }
 

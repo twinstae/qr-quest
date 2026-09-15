@@ -28,9 +28,9 @@ describe("openStep > 테스트 세션(요구 30-8)", () => {
   });
 
   it("다른 사건의 QR은 여전히 막는다", () => {
-    expect(
-      openStep({ session: session({ isTest: true }), step: step(1, "case-2") }).kind,
-    ).toBe("OTHER_CASE");
+    expect(openStep({ session: session({ isTest: true }), step: step(1, "case-2") }).kind).toBe(
+      "OTHER_CASE",
+    );
   });
 
   it("완료된 테스트 세션은 여전히 완료로 본다", () => {

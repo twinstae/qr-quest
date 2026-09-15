@@ -548,7 +548,11 @@ describe("CASE 편집기 (ticket 13)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({ kind: "READY", label: qrStep.name, title: qrStep.title });
+      expect(await response.json()).toEqual({
+        kind: "READY",
+        label: qrStep.name,
+        title: qrStep.title,
+      });
     });
 
     it("아무 데도 없는 토큰은 미발급으로 본다", async () => {

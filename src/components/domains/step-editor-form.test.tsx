@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { actions, assertions, given, query, runSiheom } from "@siheom/react";
 
-import { EMPTY_STEP_EDITOR_VALUES, StepEditorForm, type StepEditorSubmit } from "./step-editor-form.tsx";
+import {
+  EMPTY_STEP_EDITOR_VALUES,
+  StepEditorForm,
+  type StepEditorSubmit,
+} from "./step-editor-form.tsx";
 
 const noSubmit = async () => {};
 
@@ -94,7 +98,11 @@ describe("StepEditorForm > 정답 검증", () => {
       actions.click(query.button("저장")),
     );
 
-    expect(submitted?.answerSpec).toEqual({ type: "SHORT_TEXT", accepted: ["사과"], match: "EXACT" });
+    expect(submitted?.answerSpec).toEqual({
+      type: "SHORT_TEXT",
+      accepted: ["사과"],
+      match: "EXACT",
+    });
   });
 
   it("객관식은 정답으로 고른 보기가 없으면 막는다", async () => {

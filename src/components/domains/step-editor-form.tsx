@@ -243,7 +243,12 @@ export function toAnswerFormValues(
       };
     }
     case "SHORT_TEXT":
-      return { answerType: "SHORT_TEXT", ...empty, acceptedText: spec.accepted.join(", "), matchMode: spec.match };
+      return {
+        answerType: "SHORT_TEXT",
+        ...empty,
+        acceptedText: spec.accepted.join(", "),
+        matchMode: spec.match,
+      };
     case "NUMBER":
       return {
         answerType: "NUMBER",
@@ -508,15 +513,27 @@ export function StepEditorForm({
           </Fieldset.Content>
           <AnswerTypeFields />
           {answerError && (
-            <p role="status" aria-label="안내" className={css({ textStyle: "sm", color: "fg.muted" })}>
+            <p
+              role="status"
+              aria-label="안내"
+              className={css({ textStyle: "sm", color: "fg.muted" })}
+            >
               {answerError}
             </p>
           )}
           <Fieldset.Content>
             <SimpleInput name="placeholder" label="입력창 안내 문구 (선택)" />
             <SimpleInput name="hint" label="힌트" />
-            <SimpleInput name="correctMessage" label="정답 메시지" placeholder="비우면 기본 문구를 보여줘요" />
-            <SimpleInput name="wrongMessage" label="오답 메시지" placeholder="비우면 기본 문구를 보여줘요" />
+            <SimpleInput
+              name="correctMessage"
+              label="정답 메시지"
+              placeholder="비우면 기본 문구를 보여줘요"
+            />
+            <SimpleInput
+              name="wrongMessage"
+              label="오답 메시지"
+              placeholder="비우면 기본 문구를 보여줘요"
+            />
           </Fieldset.Content>
         </Fieldset.Root>
       )}

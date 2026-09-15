@@ -10,7 +10,12 @@ function getAudioContext(): AudioContext | undefined {
 
 function playTone(
   ctx: AudioContext,
-  { type, frequency, duration, gain }: { type: OscillatorType; frequency: number; duration: number; gain: number },
+  {
+    type,
+    frequency,
+    duration,
+    gain,
+  }: { type: OscillatorType; frequency: number; duration: number; gain: number },
 ) {
   const now = ctx.currentTime;
   const osc = ctx.createOscillator();

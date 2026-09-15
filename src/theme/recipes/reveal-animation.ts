@@ -35,7 +35,7 @@ export const revealAnimation = defineRecipe({
         animation: "reveal-typewriter 700ms steps(24, end) both",
       },
       TV_SCAN: {
-        animation: `reveal-tv-scan 500ms ${EASE_OUT} both`,
+        animation: `reveal-tv-scan 2000ms ${EASE_OUT} both`,
       },
       // 남용 금지 — 미스터리 강조용으로만. steps()로 매끄럽게 이어지지 않아야 글리치답다.
       GLITCH: {

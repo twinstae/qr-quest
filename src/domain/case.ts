@@ -26,9 +26,10 @@ export function formatCaseNumber(value: number): string {
   return `CASE ${String(value).padStart(2, "0")}`;
 }
 
-export function summarizeCaseStatuses(
-  cases: readonly { status: CaseStatus }[],
-): { liveCount: number; totalCount: number } {
+export function summarizeCaseStatuses(cases: readonly { status: CaseStatus }[]): {
+  liveCount: number;
+  totalCount: number;
+} {
   return {
     liveCount: cases.filter((item) => item.status === "LIVE").length,
     totalCount: cases.length,

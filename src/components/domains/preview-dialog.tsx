@@ -51,7 +51,11 @@ export function PreviewDialog({ previewUrl }: { previewUrl: string }) {
               모바일
             </Button>
           </Flex>
-          <span role="status" aria-label="현재 화면" className={css({ textStyle: "xs", color: "fg.subtle" })}>
+          <span
+            role="status"
+            aria-label="현재 화면"
+            className={css({ textStyle: "xs", color: "fg.subtle" })}
+          >
             {FRAME_LABEL[mode]}
           </span>
         </Flex>

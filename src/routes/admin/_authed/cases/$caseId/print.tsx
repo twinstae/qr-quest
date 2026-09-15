@@ -71,7 +71,12 @@ function RouteComponent() {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   const cards: Card[] = [
-    { name: "시작 QR", title: caseItem.title, url: `${origin}/s/${caseItem.entryToken}`, token: caseItem.entryToken },
+    {
+      name: "시작 QR",
+      title: caseItem.title,
+      url: `${origin}/s/${caseItem.entryToken}`,
+      token: caseItem.entryToken,
+    },
     ...qrSteps.map((step) => ({
       name: step.name,
       title: step.title,
@@ -94,7 +99,14 @@ function RouteComponent() {
           <ArrowLeft className={css({ boxSize: "4" })} /> {formatCaseNumber(caseItem.number)}{" "}
           {caseItem.title}
         </Link>
-        <div className={css({ display: "flex", justifyContent: "space-between", alignItems: "center", mb: "6" })}>
+        <div
+          className={css({
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: "6",
+          })}
+        >
           <h1 className={css({ textStyle: "xl", fontWeight: "bold" })}>인쇄 시트</h1>
           <Button onClick={() => window.print()}>
             <Printer /> 인쇄하기

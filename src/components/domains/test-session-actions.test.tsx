@@ -29,7 +29,11 @@ describe("TestSessionActions", () => {
   it("진행 중인 테스트 세션이 없으면 그렇게 안내한다", async () => {
     await runSiheom(
       given.render(
-        <TestSessionActions caseId="case-1" stepBack={async () => false} resetCompletion={async () => true} />,
+        <TestSessionActions
+          caseId="case-1"
+          stepBack={async () => false}
+          resetCompletion={async () => true}
+        />,
       ),
       actions.click(query.button("이전 단계로")),
       assertions.textContent(query.status("안내"), "진행 중인 테스트 세션이 없어요."),
