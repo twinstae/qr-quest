@@ -5,6 +5,7 @@ import * as v from "valibot";
 
 import { SimpleCheckbox, SimpleImageUpload, SimpleInput } from "@/components/form/simple-field";
 import { SimpleForm } from "@/components/form/simple-form";
+import { SubmitButton } from "@/components/form/submit-button";
 import { Button } from "@/components/ui/button.tsx";
 import * as Fieldset from "@/components/ui/fieldset.tsx";
 import {
@@ -346,15 +347,6 @@ const previewClass = css({
   position: { base: "static", lg: "sticky" },
   top: "0",
 });
-
-function SubmitButton({ children }: { children: React.ReactNode }) {
-  const { formState } = useFormContext();
-  return (
-    <Button type="submit" loading={formState.isSubmitting}>
-      {children}
-    </Button>
-  );
-}
 
 function AnswerTypeFields() {
   const { watch, setValue } = useFormContext<StepEditorFormValues>();

@@ -4,6 +4,7 @@ import * as v from "valibot";
 
 import { SimpleInput } from "@/components/form/simple-field";
 import { SimpleForm } from "@/components/form/simple-form";
+import { SubmitButton } from "@/components/form/submit-button";
 import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import * as Card from "@/components/ui/card.tsx";
@@ -185,9 +186,9 @@ export function TextAnswerField({
         placeholder={placeholder}
         inputMode={numeric ? "decimal" : undefined}
       />
-      <Button type="submit" size="lg" width="full">
+      <SubmitButton size="lg" width="full">
         제출하기
-      </Button>
+      </SubmitButton>
     </SimpleForm>
   );
 }
@@ -211,9 +212,9 @@ export function KeywordAnswerField({
         label="정답"
         placeholder={placeholder ?? "핵심 단어를 입력하세요"}
       />
-      <Button type="submit" size="lg" width="full">
+      <SubmitButton size="lg" width="full">
         제출하기
-      </Button>
+      </SubmitButton>
     </SimpleForm>
   );
 }

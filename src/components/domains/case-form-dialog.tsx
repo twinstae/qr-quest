@@ -6,6 +6,7 @@ import * as v from "valibot";
 import { DialogShell } from "@/components/domains/dialog-shell.tsx";
 import { SimpleInput } from "@/components/form/simple-field";
 import { SimpleForm } from "@/components/form/simple-form";
+import { SubmitButton } from "@/components/form/submit-button";
 import { Button } from "@/components/ui/button.tsx";
 import { getApiClient } from "@/lib/api-client";
 import { styled } from "styled-system/jsx";
@@ -71,7 +72,7 @@ export function CreateCaseDialog() {
           <Button type="button" variant="outline" onClick={() => setOpen(false)}>
             취소
           </Button>
-          <Button type="submit">CASE 만들기</Button>
+          <SubmitButton>CASE 만들기</SubmitButton>
         </Footer>
       </SimpleForm>
     </DialogShell>

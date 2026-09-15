@@ -4,7 +4,7 @@ import * as v from "valibot";
 
 import { SimpleInput } from "@/components/form/simple-field";
 import { SimpleForm } from "@/components/form/simple-form";
-import { Button } from "@/components/ui/button.tsx";
+import { SubmitButton } from "@/components/form/submit-button";
 import * as Card from "@/components/ui/card.tsx";
 import { authClient } from "@/lib/auth-client";
 import { styled } from "styled-system/jsx";
@@ -60,9 +60,7 @@ function RouteComponent() {
             <SimpleInput name="email" label="이메일" placeholder="admin@example.com" />
             <SimpleInput name="password" label="비밀번호" type="password" />
             {error && <ErrorText role="alert">{error}</ErrorText>}
-            <Button type="submit" width="full">
-              로그인
-            </Button>
+            <SubmitButton width="full">로그인</SubmitButton>
           </SimpleForm>
         </Card.Body>
       </Card.Root>
