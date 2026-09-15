@@ -22,7 +22,11 @@ const config = defineConfig({
         external: [/^@sentry\//],
       },
     }),
-    tanstackStart(),
+    tanstackStart({
+      spa: {
+        enabled: true,
+      },
+    }),
     viteReact(),
   ],
   test: {

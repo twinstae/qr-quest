@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
 import { CompletionScreen } from "@/components/domains/completion-screen.tsx";
@@ -5,28 +6,29 @@ import { Button } from "@/components/ui/button.tsx";
 import * as Card from "@/components/ui/card.tsx";
 import * as Clipboard from "@/components/ui/clipboard.tsx";
 import { formatCaseNumber } from "@/domain/case.ts";
-import { getApiClient } from "@/lib/api-client";
 import { startOrResumeSession } from "@/lib/play-session";
+import { caseByEntryQueryOptions } from "@/queries/cases.ts";
 import { css } from "styled-system/css";
 import { VStack } from "styled-system/jsx";
 
 export const Route = createFileRoute("/s/$entryToken")({
   component: RouteComponent,
-  loader: async ({ params }) => {
-    const client = getApiClient();
-    const [{ data: caseData }, session] = await Promise.all([
-      client.cases["by-entry"]({ entryToken: params.entryToken }).get(),
+  loader: async ({ params, context }) => {
+    const [, session] = await Promise.all([
+      context.queryClient.ensureQueryData(caseByEntryQueryOptions(params.entryToken)),
       startOrResumeSession(params.entryToken).catch(() => undefined),
     ]);
-    if (!caseData || !session) throw notFound();
-    return { case: caseData, session };
+    if (!session) throw notFound();
+    return { session };
   },
 });
 
 function RouteComponent() {
-  const { case: caseData, session } = Route.useLoaderData();
   const { entryToken } = Route.useParams();
+  const { session } = Route.useLoaderData();
+  const { data: caseData } = useQuery(caseByEntryQueryOptions(entryToken));
   const navigate = useNavigate();
+  if (!caseData) return null;
 
   const resumeUrl =
     typeof window !== "undefined"

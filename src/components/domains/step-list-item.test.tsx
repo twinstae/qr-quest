@@ -1,7 +1,13 @@
+import type { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it } from "vitest";
 import { actions, assertions, given, query, runSiheom } from "@siheom/react";
 
 import { StepListItem, type StepListItemData } from "./step-list-item.tsx";
+
+function withQueryClient(children: ReactNode) {
+  return <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>;
+}
 
 const STEP: StepListItemData = {
   id: "step-1",
@@ -21,17 +27,19 @@ describe("StepListItem > 순서 이동", () => {
 
     await runSiheom(
       given.render(
-        <StepListItem
-          step={STEP}
-          canMoveUp
-          canMoveDown
-          onMoveUp={() => {
-            movedUp += 1;
-          }}
-          onMoveDown={() => {
-            movedDown += 1;
-          }}
-        />,
+        withQueryClient(
+          <StepListItem
+            step={STEP}
+            canMoveUp
+            canMoveDown
+            onMoveUp={() => {
+              movedUp += 1;
+            }}
+            onMoveDown={() => {
+              movedDown += 1;
+            }}
+          />,
+        ),
       ),
       actions.click(query.button("위로 이동")),
       actions.click(query.button("아래로 이동")),
@@ -44,13 +52,15 @@ describe("StepListItem > 순서 이동", () => {
   it("맨 앞 단계는 위로 이동 버튼이 비활성화된다", async () => {
     await runSiheom(
       given.render(
-        <StepListItem
-          step={STEP}
-          canMoveUp={false}
-          canMoveDown
-          onMoveUp={() => {}}
-          onMoveDown={() => {}}
-        />,
+        withQueryClient(
+          <StepListItem
+            step={STEP}
+            canMoveUp={false}
+            canMoveDown
+            onMoveUp={() => {}}
+            onMoveDown={() => {}}
+          />,
+        ),
       ),
       assertions.disabled(query.button("위로 이동")),
     );
@@ -59,13 +69,15 @@ describe("StepListItem > 순서 이동", () => {
   it("맨 뒤 단계는 아래로 이동 버튼이 비활성화된다", async () => {
     await runSiheom(
       given.render(
-        <StepListItem
-          step={STEP}
-          canMoveUp
-          canMoveDown={false}
-          onMoveUp={() => {}}
-          onMoveDown={() => {}}
-        />,
+        withQueryClient(
+          <StepListItem
+            step={STEP}
+            canMoveUp
+            canMoveDown={false}
+            onMoveUp={() => {}}
+            onMoveDown={() => {}}
+          />,
+        ),
       ),
       assertions.disabled(query.button("아래로 이동")),
     );

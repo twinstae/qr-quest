@@ -1,26 +1,21 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Printer } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
 import { Button } from "@/components/ui/button.tsx";
 import { formatCaseNumber } from "@/domain/case.ts";
-import { getApiClient } from "@/lib/api-client";
+import { caseQueryOptions, caseStepsQueryOptions } from "@/queries/cases.ts";
 import { css } from "styled-system/css";
 import { Grid, styled } from "styled-system/jsx";
 
 export const Route = createFileRoute("/admin/_authed/cases/$caseId/print")({
   component: RouteComponent,
-  loader: async ({ params }) => {
-    const client = getApiClient();
-    const [{ data: caseItem }, { data: steps }] = await Promise.all([
-      client.cases({ id: params.caseId }).get(),
-      client.cases({ id: params.caseId }).steps.get(),
+  loader: async ({ params, context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(caseQueryOptions(params.caseId)),
+      context.queryClient.ensureQueryData(caseStepsQueryOptions(params.caseId)),
     ]);
-    if (!caseItem) throw notFound();
-    const qrSteps = (steps ?? [])
-      .filter((step) => step.qrToken !== null)
-      .sort((a, b) => a.order - b.order);
-    return { caseItem, qrSteps };
   },
 });
 
@@ -67,8 +62,14 @@ function PrintCard({ card }: { card: Card }) {
 }
 
 function RouteComponent() {
-  const { caseItem, qrSteps } = Route.useLoaderData();
+  const { caseId } = Route.useParams();
+  const { data: caseItem } = useQuery(caseQueryOptions(caseId));
+  const { data: steps } = useQuery(caseStepsQueryOptions(caseId));
   const origin = typeof window !== "undefined" ? window.location.origin : "";
+  if (!caseItem || !steps) return null;
+  const qrSteps = [...steps]
+    .filter((step) => step.qrToken !== null)
+    .sort((a, b) => a.order - b.order);
 
   const cards: Card[] = [
     {

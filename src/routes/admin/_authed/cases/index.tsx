@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { FolderPlus, ScanLine } from "lucide-react";
 
@@ -7,19 +8,17 @@ import { DashboardSummary } from "@/components/domains/dashboard-summary.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { summarizeCaseStatuses } from "@/domain/case.ts";
-import { getApiClient } from "@/lib/api-client";
+import { caseListQueryOptions, todayStatsQueryOptions } from "@/queries/cases.ts";
 import { css } from "styled-system/css";
 import { Flex, Grid, styled } from "styled-system/jsx";
 
 export const Route = createFileRoute("/admin/_authed/cases/")({
   component: RouteComponent,
-  loader: async () => {
-    const client = getApiClient();
-    const [{ data }, { data: today }] = await Promise.all([
-      client.cases.get(),
-      client.stats.today.get(),
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(caseListQueryOptions()),
+      context.queryClient.ensureQueryData(todayStatsQueryOptions()),
     ]);
-    return { cases: data ?? [], today };
   },
 });
 
@@ -41,7 +40,9 @@ const PageTitle = styled("h1", {
 });
 
 function RouteComponent() {
-  const { cases, today } = Route.useLoaderData();
+  const { data: cases } = useQuery(caseListQueryOptions());
+  const { data: today } = useQuery(todayStatsQueryOptions());
+  if (!cases) return null;
   const { liveCount, totalCount } = summarizeCaseStatuses(cases);
 
   return (

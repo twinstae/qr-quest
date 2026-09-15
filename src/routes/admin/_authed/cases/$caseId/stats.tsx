@@ -1,10 +1,11 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { CaseStatsPanel } from "@/components/domains/case-stats-panel.tsx";
 import { formatCaseNumber } from "@/domain/case.ts";
 import type { StatsPeriod } from "@/domain/tourStats.ts";
-import { getApiClient } from "@/lib/api-client";
+import { caseQueryOptions, caseStatsQueryOptions } from "@/queries/cases.ts";
 import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
@@ -21,14 +22,11 @@ export const Route = createFileRoute("/admin/_authed/cases/$caseId/stats")({
     period: toPeriod(search.period),
   }),
   loaderDeps: ({ search }) => ({ period: search.period }),
-  loader: async ({ params, deps }) => {
-    const client = getApiClient();
-    const [{ data: caseItem }, { data: stats }] = await Promise.all([
-      client.cases({ id: params.caseId }).get(),
-      client.cases({ id: params.caseId }).stats.get({ query: { period: deps.period } }),
+  loader: async ({ params, deps, context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(caseQueryOptions(params.caseId)),
+      context.queryClient.ensureQueryData(caseStatsQueryOptions(params.caseId, deps.period)),
     ]);
-    if (!caseItem || !stats) throw notFound();
-    return { caseItem, stats };
   },
 });
 
@@ -61,10 +59,12 @@ const PageTitle = styled("h1", {
 });
 
 function RouteComponent() {
-  const { caseItem, stats } = Route.useLoaderData();
   const { period } = Route.useSearch();
   const { caseId } = Route.useParams();
   const navigate = useNavigate();
+  const { data: caseItem } = useQuery(caseQueryOptions(caseId));
+  const { data: stats } = useQuery(caseStatsQueryOptions(caseId, period));
+  if (!caseItem || !stats) return null;
 
   return (
     <Main>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
 
 import { DialogShell } from "@/components/domains/dialog-shell.tsx";
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import type { StepKind } from "@/domain/step.ts";
 import { getApiClient } from "@/lib/api-client";
+import { caseKeys } from "@/queries/cases.ts";
 import { styled } from "styled-system/jsx";
 
 const LoadingBody = styled("div", {
@@ -30,7 +31,7 @@ const DEFAULT_STEP_KIND: StepKind = "QR";
 
 export function CreateStepDialog({ caseId }: { caseId: string }) {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
   return (
     <DialogShell
@@ -54,7 +55,7 @@ export function CreateStepDialog({ caseId }: { caseId: string }) {
           const client = getApiClient();
           await client.cases({ id: caseId }).steps.post(toStepRequestBody(payload));
           setOpen(false);
-          await router.invalidate();
+          await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
         }}
       />
     </DialogShell>
@@ -63,10 +64,10 @@ export function CreateStepDialog({ caseId }: { caseId: string }) {
 
 type LoadedStep = { kind: StepKind; defaultValues: StepEditorDefaultValues };
 
-export function EditStepDialog({ stepId }: { stepId: string }) {
+export function EditStepDialog({ caseId, stepId }: { caseId?: string; stepId: string }) {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState<LoadedStep | null>(null);
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
   async function handleOpenChange(next: boolean) {
     setOpen(next);
@@ -121,7 +122,9 @@ export function EditStepDialog({ stepId }: { stepId: string }) {
             const client = getApiClient();
             await client.steps({ id: stepId }).patch(toStepRequestBody(payload));
             setOpen(false);
-            await router.invalidate();
+            await queryClient.invalidateQueries({
+              queryKey: caseId ? caseKeys.steps(caseId) : caseKeys.all,
+            });
           }}
         />
       ) : (

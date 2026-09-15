@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import * as v from "valibot";
 
@@ -9,6 +9,7 @@ import { SimpleForm } from "@/components/form/simple-form";
 import { SubmitButton } from "@/components/form/submit-button";
 import { Button } from "@/components/ui/button.tsx";
 import { getApiClient } from "@/lib/api-client";
+import { caseKeys, todayStatsKey } from "@/queries/cases.ts";
 import { styled } from "styled-system/jsx";
 
 const Footer = styled("div", {
@@ -22,7 +23,7 @@ const Footer = styled("div", {
 
 export function CreateCaseDialog() {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
   return (
     <DialogShell
@@ -57,7 +58,10 @@ export function CreateCaseDialog() {
             estimatedMinutes: 20,
           });
           setOpen(false);
-          await router.invalidate();
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: caseKeys.all }),
+            queryClient.invalidateQueries({ queryKey: todayStatsKey }),
+          ]);
         }}
       >
         <SimpleInput name="number" label="CASE 번호" placeholder="1" />

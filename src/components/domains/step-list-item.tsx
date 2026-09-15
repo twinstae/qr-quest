@@ -21,6 +21,7 @@ export type StepListItemData = {
 };
 
 export function StepListItem({
+  caseId,
   step,
   canMoveUp,
   canMoveDown,
@@ -28,6 +29,8 @@ export function StepListItem({
   onMoveDown,
   reissueQrToken,
 }: {
+  /** 단계 수정 후 캐시 무효화 범위를 좁히는 데 쓴다 — 없으면 CASE 전체를 무효화한다. */
+  caseId?: string;
   step: StepListItemData;
   /** 순서 이동 버튼을 함께 보여줄 때만 넘긴다 — 단독 미리보기 등에서는 생략한다. */
   canMoveUp?: boolean;
@@ -88,7 +91,7 @@ export function StepListItem({
           <span className={css({ textStyle: "xs", color: "fg.subtle" })}>QR 없음</span>
         )}
         <Flex gap="2">
-          <EditStepDialog stepId={step.id} />
+          <EditStepDialog caseId={caseId} stepId={step.id} />
         </Flex>
       </Card.Footer>
     </Card.Root>

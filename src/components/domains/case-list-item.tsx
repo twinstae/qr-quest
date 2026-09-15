@@ -1,4 +1,5 @@
-import { Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { BarChart3, ChevronRight, Trash2 } from "lucide-react";
 
 import { CloneCaseButton } from "@/components/domains/clone-case-button.tsx";
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import * as Card from "@/components/ui/card.tsx";
 import { formatCaseNumber } from "@/domain/case.ts";
 import { getApiClient } from "@/lib/api-client";
+import { caseKeys, todayStatsKey } from "@/queries/cases.ts";
 import { css } from "styled-system/css";
 import { Flex } from "styled-system/jsx";
 import { linkOverlay } from "styled-system/patterns";
@@ -40,7 +42,7 @@ const statsLink = css({
 });
 
 function DeleteCaseButton({ item }: { item: CaseSummary }) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
   return (
     <ConfirmDialog
@@ -54,7 +56,10 @@ function DeleteCaseButton({ item }: { item: CaseSummary }) {
       }
       onConfirm={async () => {
         await getApiClient().cases({ id: item.id }).delete();
-        await router.invalidate();
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: caseKeys.all }),
+          queryClient.invalidateQueries({ queryKey: todayStatsKey }),
+        ]);
       }}
     />
   );

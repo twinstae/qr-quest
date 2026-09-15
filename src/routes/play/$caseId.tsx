@@ -1,4 +1,5 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { CompletionScreen } from "@/components/domains/completion-screen.tsx";
 import { GuidanceScreen } from "@/components/domains/guidance-screen.tsx";
@@ -6,24 +7,24 @@ import { ProgressDots } from "@/components/domains/progress-dots.tsx";
 import { StepMedia } from "@/components/domains/step-card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import * as Card from "@/components/ui/card.tsx";
-import type { PlayProgressResult } from "@/application/playService.ts";
 import { getApiClient } from "@/lib/api-client";
-import { unwrapPlayResult } from "@/lib/play-client";
+import { playKeys, playProgressQueryOptions } from "@/queries/play.ts";
 import { css } from "styled-system/css";
 import { VStack } from "styled-system/jsx";
 
 export const Route = createFileRoute("/play/$caseId")({
   component: RouteComponent,
-  loader: async ({ params }) => {
-    const client = getApiClient();
-    const response = await client.play.cases({ caseId: params.caseId }).progress.get();
-    return { progress: unwrapPlayResult<PlayProgressResult>(response) };
+  loader: async ({ params, context }) => {
+    await context.queryClient.ensureQueryData(playProgressQueryOptions(params.caseId));
   },
 });
 
 function RouteComponent() {
-  const { progress } = Route.useLoaderData();
-  const router = useRouter();
+  const { caseId } = Route.useParams();
+  const { data: progress } = useQuery(playProgressQueryOptions(caseId));
+  const queryClient = useQueryClient();
+
+  if (!progress) return null;
 
   if (progress.kind === "NOT_STARTED") {
     return <GuidanceScreen text="먼저 시작 QR을 찍어주세요." />;
@@ -63,7 +64,7 @@ function RouteComponent() {
               onClick={async () => {
                 const client = getApiClient();
                 await client.play.steps({ id: step.id }).advance.post();
-                await router.invalidate();
+                await queryClient.invalidateQueries({ queryKey: playKeys.progress(caseId) });
               }}
             >
               사건 시작

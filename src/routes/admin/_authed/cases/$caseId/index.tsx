@@ -1,4 +1,5 @@
-import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, MapPinPlus } from "lucide-react";
 
 import { CaseStatusControl } from "@/components/domains/case-status-control.tsx";
@@ -12,6 +13,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { formatCaseNumber, type LiveViolation } from "@/domain/case.ts";
 import { getApiClient } from "@/lib/api-client";
 import { unwrapEdenError } from "@/lib/eden-error";
+import { caseKeys, caseQueryOptions, caseStepsQueryOptions } from "@/queries/cases.ts";
 import { css } from "styled-system/css";
 import { Flex, styled, VStack } from "styled-system/jsx";
 
@@ -30,14 +32,11 @@ const actionLinkStyle = css({
 
 export const Route = createFileRoute("/admin/_authed/cases/$caseId/")({
   component: RouteComponent,
-  loader: async ({ params }) => {
-    const client = getApiClient();
-    const [{ data: caseItem }, { data: steps }] = await Promise.all([
-      client.cases({ id: params.caseId }).get(),
-      client.cases({ id: params.caseId }).steps.get(),
+  loader: async ({ params, context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(caseQueryOptions(params.caseId)),
+      context.queryClient.ensureQueryData(caseStepsQueryOptions(params.caseId)),
     ]);
-    if (!caseItem) throw notFound();
-    return { caseItem, steps: steps ?? [] };
   },
 });
 
@@ -71,8 +70,11 @@ const PageTitle = styled("h1", {
 });
 
 function RouteComponent() {
-  const { caseItem, steps } = Route.useLoaderData();
-  const router = useRouter();
+  const { caseId } = Route.useParams();
+  const { data: caseItem } = useQuery(caseQueryOptions(caseId));
+  const { data: steps } = useQuery(caseStepsQueryOptions(caseId));
+  const queryClient = useQueryClient();
+  if (!caseItem || !steps) return null;
   const sortedSteps = [...steps].sort((a, b) => a.order - b.order);
 
   async function moveStep(fromIndex: number, toIndex: number) {
@@ -82,9 +84,9 @@ function RouteComponent() {
     reordered.splice(toIndex, 0, moved);
 
     await getApiClient()
-      .cases({ id: caseItem.id })
+      .cases({ id: caseId })
       .steps.reorder.patch({ orderedStepIds: reordered.map((step) => step.id) });
-    await router.invalidate();
+    await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
   }
 
   return (
@@ -112,7 +114,7 @@ function RouteComponent() {
                   : [];
               return { kind: "REJECTED", violations };
             }}
-            onChanged={() => router.invalidate()}
+            onChanged={() => queryClient.invalidateQueries({ queryKey: caseKeys.detail(caseId) })}
           />
           <ReissueTokenButton
             label="시작 QR 재발급"
@@ -120,7 +122,7 @@ function RouteComponent() {
               const { data } = await getApiClient()
                 .cases({ id: caseItem.id })
                 ["entry-token"].reissue.post();
-              await router.invalidate();
+              await queryClient.invalidateQueries({ queryKey: caseKeys.detail(caseId) });
               return data?.entryToken ?? "";
             }}
             onReissued={() => {}}
@@ -189,6 +191,7 @@ function RouteComponent() {
           {sortedSteps.map((step, index) => (
             <StepListItem
               key={step.id}
+              caseId={caseId}
               step={step}
               canMoveUp={index > 0}
               canMoveDown={index < sortedSteps.length - 1}
@@ -200,7 +203,7 @@ function RouteComponent() {
                       const { data } = await getApiClient()
                         .steps({ id: step.id })
                         ["qr-token"].reissue.post();
-                      await router.invalidate();
+                      await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
                       return data?.qrToken ?? "";
                     }
                   : undefined

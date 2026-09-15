@@ -1,28 +1,31 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { CompletionScreen } from "@/components/domains/completion-screen.tsx";
 import { GuidanceScreen } from "@/components/domains/guidance-screen.tsx";
 import { StepExperience, type StepExperienceState } from "@/components/domains/step-experience.tsx";
-import type { PlayStepResult, SubmitAnswerResult, HintResult } from "@/application/playService.ts";
+import type { SubmitAnswerResult, HintResult } from "@/application/playService.ts";
 import { getApiClient } from "@/lib/api-client";
 import { unwrapPlayResult } from "@/lib/play-client";
 import { useWakeLock } from "@/lib/use-wake-lock";
+import { playStepQueryOptions } from "@/queries/play.ts";
 
 export const Route = createFileRoute("/t/$qrToken")({
   component: RouteComponent,
-  loader: async ({ params }) => {
-    const client = getApiClient();
-    const response = await client.play.steps.qr({ qrToken: params.qrToken }).get();
-    return { result: unwrapPlayResult<PlayStepResult>(response) };
+  loader: async ({ params, context }) => {
+    await context.queryClient.ensureQueryData(playStepQueryOptions(params.qrToken));
   },
 });
 
 function RouteComponent() {
-  const { result } = Route.useLoaderData();
+  const { qrToken } = Route.useParams();
+  const { data: result } = useQuery(playStepQueryOptions(qrToken));
   const navigate = useNavigate();
   const [state, setState] = useState<StepExperienceState>({ status: "idle" });
-  useWakeLock(result.kind === "ALLOWED" && state.status !== "correct");
+  useWakeLock(result?.kind === "ALLOWED" && state.status !== "correct");
+
+  if (!result) return null;
 
   if (result.kind === "NOT_STARTED") {
     return <GuidanceScreen text="먼저 시작 QR을 찍어주세요." />;
