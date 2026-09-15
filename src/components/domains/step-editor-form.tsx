@@ -37,20 +37,28 @@ const ANSWER_TYPE_LABELS: Record<AnswerType, string> = {
   KEYWORDS: "키워드",
 };
 
-const REVEAL_PRESETS = ["FADE_UP", "UNROLL", "TYPEWRITER", "TV_SCAN", "GLITCH"] as const;
+const REVEAL_PRESETS = [
+  "FADE_UP",
+  "UNROLL",
+  "TYPEWRITER",
+  "TV_SCAN",
+  "GLITCH",
+  "CARD_UNFOLD",
+] as const;
 const REVEAL_PRESET_LABELS: Record<(typeof REVEAL_PRESETS)[number], string> = {
   FADE_UP: "차분하게 떠오름",
   UNROLL: "두루마리가 펴짐",
   TYPEWRITER: "한 글자씩",
   TV_SCAN: "브라운관 스캔",
   GLITCH: "글리치",
+  CARD_UNFOLD: "접힌 카드가 펼쳐짐",
 };
 
 const SOUND_KEYS = ["paper", "radio", "chime"] as const;
 const SOUND_LABELS: Record<"NONE" | (typeof SOUND_KEYS)[number], string> = {
   NONE: "없음",
-  paper: "종이 넘기는 소리",
-  radio: "낮은 확성기 톤",
+  paper: "칙 소리",
+  radio: "띵 소리",
   chime: "차임벨",
 };
 

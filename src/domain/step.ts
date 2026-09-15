@@ -56,7 +56,13 @@ export function toPublicAnswerSpec(spec: AnswerSpec): PublicAnswerSpec {
   }
 }
 
-export type RevealPreset = "FADE_UP" | "UNROLL" | "TYPEWRITER" | "TV_SCAN" | "GLITCH";
+export type RevealPreset =
+  | "FADE_UP"
+  | "UNROLL"
+  | "TYPEWRITER"
+  | "TV_SCAN"
+  | "GLITCH"
+  | "CARD_UNFOLD";
 
 export type SoundKey = "paper" | "radio" | "chime";
 

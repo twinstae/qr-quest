@@ -89,6 +89,7 @@ export const RevealSchema = t.Object({
       t.Literal("TYPEWRITER"),
       t.Literal("TV_SCAN"),
       t.Literal("GLITCH"),
+      t.Literal("CARD_UNFOLD"),
     ]),
   ),
   sound: t.Optional(t.Union([t.Literal("paper"), t.Literal("radio"), t.Literal("chime")])),

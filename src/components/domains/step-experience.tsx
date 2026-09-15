@@ -1,16 +1,15 @@
 import { useEffect } from "react";
 import { MessageCircleQuestion } from "lucide-react";
 
+import { RevealPanel } from "@/components/domains/reveal-panel.tsx";
 import { SoundToggle } from "@/components/domains/sound-toggle.tsx";
-import { StepCardForm, StepMedia, type StepCardData } from "@/components/domains/step-card.tsx";
+import { StepCardForm, type StepCardData } from "@/components/domains/step-card.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import * as Card from "@/components/ui/card.tsx";
 import type { AnswerSubmission, Media, RevealPreset, SoundKey } from "@/domain/step.ts";
 import { playSound } from "@/lib/sound-effects";
 import { useSoundPreference } from "@/lib/use-sound-preference";
 import { css } from "styled-system/css";
 import { VStack } from "styled-system/jsx";
-import { revealAnimation } from "styled-system/recipes";
 
 export type Reveal = { text?: string; media?: Media; preset?: RevealPreset; sound?: SoundKey };
 
@@ -54,24 +53,11 @@ export function StepExperience({
     return (
       <VStack minHeight="screen" justify="center" p="4" gap="4">
         {soundCorner}
-        <Card.Root
-          variant="elevated"
-          colorPalette="green"
-          width="full"
-          maxWidth="sm"
-          alignItems="center"
-          textAlign="center"
-        >
-          {state.reveal.media && <StepMedia media={state.reveal.media} />}
-          <Card.Header alignItems="center">
-            <Card.Title
-              textStyle="xl"
-              className={revealAnimation({ preset: state.reveal.preset ?? "FADE_UP" })}
-            >
-              {state.reveal.text || state.message}
-            </Card.Title>
-          </Card.Header>
-        </Card.Root>
+        <RevealPanel
+          preset={state.reveal.preset ?? "FADE_UP"}
+          text={state.reveal.text || state.message}
+          media={state.reveal.media}
+        />
         <Button size="lg" width="full" maxWidth="sm" onClick={onContinue}>
           다음 단서 찾기
         </Button>

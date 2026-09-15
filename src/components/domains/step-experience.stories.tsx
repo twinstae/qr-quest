@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
+import type { RevealPreset } from "@/domain/step.ts";
+
 import { StepExperience } from "./step-experience.tsx";
 
 const step = {
@@ -71,52 +73,46 @@ export const CorrectWithoutReveal: Story = {
   },
 };
 
-export const RevealUnroll: Story = {
-  args: {
+/**
+ * 연출은 카드 하나에 걸린다 — 사진과 문구가 함께 움직이는지 보려면 단서에 사진이 있어야
+ * 한다. 그래서 프리셋 스토리는 전부 사진을 넣는다(사진 없는 단서는 CorrectWithoutReveal).
+ */
+const CLUE_PHOTO = {
+  kind: "image" as const,
+  src: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800",
+  alt: "서가 사이에 놓인 낡은 책",
+};
+
+function revealWith(preset: RevealPreset, text: string): Story["args"] {
+  return {
     state: {
       status: "correct",
       message: CORRECT_MESSAGE,
-      reveal: { text: "두루마리가 펴지며 단서가 드러납니다.", preset: "UNROLL" },
+      reveal: { text, preset, media: CLUE_PHOTO },
     },
-  },
+  };
+}
+
+export const RevealUnroll: Story = {
+  args: revealWith("UNROLL", "두루마리가 펴지며 단서가 드러납니다."),
 };
 
 export const RevealFadeUp: Story = {
-  args: {
-    state: {
-      status: "correct",
-      message: CORRECT_MESSAGE,
-      reveal: { text: "차분하게 떠오르는 단서입니다.", preset: "FADE_UP" },
-    },
-  },
+  args: revealWith("FADE_UP", "차분하게 떠오르는 단서입니다."),
 };
 
 export const RevealTypewriter: Story = {
-  args: {
-    state: {
-      status: "correct",
-      message: CORRECT_MESSAGE,
-      reveal: { text: "한 글자씩 드러나는 단서입니다.", preset: "TYPEWRITER" },
-    },
-  },
+  args: revealWith("TYPEWRITER", "한 글자씩 드러나는 단서입니다."),
 };
 
 export const RevealTvScan: Story = {
-  args: {
-    state: {
-      status: "correct",
-      message: CORRECT_MESSAGE,
-      reveal: { text: "브라운관처럼 스캔되며 나타납니다.", preset: "TV_SCAN" },
-    },
-  },
+  args: revealWith("TV_SCAN", "브라운관처럼 스캔되며 나타납니다."),
 };
 
 export const RevealGlitch: Story = {
-  args: {
-    state: {
-      status: "correct",
-      message: CORRECT_MESSAGE,
-      reveal: { text: "순간적으로 어긋나는 단서입니다.", preset: "GLITCH" },
-    },
-  },
+  args: revealWith("GLITCH", "순간적으로 어긋나는 단서입니다."),
+};
+
+export const RevealCardUnfold: Story = {
+  args: revealWith("CARD_UNFOLD", "접힌 카드를 누르면 단서가 펼쳐집니다."),
 };
