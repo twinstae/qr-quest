@@ -151,9 +151,65 @@ export const LiveViolationSchema = t.Union([
   t.Object({ kind: t.Literal("MISSING_QR_TOKEN"), stepId: t.String(), stepName: t.String() }),
 ]);
 
+/** 직원 리딤 화면(16b)의 판정. 상태 코드로도 구분하지만 화면은 kind만 본다. */
+export const RedeemValidSchema = t.Object({
+  kind: t.Literal("VALID"),
+  code: t.String(),
+  caseNumber: t.Number(),
+  caseTitle: t.String(),
+  completedAt: t.Optional(t.String()),
+  todayCount: t.Number(),
+});
+export const RedeemAlreadyRedeemedSchema = t.Object({
+  kind: t.Literal("ALREADY_REDEEMED"),
+  code: t.String(),
+  redeemedAt: t.String(),
+});
+export const RedeemTestSessionSchema = t.Object({ kind: t.Literal("TEST_SESSION") });
+export const RedeemUnknownSchema = t.Object({ kind: t.Literal("UNKNOWN") });
+
+export const StatsPeriodSchema = t.Union([t.Literal("today"), t.Literal("week"), t.Literal("all")]);
+
+const StepStatsSchema = t.Object({
+  stepId: t.String(),
+  name: t.String(),
+  order: t.Number(),
+  kind: StepKindSchema,
+  reached: t.Number(),
+  dropped: t.Number(),
+  dropRate: t.Number(),
+  attemptedSessions: t.Optional(t.Number()),
+  firstTryCorrectRate: t.Optional(t.Number()),
+  attemptCorrectRate: t.Optional(t.Number()),
+  hintCount: t.Number(),
+  hasAnswer: t.Boolean(),
+  advice: t.String(),
+});
+
+export const CaseStatsSchema = t.Object({
+  caseId: t.String(),
+  caseNumber: t.Number(),
+  caseTitle: t.String(),
+  period: StatsPeriodSchema,
+  started: t.Number(),
+  completed: t.Number(),
+  inProgress: t.Number(),
+  completionRate: t.Number(),
+  averageMinutes: t.Optional(t.Number()),
+  excludedLongSessions: t.Number(),
+  steps: t.Array(StepStatsSchema),
+  hardestStep: t.Optional(
+    t.Object({ stepId: t.String(), name: t.String(), firstTryCorrectRate: t.Number() }),
+  ),
+  mostHintedStep: t.Optional(
+    t.Object({ stepId: t.String(), name: t.String(), hintCount: t.Number() }),
+  ),
+});
+
+export const TodayOverviewSchema = t.Object({ started: t.Number(), completed: t.Number() });
+
 export const QrCheckResultSchema = t.Union([
   t.Object({ kind: t.Literal("READY"), label: t.String(), title: t.String() }),
   t.Object({ kind: t.Literal("OTHER_CASE"), caseNumber: t.Number() }),
   t.Object({ kind: t.Literal("UNKNOWN") }),
 ]);
-

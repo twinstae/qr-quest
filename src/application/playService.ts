@@ -12,6 +12,7 @@ import {
   type Step,
 } from "../domain/step.ts";
 import { nextOrderAfter, openStep, progressOf, type OpenStepResult } from "../domain/tourFlow.ts";
+import { elapsedMinutesRounded } from "../domain/tourStats.ts";
 import { toStepDisplay, type StepDisplay } from "./stepService.ts";
 
 export type LockedResult =
@@ -115,7 +116,10 @@ export async function startOrResumeSession(
   return toStartResult(created, false);
 }
 
-export type PlayStepDisplay = Omit<StepDisplay, "hint"> & { hasHint: boolean; debugAnswer?: string };
+export type PlayStepDisplay = Omit<StepDisplay, "hint"> & {
+  hasHint: boolean;
+  debugAnswer?: string;
+};
 
 /**
  * 힌트 글자는 참가자 응답에 절대 담지 않는다 — 여기서 함께 내려주면 "사용했는지"를
@@ -197,7 +201,12 @@ export async function submitAnswer(
       completionCode,
       currentStepOrder: step.order,
     });
-    return { kind: "CORRECT", reveal: step.reveal, message: resolveCorrectMessage(step), completionCode };
+    return {
+      kind: "CORRECT",
+      reveal: step.reveal,
+      message: resolveCorrectMessage(step),
+      completionCode,
+    };
   }
 
   const steps = await ctx.repo.step.listByCaseId(step.caseId);
@@ -270,7 +279,14 @@ export async function advanceNarrativeStep(
 export type PlayProgressResult =
   | { kind: "NOT_STARTED" }
   | { kind: "OTHER_CASE" }
-  | { kind: "COMPLETED"; completionCode?: string; closing?: PlayStepDisplay }
+  | {
+      kind: "COMPLETED";
+      completionCode?: string;
+      /** 완주 화면이 보여줄 소요 시간(분)과 힌트 사용 횟수 (요구 14). */
+      elapsedMinutes?: number;
+      hintCount: number;
+      closing?: PlayStepDisplay;
+    }
   | { kind: "NARRATIVE"; step: PlayStepDisplay }
   | { kind: "WAITING"; stepName: string; resolved: number; total: number };
 
@@ -287,9 +303,13 @@ export async function getPlayProgress(
 
   if (session.status === "COMPLETED") {
     const closing = steps.find((step) => step.kind === "CLOSING");
+    // 힌트는 세션당 1회로 기록되므로 행 수가 곧 사용 횟수다.
+    const attempts = await ctx.repo.stepAttempt.listBySessionId(session.id);
     return {
       kind: "COMPLETED",
       completionCode: session.completionCode,
+      elapsedMinutes: elapsedMinutesRounded(session),
+      hintCount: attempts.filter((attempt) => attempt.usedHint).length,
       closing: closing ? toPlayStepDisplay(closing) : undefined,
     };
   }

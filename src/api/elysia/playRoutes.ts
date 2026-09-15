@@ -169,7 +169,10 @@ export function createPlayRoutes(ctx: AppContext) {
       {
         params: t.Object({ id: t.String() }),
         response: {
-          200: t.Union([t.Object({ kind: t.Literal("HINT"), hint: t.Optional(t.String()) }), CompletedSchema]),
+          200: t.Union([
+            t.Object({ kind: t.Literal("HINT"), hint: t.Optional(t.String()) }),
+            CompletedSchema,
+          ]),
           409: LockedOnlySchema,
           423: LockedOnlySchema,
         },
@@ -191,6 +194,8 @@ export function createPlayRoutes(ctx: AppContext) {
           t.Object({
             kind: t.Literal("COMPLETED"),
             completionCode: t.Optional(t.String()),
+            elapsedMinutes: t.Optional(t.Number()),
+            hintCount: t.Number(),
             closing: t.Optional(StepDisplaySchema),
           }),
           t.Object({ kind: t.Literal("NARRATIVE"), step: StepDisplaySchema }),

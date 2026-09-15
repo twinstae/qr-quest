@@ -50,9 +50,15 @@ const COMPLETION_CODE_PREFIX_DIGITS = COMPLETION_CODE_PREFIX.replace("-", "");
 /**
  * 직원이 소문자로 입력하거나 공백/하이픈을 빠뜨리거나 다른 자리에 넣어도
  * 같은 코드로 보게 한다. 먼저 글자만 남기고, 접두사를 확인해 다시 붙인다.
+ *
+ * 리딤 화면은 직원이 **뒤 네 글자만** 입력하는 걸 기본으로 한다 — 서점이 바쁠 때
+ * `79-1-`을 매번 치게 하면 오타가 난다. 그래서 네 글자만 들어오면 접두사를 서버가 채운다.
  */
 export function normalizeCompletionCode(code: string): string {
   const compact = code.toUpperCase().replace(/[^0-9A-Z]/g, "");
+  if (compact.length === COMPLETION_CODE_LENGTH) {
+    return `${COMPLETION_CODE_PREFIX}-${compact}`;
+  }
   if (!compact.startsWith(COMPLETION_CODE_PREFIX_DIGITS)) return compact;
   return `${COMPLETION_CODE_PREFIX}-${compact.slice(COMPLETION_CODE_PREFIX_DIGITS.length)}`;
 }

@@ -40,6 +40,8 @@ function RouteComponent() {
         closingBody={progress.closing?.body}
         closingMedia={progress.closing?.media}
         completionCode={progress.completionCode}
+        elapsedMinutes={progress.elapsedMinutes}
+        hintCount={progress.hintCount}
       />
     );
   }

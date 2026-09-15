@@ -35,14 +35,24 @@ function Stat({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-/** 오늘 참가·완료는 16 전까지 통계를 낼 수 없어 "-"로 둔다. */
-export function DashboardSummary({ liveCount, totalCount }: { liveCount: number; totalCount: number }) {
+/** 오늘 참가·완료는 통계 서비스(16)가 돌려준다 — 아직 못 받았으면 "-"로 둔다. */
+export function DashboardSummary({
+  liveCount,
+  totalCount,
+  startedToday,
+  completedToday,
+}: {
+  liveCount: number;
+  totalCount: number;
+  startedToday?: number;
+  completedToday?: number;
+}) {
   return (
     <Grid columns={{ base: 2, sm: 4 }} gap="4" className={css({ mb: "8" })}>
       <Stat label="진행 중인 CASE" value={liveCount} />
       <Stat label="전체 CASE" value={totalCount} />
-      <Stat label="오늘 참가" value="-" />
-      <Stat label="오늘 완료" value="-" />
+      <Stat label="오늘 참가" value={startedToday ?? "-"} />
+      <Stat label="오늘 완료" value={completedToday ?? "-"} />
     </Grid>
   );
 }

@@ -140,7 +140,9 @@ function RouteComponent() {
           <TestSessionActions
             caseId={caseItem.id}
             stepBack={async (id) => {
-              const { data } = await getApiClient().cases({ id })["test-session"]["step-back"].post();
+              const { data } = await getApiClient()
+                .cases({ id })
+                ["test-session"]["step-back"].post();
               return data?.ok ?? false;
             }}
             resetCompletion={async (id) => {
@@ -150,6 +152,14 @@ function RouteComponent() {
               return data?.ok ?? false;
             }}
           />
+          <Link
+            to="/admin/cases/$caseId/stats"
+            params={{ caseId: caseItem.id }}
+            search={{ period: "all" }}
+            className={actionLinkStyle}
+          >
+            통계
+          </Link>
           <Link
             to="/admin/cases/$caseId/print"
             params={{ caseId: caseItem.id }}

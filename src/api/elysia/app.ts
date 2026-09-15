@@ -20,7 +20,12 @@ import {
   listCases,
   updateCase,
 } from "../../application/caseService.ts";
-import { createStep, getStepForEdit, listSteps, updateStep } from "../../application/stepService.ts";
+import {
+  createStep,
+  getStepForEdit,
+  listSteps,
+  updateStep,
+} from "../../application/stepService.ts";
 import { presignUpload } from "../../application/uploadService.ts";
 import {
   FileTooLargeError,
@@ -31,6 +36,7 @@ import {
 import type { AppContext } from "../context.ts";
 import { createAuthGuard } from "./authGuard.ts";
 import { createPlayRoutes, PLAY_SESSION_COOKIE } from "./playRoutes.ts";
+import { createRedeemRoutes } from "./redeemRoutes.ts";
 import {
   CaseFieldsSchema,
   CaseSchema,
@@ -40,6 +46,7 @@ import {
   StepKindSchema,
   StepPreviewSchema,
 } from "./schemas.ts";
+import { createStatsRoutes } from "./statsRoutes.ts";
 
 export function createApp(ctx: AppContext) {
   return (
@@ -89,6 +96,8 @@ export function createApp(ctx: AppContext) {
         },
       )
       // ── 관리자 ────────────────────────────────────────────────
+      .use(createRedeemRoutes(ctx))
+      .use(createStatsRoutes(ctx))
       .get("/cases", () => listCases(ctx), {
         auth: true,
         response: t.Array(CaseSchema),

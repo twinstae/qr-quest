@@ -63,8 +63,9 @@ START → 사건 소개 → QR 01~04 → FINAL → CASE CLOSED의 **순차 진�
 
 - FINAL 정답 시 `79-1-XXXX` 형식 코드를 발급해 세션에 저장한다(요구 14).
 - 혼동되는 문자(O/0, I/1)를 제외한 알파벳·숫자 4자리를 쓴다.
-- 발급·재표시·리딤 처리는 [16](16-completion-and-stats.md)에서 확장하고,
-  이 티켓에서는 발급과 화면 표시까지 한다.
+- 발급·재표시·리딤 처리는 [16](16-completion-code-and-stats.md)에서 확장하고,
+  이 티켓에서는 발급과 화면 표시까지 한다. (16에서 완료 화면에 소요 시간·힌트 횟수와
+  가장 큰 글자의 인증번호를 더했고, 리딤·통계까지 붙었다)
 
 ## 테스트 (RED 먼저)
 
@@ -107,4 +108,4 @@ START → 사건 소개 → QR 01~04 → FINAL → CASE CLOSED의 **순차 진�
 
 ## Depends on
 
-[11](11-case-step-session-model.md). 완료 화면의 리딤/통계는 [16](16-completion-and-stats.md).
+[11](11-case-step-session-model.md). 완료 화면의 리딤/통계는 [16](16-completion-code-and-stats.md).

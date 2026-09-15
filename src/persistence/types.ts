@@ -32,11 +32,21 @@ export interface PlaySessionRepo {
     input: Partial<Omit<PlaySession, "id" | "caseId" | "token">>,
   ): Promise<PlaySession>;
   listByCaseId(caseId: PlaySession["caseId"]): Promise<PlaySession[]>;
+  /** 완주 인증번호로 세션을 찾는다 — 직원 리딤 화면(16b). */
+  getByCompletionCode(code: string): Promise<PlaySession | undefined>;
+  /** 주어진 시각 이후에 리워드를 건넨 세션 수. "오늘 3번째" 표시에 쓴다. */
+  countRedeemedSince(since: string): Promise<number>;
+  /** 주어진 시각 이후에 시작한 세션 수(테스트 제외). 대시보드의 "오늘 참가". */
+  countStartedSince(since: string): Promise<number>;
+  /** 주어진 시각 이후에 완료한 세션 수(테스트 제외). 대시보드의 "오늘 완료". */
+  countCompletedSince(since: string): Promise<number>;
 }
 
 export interface StepAttemptRepo {
   create(input: Omit<StepAttempt, "id">): Promise<StepAttempt>;
   listBySessionId(sessionId: StepAttempt["sessionId"]): Promise<StepAttempt[]>;
+  /** 세션 여러 개의 시도를 한 번에 읽는다 — 통계(16c)는 세션 목록 전체가 필요하다. */
+  listBySessionIds(sessionIds: StepAttempt["sessionId"][]): Promise<StepAttempt[]>;
 }
 
 export interface ImageStorage {

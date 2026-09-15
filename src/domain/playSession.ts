@@ -34,8 +34,19 @@ export type StepAttempt = {
   createdAt: string;
 };
 
+/**
+ * 직원 리딤 화면(16b)이 그대로 보여줄 수 있는 판정 결과.
+ * `todayCount`는 이 건까지 포함한 오늘 리워드 전달 순번이다 — "오늘 3번째".
+ */
 export type CompletionCodeStatus =
-  | { kind: "VALID"; code: string }
+  | {
+      kind: "VALID";
+      code: string;
+      caseNumber: number;
+      caseTitle: string;
+      completedAt?: string;
+      todayCount: number;
+    }
   | { kind: "ALREADY_REDEEMED"; code: string; redeemedAt: string }
   | { kind: "TEST_SESSION" }
   | { kind: "UNKNOWN" };

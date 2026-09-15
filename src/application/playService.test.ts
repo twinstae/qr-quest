@@ -6,7 +6,10 @@ import { ANOTHER_CASE, TEST_CASE, TEST_STEP } from "../domain/fixtures.ts";
 import type { PlaySession } from "../domain/playSession.ts";
 import { DEFAULT_CORRECT_MESSAGE, DEFAULT_WRONG_MESSAGE, type Step } from "../domain/step.ts";
 import createFakeCaseRepo from "../persistence/FakeCaseRepo.ts";
-import { createFakePlaySessionRepo, createFakeStepAttemptRepo } from "../persistence/FakePlaySessionRepo.ts";
+import {
+  createFakePlaySessionRepo,
+  createFakeStepAttemptRepo,
+} from "../persistence/FakePlaySessionRepo.ts";
 import createFakeStepRepo from "../persistence/FakeStepRepo.ts";
 import {
   advanceNarrativeStep,
@@ -133,9 +136,7 @@ describe("startOrResumeSession", () => {
   it("없는 시작 토큰은 NotExistError를 던진다", async () => {
     const ctx = contextWith();
 
-    await expect(startOrResumeSession(ctx, { entryToken: "NOPE" })).rejects.toThrow(
-      NotExistError,
-    );
+    await expect(startOrResumeSession(ctx, { entryToken: "NOPE" })).rejects.toThrow(NotExistError);
   });
 });
 
@@ -304,6 +305,30 @@ describe("submitAnswer", () => {
     expect(updated?.completionCode).toEqual(expect.any(String));
   });
 
+  it("완료 코드는 세션당 하나만 발급되고, 다시 들어와도 같은 코드다", async () => {
+    const session = activeSession({ currentStepOrder: FINAL_STEP.order });
+    const ctx = contextWith({ sessions: [session] });
+    const submission = { type: "TEXT", value: "헌법논증이론" } as const;
+
+    await submitAnswer(ctx, { stepId: FINAL_STEP.id, sessionToken: session.token, submission });
+    const issued = (await ctx.repo.playSession.getById(session.id))?.completionCode;
+    expect(issued).toEqual(expect.any(String));
+
+    // 완료한 세션은 이미 종결된 것으로 보므로 다시 채점해 코드를 갈아치우지 않는다.
+    const again = await submitAnswer(ctx, {
+      stepId: FINAL_STEP.id,
+      sessionToken: session.token,
+      submission,
+    });
+    expect(again).toEqual({ kind: "COMPLETED", caseId: TEST_CASE.id });
+
+    const progress = await getPlayProgress(ctx, {
+      caseId: TEST_CASE.id,
+      sessionToken: session.token,
+    });
+    expect(progress).toMatchObject({ kind: "COMPLETED", completionCode: issued });
+  });
+
   it("잠긴 단계에 제출하면 LOCKED를 돌려주고 아무 것도 바꾸지 않는다", async () => {
     const session = activeSession({ currentStepOrder: 0 });
     const ctx = contextWith({ sessions: [session] });
@@ -398,7 +423,10 @@ describe("getPlayProgress", () => {
     const session = activeSession({ currentStepOrder: INTRO_STEP.order });
     const ctx = contextWith({ sessions: [session] });
 
-    const result = await getPlayProgress(ctx, { caseId: TEST_CASE.id, sessionToken: session.token });
+    const result = await getPlayProgress(ctx, {
+      caseId: TEST_CASE.id,
+      sessionToken: session.token,
+    });
 
     expect(result.kind).toBe("NARRATIVE");
     if (result.kind === "NARRATIVE") expect(result.step.id).toBe(INTRO_STEP.id);
@@ -408,7 +436,10 @@ describe("getPlayProgress", () => {
     const session = activeSession({ currentStepOrder: TEST_STEP.order });
     const ctx = contextWith({ sessions: [session] });
 
-    const result = await getPlayProgress(ctx, { caseId: TEST_CASE.id, sessionToken: session.token });
+    const result = await getPlayProgress(ctx, {
+      caseId: TEST_CASE.id,
+      sessionToken: session.token,
+    });
 
     expect(result).toEqual({
       kind: "WAITING",
@@ -423,15 +454,56 @@ describe("getPlayProgress", () => {
       status: "COMPLETED",
       completionCode: "79-1-K7QP",
       currentStepOrder: CLOSING_STEP.order,
+      startedAt: "2026-09-15T06:00:00.000Z",
+      completedAt: "2026-09-15T06:20:00.000Z",
     });
     const ctx = contextWith({ sessions: [session] });
 
-    const result = await getPlayProgress(ctx, { caseId: TEST_CASE.id, sessionToken: session.token });
+    const result = await getPlayProgress(ctx, {
+      caseId: TEST_CASE.id,
+      sessionToken: session.token,
+    });
 
     expect(result).toEqual({
       kind: "COMPLETED",
       completionCode: "79-1-K7QP",
+      elapsedMinutes: 20,
+      hintCount: 0,
       closing: expect.objectContaining({ id: CLOSING_STEP.id }),
     });
+  });
+
+  it("완료 화면용으로 소요 시간과 힌트 횟수를 함께 돌려준다", async () => {
+    const session = activeSession({
+      status: "COMPLETED",
+      completionCode: "79-1-K7QP",
+      currentStepOrder: CLOSING_STEP.order,
+      startedAt: "2026-09-15T06:00:00.000Z",
+      completedAt: "2026-09-15T06:17:30.000Z",
+    });
+    const ctx = contextWith({ sessions: [session] });
+    await ctx.repo.stepAttempt.create({
+      sessionId: session.id,
+      stepId: TEST_STEP.id,
+      submitted: "",
+      correct: false,
+      usedHint: true,
+      createdAt: "2026-09-15T06:05:00.000Z",
+    });
+    await ctx.repo.stepAttempt.create({
+      sessionId: session.id,
+      stepId: FINAL_STEP.id,
+      submitted: "",
+      correct: true,
+      usedHint: false,
+      createdAt: "2026-09-15T06:16:00.000Z",
+    });
+
+    const result = await getPlayProgress(ctx, {
+      caseId: TEST_CASE.id,
+      sessionToken: session.token,
+    });
+
+    expect(result).toMatchObject({ kind: "COMPLETED", elapsedMinutes: 18, hintCount: 1 });
   });
 });

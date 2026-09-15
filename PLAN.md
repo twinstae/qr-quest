@@ -18,7 +18,7 @@
 13. [x] 관리자가 개발자 없이 CASE를 만들고 STEP을 편집한다 (복제·미리보기·테스트 모드·상태) ([ticket](docs/tickets/13-admin-case-editor.md))
 14. [x] CASE별 QR을 인쇄하고 설치를 점검한다 (고정 URL 유지) ([ticket](docs/tickets/14-qr-operations.md))
 15. [x] 단서 공개 연출 프리셋과 동영상·효과음을 지원한다 ([ticket](docs/tickets/15-media-and-reveal.md))
-16. [ ] 완료 인증번호를 발급·리딤하고 참가 통계를 본다 ([ticket](docs/tickets/16-completion-code-and-stats.md))
+16. [x] 완료 인증번호를 발급·리딤하고 참가 통계를 본다 ([ticket](docs/tickets/16-completion-code-and-stats.md) — 16a·16b·16c 완료. 대시보드 "오늘 참가/완료"도 실제 숫자로 연결)
 
 Recommended build order (dependency-driven, not the numbering above):
 [08](docs/tickets/08-database-connection.md) → [03](docs/tickets/03-show-reward-on-correct-answer.md) →
@@ -32,6 +32,9 @@ Tour build order:
 [16](docs/tickets/16-completion-code-and-stats.md) 중 인증번호 →
 [13](docs/tickets/13-admin-case-editor.md) → [14](docs/tickets/14-qr-operations.md) →
 [15](docs/tickets/15-media-and-reveal.md) → [16](docs/tickets/16-completion-code-and-stats.md) 중 통계
+
+Phase 3(15·16)까지 끝났고, 남은 항목은 [07](docs/tickets/07-admin-login.md)(passkey)뿐이다.
+passkey는 이메일+비밀번호 로그인이 이미 동작하므로 선택적 잔여 작업이다.
 
 Phase 1(11·12)이 끝나면 체험비를 받고 실제 운영이 가능하고,
 Phase 2(13·14)가 끝나면 사장님이 개발자 없이 CASE 02를 만들 수 있다.

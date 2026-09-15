@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { ChevronRight, Trash2 } from "lucide-react";
+import { BarChart3, ChevronRight, Trash2 } from "lucide-react";
 
 import { CloneCaseButton } from "@/components/domains/clone-case-button.tsx";
 import { ConfirmDialog } from "@/components/domains/confirm-dialog.tsx";
@@ -23,6 +23,21 @@ export type CaseSummary = {
 // 카드 전체가 링크 오버레이(::before, zIndex 0)로 덮여 있어서
 // 복제·삭제 버튼은 그 위로 올려야 클릭이 링크에 먹히지 않는다.
 const overlayButton = css({ position: "relative", zIndex: "1" });
+
+const statsLink = css({
+  position: "relative",
+  zIndex: "1",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "1.5",
+  borderWidth: "1px",
+  borderColor: "border",
+  borderRadius: "l2",
+  px: "3",
+  h: "9",
+  textStyle: "sm",
+  _hover: { bg: "gray.subtle.bg" },
+});
 
 function DeleteCaseButton({ item }: { item: CaseSummary }) {
   const router = useRouter();
@@ -70,6 +85,14 @@ export function CaseListItem({ item }: { item: CaseSummary }) {
         {item.teaser && <Card.Description>{item.teaser}</Card.Description>}
       </Card.Header>
       <Card.Footer justifyContent="flex-end" alignItems="center" gap="2">
+        <Link
+          to="/admin/cases/$caseId/stats"
+          params={{ caseId: item.id }}
+          search={{ period: "all" }}
+          className={statsLink}
+        >
+          <BarChart3 /> 통계
+        </Link>
         <span className={overlayButton}>
           <CloneCaseButton
             caseId={item.id}

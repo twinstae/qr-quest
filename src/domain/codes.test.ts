@@ -76,6 +76,14 @@ describe("normalizeCompletionCode / isValidCompletionCode", () => {
     expect(isValidCompletionCode("791K7QP")).toBe(true);
   });
 
+  it("뒤 네 글자만 입력해도 접두사를 서버가 채운다", () => {
+    expect(normalizeCompletionCode("k7qp")).toBe("79-1-K7QP");
+    expect(isValidCompletionCode(" K7QP ")).toBe(true);
+    // 네 글자 안에 혼동 글자가 섞이면 여전히 유효하지 않다.
+    expect(isValidCompletionCode("K70P")).toBe(false);
+    expect(isValidCompletionCode("K7Q1")).toBe(false);
+  });
+
   it("형식이 어긋나면 유효하지 않다", () => {
     expect(isValidCompletionCode("79-1-K7Q")).toBe(false);
     expect(isValidCompletionCode("79-1-K7QPX")).toBe(false);

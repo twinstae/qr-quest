@@ -1,20 +1,25 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { FolderPlus } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { FolderPlus, ScanLine } from "lucide-react";
 
 import { CaseListItem } from "@/components/domains/case-list-item.tsx";
 import { CreateCaseDialog } from "@/components/domains/case-form-dialog.tsx";
 import { DashboardSummary } from "@/components/domains/dashboard-summary.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { summarizeCaseStatuses } from "@/domain/case.ts";
 import { getApiClient } from "@/lib/api-client";
+import { css } from "styled-system/css";
 import { Flex, Grid, styled } from "styled-system/jsx";
 
 export const Route = createFileRoute("/admin/_authed/cases/")({
   component: RouteComponent,
   loader: async () => {
     const client = getApiClient();
-    const { data } = await client.cases.get();
-    return { cases: data ?? [] };
+    const [{ data }, { data: today }] = await Promise.all([
+      client.cases.get(),
+      client.stats.today.get(),
+    ]);
+    return { cases: data ?? [], today };
   },
 });
 
@@ -36,17 +41,30 @@ const PageTitle = styled("h1", {
 });
 
 function RouteComponent() {
-  const { cases } = Route.useLoaderData();
+  const { cases, today } = Route.useLoaderData();
   const { liveCount, totalCount } = summarizeCaseStatuses(cases);
 
   return (
     <Main>
       <Flex justify="space-between" align="center" gap="4" mb="6">
         <PageTitle>CASE 목록</PageTitle>
-        <CreateCaseDialog />
+        <Flex align="center" gap="2">
+          {/* 매장에서 리워드를 건넬 때 여는 화면. 한 번에 닿을 수 있게 목록 상단에 둔다. */}
+          <Link to="/admin/redeem" className={css({ display: "inline-flex" })}>
+            <Button variant="outline">
+              <ScanLine /> 리워드 확인
+            </Button>
+          </Link>
+          <CreateCaseDialog />
+        </Flex>
       </Flex>
 
-      <DashboardSummary liveCount={liveCount} totalCount={totalCount} />
+      <DashboardSummary
+        liveCount={liveCount}
+        totalCount={totalCount}
+        startedToday={today?.started}
+        completedToday={today?.completed}
+      />
 
       {cases.length === 0 ? (
         <EmptyState
