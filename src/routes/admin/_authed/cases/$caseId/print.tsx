@@ -13,8 +13,8 @@ export const Route = createFileRoute("/admin/_authed/cases/$caseId/print")({
   component: RouteComponent,
   loader: async ({ params, context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(caseQueryOptions(params.caseId)),
-      context.queryClient.ensureQueryData(caseStepsQueryOptions(params.caseId)),
+      context.queryClient.query({ ...caseQueryOptions(params.caseId), staleTime: "static" }),
+      context.queryClient.query({ ...caseStepsQueryOptions(params.caseId), staleTime: "static" }),
     ]);
   },
 });

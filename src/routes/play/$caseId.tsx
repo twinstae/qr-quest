@@ -15,7 +15,10 @@ import { VStack } from "styled-system/jsx";
 export const Route = createFileRoute("/play/$caseId")({
   component: RouteComponent,
   loader: async ({ params, context }) => {
-    await context.queryClient.ensureQueryData(playProgressQueryOptions(params.caseId));
+    await context.queryClient.query({
+      ...playProgressQueryOptions(params.caseId),
+      staleTime: "static",
+    });
   },
 });
 

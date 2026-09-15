@@ -4,7 +4,6 @@ import { ArrowLeft, MapPinPlus } from "lucide-react";
 
 import { CaseStatusControl } from "@/components/domains/case-status-control.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
-import { ReissueTokenButton } from "@/components/domains/reissue-token-button.tsx";
 import { StartTestModeButton } from "@/components/domains/start-test-mode-button.tsx";
 import { CreateStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { TestSessionActions } from "@/components/domains/test-session-actions.tsx";
@@ -34,8 +33,8 @@ export const Route = createFileRoute("/admin/_authed/cases/$caseId/")({
   component: RouteComponent,
   loader: async ({ params, context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(caseQueryOptions(params.caseId)),
-      context.queryClient.ensureQueryData(caseStepsQueryOptions(params.caseId)),
+      context.queryClient.query({ ...caseQueryOptions(params.caseId), staleTime: "static" }),
+      context.queryClient.query({ ...caseStepsQueryOptions(params.caseId), staleTime: "static" }),
     ]);
   },
 });
@@ -116,17 +115,6 @@ function RouteComponent() {
             }}
             onChanged={() => queryClient.invalidateQueries({ queryKey: caseKeys.detail(caseId) })}
           />
-          <ReissueTokenButton
-            label="시작 QR 재발급"
-            reissue={async () => {
-              const { data } = await getApiClient()
-                .cases({ id: caseItem.id })
-                ["entry-token"].reissue.post();
-              await queryClient.invalidateQueries({ queryKey: caseKeys.detail(caseId) });
-              return data?.entryToken ?? "";
-            }}
-            onReissued={() => {}}
-          />
         </Flex>
         <Flex gap="2" flexWrap="wrap">
           <StartTestModeButton
@@ -197,17 +185,6 @@ function RouteComponent() {
               canMoveDown={index < sortedSteps.length - 1}
               onMoveUp={() => moveStep(index, index - 1)}
               onMoveDown={() => moveStep(index, index + 1)}
-              reissueQrToken={
-                step.qrToken
-                  ? async () => {
-                      const { data } = await getApiClient()
-                        .steps({ id: step.id })
-                        ["qr-token"].reissue.post();
-                      await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
-                      return data?.qrToken ?? "";
-                    }
-                  : undefined
-              }
               deleteStep={async () => {
                 await getApiClient().steps({ id: step.id }).delete();
                 await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });

@@ -1,7 +1,6 @@
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 
 import { ConfirmDialog } from "@/components/domains/confirm-dialog.tsx";
-import { ReissueTokenButton } from "@/components/domains/reissue-token-button.tsx";
 import { EditStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { StepQrCodeDownload } from "@/components/domains/step-qr-code.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
@@ -29,7 +28,6 @@ export function StepListItem({
   canMoveDown,
   onMoveUp,
   onMoveDown,
-  reissueQrToken,
   deleteStep,
 }: {
   /** 단계 수정 후 캐시 무효화 범위를 좁히는 데 쓴다 — 없으면 CASE 전체를 무효화한다. */
@@ -40,8 +38,6 @@ export function StepListItem({
   canMoveDown?: boolean;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
-  /** 넘기면 QR이 있는 단계에 [QR 재발급] 버튼이 보인다. */
-  reissueQrToken?: () => Promise<string>;
   /** 넘기면 [삭제] 버튼이 보인다 — 단독 미리보기 등에서는 생략한다. */
   deleteStep?: () => Promise<void>;
 }) {
@@ -88,9 +84,6 @@ export function StepListItem({
         {step.qrToken ? (
           <Flex gap="2" align="center">
             <StepQrCodeDownload qrToken={step.qrToken} label={step.name} />
-            {reissueQrToken && (
-              <ReissueTokenButton reissue={reissueQrToken} onReissued={() => {}} />
-            )}
           </Flex>
         ) : (
           <span className={css({ textStyle: "xs", color: "fg.subtle" })}>QR 없음</span>

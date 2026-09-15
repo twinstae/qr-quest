@@ -24,8 +24,11 @@ export const Route = createFileRoute("/admin/_authed/cases/$caseId/stats")({
   loaderDeps: ({ search }) => ({ period: search.period }),
   loader: async ({ params, deps, context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(caseQueryOptions(params.caseId)),
-      context.queryClient.ensureQueryData(caseStatsQueryOptions(params.caseId, deps.period)),
+      context.queryClient.query({ ...caseQueryOptions(params.caseId), staleTime: "static" }),
+      context.queryClient.query({
+        ...caseStatsQueryOptions(params.caseId, deps.period),
+        staleTime: "static",
+      }),
     ]);
   },
 });

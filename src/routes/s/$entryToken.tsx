@@ -15,7 +15,10 @@ export const Route = createFileRoute("/s/$entryToken")({
   component: RouteComponent,
   loader: async ({ params, context }) => {
     const [, session] = await Promise.all([
-      context.queryClient.ensureQueryData(caseByEntryQueryOptions(params.entryToken)),
+      context.queryClient.query({
+        ...caseByEntryQueryOptions(params.entryToken),
+        staleTime: "static",
+      }),
       startOrResumeSession(params.entryToken).catch(() => undefined),
     ]);
     if (!session) throw notFound();

@@ -14,7 +14,10 @@ import { playStepQueryOptions } from "@/queries/play.ts";
 export const Route = createFileRoute("/t/$qrToken")({
   component: RouteComponent,
   loader: async ({ params, context }) => {
-    await context.queryClient.ensureQueryData(playStepQueryOptions(params.qrToken));
+    await context.queryClient.query({
+      ...playStepQueryOptions(params.qrToken),
+      staleTime: "static",
+    });
   },
 });
 
