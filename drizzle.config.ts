@@ -4,6 +4,7 @@ export default defineConfig({
   dialect: "postgresql",
   schema: ["./src/persistence/drizzle/schema.ts", "./src/persistence/drizzle/authSchema.ts"],
   out: "./src/persistence/drizzle/migrations",
+  schemaFilter: ["public"],
   dbCredentials: {
     url: process.env.DATABASE_URL!,
   },
