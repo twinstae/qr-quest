@@ -326,6 +326,27 @@ const Footer = styled("div", {
   },
 });
 
+/**
+ * 미리보기를 넘긴 편집기는 폼과 미리보기를 나란히 둔다. 넓은 화면에서만 두 칸이고,
+ * 좁은 화면에서는 폼 아래로 내려간다 — 좁은 화면에서 옆에 끼워 넣으면 폼 자체가 못 쓰게 된다.
+ */
+const layoutClass = css({
+  display: "grid",
+  alignItems: "start",
+  gap: "6",
+  gridTemplateColumns: { base: "1fr", lg: "minmax(0, 1fr) minmax(0, 22rem)" },
+});
+
+const fieldsClass = css({ display: "flex", flexDirection: "column", gap: "6" });
+
+// 미리보기는 폼을 훑는 동안 계속 보여야 한다 — 스크롤을 따라오게 붙여 둔다.
+const previewClass = css({
+  display: "flex",
+  flexDirection: "column",
+  position: { base: "static", lg: "sticky" },
+  top: "0",
+});
+
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { formState } = useFormContext();
   return (
@@ -469,6 +490,7 @@ export function StepEditorForm({
   defaultValues,
   onSubmit,
   onCancel,
+  preview,
 }: {
   /** 이 단계의 종류. 편집기는 종류를 바꾸지 않는다. */
   kind: StepKind;
@@ -476,6 +498,11 @@ export function StepEditorForm({
   defaultValues: StepEditorDefaultValues;
   onSubmit: (payload: StepEditorSubmit) => Promise<void>;
   onCancel?: () => void;
+  /**
+   * 오른쪽 칸에 붙일 미리보기. 넘긴 노드는 폼 안(FormProvider 아래)에서 그려지므로
+   * `useFormContext().watch()`로 저장 전 값을 그대로 읽을 수 있다.
+   */
+  preview?: React.ReactNode;
 }) {
   const isQuestion = isQuestionKind(kind);
   const [answerError, setAnswerError] = useState<string>();
@@ -503,66 +530,72 @@ export function StepEditorForm({
         });
       }}
     >
-      <Fieldset.Root>
-        <Fieldset.Legend>단계</Fieldset.Legend>
-        <Fieldset.Content>
-          <SimpleInput name="name" label="단계 이름" placeholder="QR 02" />
-          <SimpleInput name="title" label="제목" placeholder="이 QR을 찾으면 보이는 제목" />
-          <SimpleInput name="body" label="본문 (선택)" />
-          <SimpleImageUpload name="media" label="이미지" allowVideo />
-        </Fieldset.Content>
-      </Fieldset.Root>
+      <div className={layoutClass}>
+        <div className={fieldsClass}>
+          <Fieldset.Root>
+            <Fieldset.Legend>단계</Fieldset.Legend>
+            <Fieldset.Content>
+              <SimpleInput name="name" label="단계 이름" placeholder="QR 02" />
+              <SimpleInput name="title" label="제목" placeholder="이 QR을 찾으면 보이는 제목" />
+              <SimpleInput name="body" label="본문 (선택)" />
+              <SimpleImageUpload name="media" label="이미지" allowVideo />
+            </Fieldset.Content>
+          </Fieldset.Root>
 
-      {isQuestion && (
-        <Fieldset.Root>
-          <Fieldset.Legend>문제와 정답</Fieldset.Legend>
-          <Fieldset.Content>
-            <SimpleInput name="question" label="문제 (선택)" />
-          </Fieldset.Content>
-          <AnswerTypeFields />
-          {answerError && (
-            <p
-              role="status"
-              aria-label="안내"
-              className={css({ textStyle: "sm", color: "fg.muted" })}
-            >
-              {answerError}
-            </p>
+          {isQuestion && (
+            <Fieldset.Root>
+              <Fieldset.Legend>문제와 정답</Fieldset.Legend>
+              <Fieldset.Content>
+                <SimpleInput name="question" label="문제 (선택)" />
+              </Fieldset.Content>
+              <AnswerTypeFields />
+              {answerError && (
+                <p
+                  role="status"
+                  aria-label="안내"
+                  className={css({ textStyle: "sm", color: "fg.muted" })}
+                >
+                  {answerError}
+                </p>
+              )}
+              <Fieldset.Content>
+                <SimpleInput name="placeholder" label="입력창 안내 문구 (선택)" />
+                <SimpleInput name="hint" label="힌트" />
+                <SimpleInput
+                  name="correctMessage"
+                  label="정답 메시지"
+                  placeholder="비우면 기본 문구를 보여줘요"
+                />
+                <SimpleInput
+                  name="wrongMessage"
+                  label="오답 메시지"
+                  placeholder="비우면 기본 문구를 보여줘요"
+                />
+              </Fieldset.Content>
+            </Fieldset.Root>
           )}
-          <Fieldset.Content>
-            <SimpleInput name="placeholder" label="입력창 안내 문구 (선택)" />
-            <SimpleInput name="hint" label="힌트" />
-            <SimpleInput
-              name="correctMessage"
-              label="정답 메시지"
-              placeholder="비우면 기본 문구를 보여줘요"
-            />
-            <SimpleInput
-              name="wrongMessage"
-              label="오답 메시지"
-              placeholder="비우면 기본 문구를 보여줘요"
-            />
-          </Fieldset.Content>
-        </Fieldset.Root>
-      )}
 
-      <Fieldset.Root>
-        <Fieldset.Legend>정답 시 공개할 단서 (선택)</Fieldset.Legend>
-        <Fieldset.Content>
-          <SimpleInput name="revealText" label="문구" />
-          <SimpleImageUpload name="revealMedia" label="이미지" allowVideo />
-        </Fieldset.Content>
-        <RevealPresetFields />
-      </Fieldset.Root>
+          <Fieldset.Root>
+            <Fieldset.Legend>정답 시 공개할 단서 (선택)</Fieldset.Legend>
+            <Fieldset.Content>
+              <SimpleInput name="revealText" label="문구" />
+              <SimpleImageUpload name="revealMedia" label="이미지" allowVideo />
+            </Fieldset.Content>
+            <RevealPresetFields />
+          </Fieldset.Root>
 
-      <Footer>
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
-            취소
-          </Button>
-        )}
-        <SubmitButton>{submitLabel}</SubmitButton>
-      </Footer>
+          <Footer>
+            {onCancel && (
+              <Button type="button" variant="outline" onClick={onCancel}>
+                취소
+              </Button>
+            )}
+            <SubmitButton>{submitLabel}</SubmitButton>
+          </Footer>
+        </div>
+
+        {preview && <div className={previewClass}>{preview}</div>}
+      </div>
     </SimpleForm>
   );
 }

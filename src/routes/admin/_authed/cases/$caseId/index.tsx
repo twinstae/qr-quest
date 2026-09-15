@@ -93,8 +93,8 @@ function RouteComponent() {
         <ArrowLeft className={css({ boxSize: "4" })} /> CASE 목록
       </BackLink>
 
-      <Flex justify="space-between" align="center" gap="4" mb="8">
-        <Flex align="center" gap="3">
+      <Flex justify="space-between" flexDirection="column" gap="4" mb="8">
+        <Flex align="center" gap="3" flexWrap="wrap">
           <PageTitle>
             {formatCaseNumber(caseItem.number)} {caseItem.title}
           </PageTitle>
@@ -126,7 +126,7 @@ function RouteComponent() {
             onReissued={() => {}}
           />
         </Flex>
-        <Flex gap="2">
+        <Flex gap="2" flexWrap="wrap">
           <StartTestModeButton
             caseId={caseItem.id}
             startTestSession={async (id) => {
@@ -174,7 +174,6 @@ function RouteComponent() {
           >
             설치 점검
           </Link>
-          <CreateStepDialog caseId={caseItem.id} />
         </Flex>
       </Flex>
 
@@ -208,6 +207,8 @@ function RouteComponent() {
               }
             />
           ))}
+
+          <CreateStepDialog caseId={caseItem.id} />
         </VStack>
       )}
     </Main>

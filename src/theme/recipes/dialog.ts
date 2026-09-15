@@ -3,6 +3,9 @@ import { defineSlotRecipe } from "@pandacss/dev";
 
 export const dialog = defineSlotRecipe({
   className: "dialog",
+  // size는 DialogShell이 prop으로 받아 런타임에 넘긴다 — Panda는 정적으로 쓰인 variant만
+  // CSS로 뽑으므로 그냥 두면 클래스만 붙고 폭이 적용되지 않는다(reveal-animation과 같은 함정).
+  staticCss: [{ size: ["*"] }],
   slots: [...dialogAnatomy.keys(), "root", "header", "body", "footer"],
   base: {
     backdrop: {
@@ -37,7 +40,6 @@ export const dialog = defineSlotRecipe({
       bg: "gray.surface.bg",
       boxShadow: "xl",
       width: "full",
-      maxWidth: "md",
       maxHeight: "calc(100% - 7.5rem)",
       overflow: "auto",
       _open: {
@@ -82,6 +84,18 @@ export const dialog = defineSlotRecipe({
     closeTrigger: {
       color: "fg.muted",
       _hover: { color: "fg.default" },
+    },
+  },
+  defaultVariants: {
+    size: "md",
+  },
+  variants: {
+    // 폭은 variant로만 정한다 — base에 maxWidth를 두고 variant로 덮으면 명시도가 같아
+    // 스타일시트 순서에 따라 지는 싸움이 된다(ticket 15의 "정적 추출과 캐스케이드").
+    size: {
+      md: { content: { maxWidth: "md" } },
+      // 폼 옆에 참가자 화면 미리보기를 나란히 두는 편집기용 크기.
+      wide: { content: { maxWidth: "5xl" } },
     },
   },
 });

@@ -1,6 +1,5 @@
 import { ArrowDown, ArrowUp } from "lucide-react";
 
-import { PreviewDialog } from "@/components/domains/preview-dialog.tsx";
 import { ReissueTokenButton } from "@/components/domains/reissue-token-button.tsx";
 import { EditStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { StepQrCodeDownload } from "@/components/domains/step-qr-code.tsx";
@@ -89,7 +88,6 @@ export function StepListItem({
           <span className={css({ textStyle: "xs", color: "fg.subtle" })}>QR 없음</span>
         )}
         <Flex gap="2">
-          <PreviewDialog previewUrl={`/admin/preview/${step.id}`} />
           <EditStepDialog stepId={step.id} />
         </Flex>
       </Card.Footer>

@@ -18,7 +18,6 @@ import { Route as SEntryTokenRouteImport } from './routes/s/$entryToken'
 import { Route as TQrTokenRouteImport } from './routes/t/$qrToken'
 import { Route as AdminAuthedRedeemRouteImport } from './routes/admin/_authed/redeem'
 import { Route as AdminAuthedCasesIndexRouteImport } from './routes/admin/_authed/cases/index'
-import { Route as AdminAuthedPreviewStepIdRouteImport } from './routes/admin/_authed/preview/$stepId'
 import { Route as AdminAuthedCasesCaseIdIndexRouteImport } from './routes/admin/_authed/cases/$caseId/index'
 import { Route as AdminAuthedCasesCaseIdCheckRouteImport } from './routes/admin/_authed/cases/$caseId/check'
 import { Route as AdminAuthedCasesCaseIdPrintRouteImport } from './routes/admin/_authed/cases/$caseId/print'
@@ -69,12 +68,6 @@ const AdminAuthedCasesIndexRoute = AdminAuthedCasesIndexRouteImport.update({
   path: '/cases/',
   getParentRoute: () => AdminAuthedRoute,
 } as any)
-const AdminAuthedPreviewStepIdRoute =
-  AdminAuthedPreviewStepIdRouteImport.update({
-    id: '/preview/$stepId',
-    path: '/preview/$stepId',
-    getParentRoute: () => AdminAuthedRoute,
-  } as any)
 const AdminAuthedCasesCaseIdIndexRoute =
   AdminAuthedCasesCaseIdIndexRouteImport.update({
     id: '/cases/$caseId/',
@@ -109,7 +102,6 @@ export interface FileRoutesByFullPath {
   '/s/$entryToken': typeof SEntryTokenRoute
   '/t/$qrToken': typeof TQrTokenRoute
   '/admin/redeem': typeof AdminAuthedRedeemRoute
-  '/admin/preview/$stepId': typeof AdminAuthedPreviewStepIdRoute
   '/admin/cases/': typeof AdminAuthedCasesIndexRoute
   '/admin/cases/$caseId/check': typeof AdminAuthedCasesCaseIdCheckRoute
   '/admin/cases/$caseId/print': typeof AdminAuthedCasesCaseIdPrintRoute
@@ -125,7 +117,6 @@ export interface FileRoutesByTo {
   '/s/$entryToken': typeof SEntryTokenRoute
   '/t/$qrToken': typeof TQrTokenRoute
   '/admin/redeem': typeof AdminAuthedRedeemRoute
-  '/admin/preview/$stepId': typeof AdminAuthedPreviewStepIdRoute
   '/admin/cases': typeof AdminAuthedCasesIndexRoute
   '/admin/cases/$caseId/check': typeof AdminAuthedCasesCaseIdCheckRoute
   '/admin/cases/$caseId/print': typeof AdminAuthedCasesCaseIdPrintRoute
@@ -142,7 +133,6 @@ export interface FileRoutesById {
   '/s/$entryToken': typeof SEntryTokenRoute
   '/t/$qrToken': typeof TQrTokenRoute
   '/admin/_authed/redeem': typeof AdminAuthedRedeemRoute
-  '/admin/_authed/preview/$stepId': typeof AdminAuthedPreviewStepIdRoute
   '/admin/_authed/cases/': typeof AdminAuthedCasesIndexRoute
   '/admin/_authed/cases/$caseId/check': typeof AdminAuthedCasesCaseIdCheckRoute
   '/admin/_authed/cases/$caseId/print': typeof AdminAuthedCasesCaseIdPrintRoute
@@ -160,7 +150,6 @@ export interface FileRouteTypes {
     | '/s/$entryToken'
     | '/t/$qrToken'
     | '/admin/redeem'
-    | '/admin/preview/$stepId'
     | '/admin/cases/'
     | '/admin/cases/$caseId/check'
     | '/admin/cases/$caseId/print'
@@ -176,7 +165,6 @@ export interface FileRouteTypes {
     | '/s/$entryToken'
     | '/t/$qrToken'
     | '/admin/redeem'
-    | '/admin/preview/$stepId'
     | '/admin/cases'
     | '/admin/cases/$caseId/check'
     | '/admin/cases/$caseId/print'
@@ -192,7 +180,6 @@ export interface FileRouteTypes {
     | '/s/$entryToken'
     | '/t/$qrToken'
     | '/admin/_authed/redeem'
-    | '/admin/_authed/preview/$stepId'
     | '/admin/_authed/cases/'
     | '/admin/_authed/cases/$caseId/check'
     | '/admin/_authed/cases/$caseId/print'
@@ -275,13 +262,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthedCasesIndexRouteImport
       parentRoute: typeof AdminAuthedRoute
     }
-    '/admin/_authed/preview/$stepId': {
-      id: '/admin/_authed/preview/$stepId'
-      path: '/preview/$stepId'
-      fullPath: '/admin/preview/$stepId'
-      preLoaderRoute: typeof AdminAuthedPreviewStepIdRouteImport
-      parentRoute: typeof AdminAuthedRoute
-    }
     '/admin/_authed/cases/$caseId/': {
       id: '/admin/_authed/cases/$caseId/'
       path: '/cases/$caseId'
@@ -315,7 +295,6 @@ declare module '@tanstack/react-router' {
 
 interface AdminAuthedRouteChildren {
   AdminAuthedRedeemRoute: typeof AdminAuthedRedeemRoute
-  AdminAuthedPreviewStepIdRoute: typeof AdminAuthedPreviewStepIdRoute
   AdminAuthedCasesIndexRoute: typeof AdminAuthedCasesIndexRoute
   AdminAuthedCasesCaseIdCheckRoute: typeof AdminAuthedCasesCaseIdCheckRoute
   AdminAuthedCasesCaseIdPrintRoute: typeof AdminAuthedCasesCaseIdPrintRoute
@@ -325,7 +304,6 @@ interface AdminAuthedRouteChildren {
 
 const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
   AdminAuthedRedeemRoute: AdminAuthedRedeemRoute,
-  AdminAuthedPreviewStepIdRoute: AdminAuthedPreviewStepIdRoute,
   AdminAuthedCasesIndexRoute: AdminAuthedCasesIndexRoute,
   AdminAuthedCasesCaseIdCheckRoute: AdminAuthedCasesCaseIdCheckRoute,
   AdminAuthedCasesCaseIdPrintRoute: AdminAuthedCasesCaseIdPrintRoute,

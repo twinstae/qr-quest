@@ -3,6 +3,7 @@ import { useRouter } from "@tanstack/react-router";
 import { Pencil, Plus } from "lucide-react";
 
 import { DialogShell } from "@/components/domains/dialog-shell.tsx";
+import { StepPreviewPanel } from "@/components/domains/step-preview-panel.tsx";
 import {
   EMPTY_STEP_EDITOR_VALUES,
   StepEditorForm,
@@ -36,6 +37,7 @@ export function CreateStepDialog({ caseId }: { caseId: string }) {
       title="단계 추가"
       open={open}
       onOpenChange={setOpen}
+      size="wide"
       trigger={
         <Button>
           <Plus /> 단계 추가
@@ -46,6 +48,7 @@ export function CreateStepDialog({ caseId }: { caseId: string }) {
         kind={DEFAULT_STEP_KIND}
         submitLabel="단계 만들기"
         defaultValues={EMPTY_STEP_EDITOR_VALUES}
+        preview={<StepPreviewPanel kind={DEFAULT_STEP_KIND} />}
         onCancel={() => setOpen(false)}
         onSubmit={async (payload) => {
           const client = getApiClient();
@@ -100,6 +103,7 @@ export function EditStepDialog({ stepId }: { stepId: string }) {
       title="단계 수정"
       open={open}
       onOpenChange={handleOpenChange}
+      size="wide"
       trigger={
         <Button variant="outline" size="sm">
           <Pencil /> 수정
@@ -111,6 +115,7 @@ export function EditStepDialog({ stepId }: { stepId: string }) {
           kind={loaded.kind}
           submitLabel="저장"
           defaultValues={loaded.defaultValues}
+          preview={<StepPreviewPanel kind={loaded.kind} />}
           onCancel={() => setOpen(false)}
           onSubmit={async (payload) => {
             const client = getApiClient();
