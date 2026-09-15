@@ -54,7 +54,7 @@ function RouteComponent() {
           <img
             src={caseData.thumbnail.src}
             alt={caseData.thumbnail.alt}
-            className={css({ width: "full", aspectRatio: "16 / 10", objectFit: "contain" })}
+            className={css({ width: "full", aspectRatio: "1 / 1", objectFit: "contain" })}
           />
         )}
         <Card.Header>
