@@ -63,7 +63,7 @@ export const fileUpload = defineSlotRecipe({
     },
     itemPreviewImage: {
       aspectRatio: "1",
-      objectFit: "cover",
+      objectFit: "contain",
       maxW: "20",
       borderRadius: "l2",
     },

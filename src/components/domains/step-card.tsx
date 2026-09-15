@@ -28,7 +28,7 @@ export type StepCardData = {
 
 /** 이미지와 동영상을 같은 자리에서 보여준다. */
 export function StepMedia({ media }: { media: Media }) {
-  const className = css({ width: "full", aspectRatio: "16 / 10", objectFit: "cover" });
+  const className = css({ width: "full", aspectRatio: "16 / 10", objectFit: "contain" });
 
   if (media.kind === "video") {
     return (
