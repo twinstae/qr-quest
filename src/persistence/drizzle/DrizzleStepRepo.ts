@@ -78,6 +78,9 @@ export function createDrizzleStepRepo(db: Database): StepRepo {
       if (!row) throw new Error("update did not return a row");
       return toDomain(row);
     },
+    async delete(id) {
+      await db.delete(steps).where(eq(steps.id, id));
+    },
     async deleteByCaseId(caseId) {
       await db.delete(steps).where(eq(steps.caseId, caseId));
     },

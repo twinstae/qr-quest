@@ -22,6 +22,7 @@ import {
 } from "../../application/caseService.ts";
 import {
   createStep,
+  deleteStep,
   getStepForEdit,
   listSteps,
   updateStep,
@@ -179,6 +180,18 @@ export function createApp(ctx: AppContext) {
           ...StepFieldsSchema,
         }),
       })
+      .delete(
+        "/steps/:id",
+        async ({ params }) => {
+          await deleteStep(ctx, params.id);
+          return { deleted: true };
+        },
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          response: t.Object({ deleted: t.Boolean() }),
+        },
+      )
       .post("/cases/:id/clone", ({ params }) => cloneCase(ctx, params.id), {
         auth: true,
         params: t.Object({ id: t.String() }),

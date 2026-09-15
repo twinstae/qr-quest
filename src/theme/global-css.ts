@@ -12,7 +12,7 @@ export const globalCss = {
     body: {
       background: "canvas",
       color: "fg.default",
-      wordBreak: "keep-all"
+      wordBreak: "keep-all",
     },
   },
 };

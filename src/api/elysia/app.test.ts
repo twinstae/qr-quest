@@ -350,6 +350,33 @@ describe("PATCH /api/steps/:id", () => {
   });
 });
 
+describe("DELETE /api/steps/:id", () => {
+  it("세션이 없으면 401을 반환한다", async () => {
+    const client = createTestClient(appWith(TEST_CASE, [TEST_STEP]));
+
+    expect((await client.delete(`/api/steps/${TEST_STEP.id}`)).status).toBe(401);
+  });
+
+  it("그 단계만 지우고 같은 CASE의 다른 단계는 남겨둔다", async () => {
+    const survivor = { ...ANOTHER_STEP, id: "step-other", caseId: TEST_CASE.id };
+    const { client } = await signedInClient(
+      createFakeContext({
+        repo: {
+          case: createFakeCaseRepo({ [TEST_CASE.id]: TEST_CASE }),
+          step: createFakeStepRepo({ [TEST_STEP.id]: TEST_STEP, [survivor.id]: survivor }),
+        },
+      }),
+    );
+
+    const response = await client.delete(`/api/steps/${TEST_STEP.id}`);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ deleted: true });
+    const steps = await (await client.get(`/api/cases/${TEST_CASE.id}/steps`)).json();
+    expect(steps).toEqual([expect.objectContaining({ id: survivor.id })]);
+  });
+});
+
 describe("CASE 편집기 (ticket 13)", () => {
   async function createFullCase(client: ReturnType<typeof createTestClient>) {
     const created = await (await client.post("/api/cases", toCaseRequestBody(TEST_CASE))).json();

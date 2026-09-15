@@ -112,6 +112,23 @@ describe("createDrizzleStepRepo", () => {
     expect(await stepRepo.getById(step.id)).toEqual(updated);
   });
 
+  it("delete는 그 단계만 지우고 다른 단계는 남겨둔다", async () => {
+    const { db, caseRepo, stepRepo } = await setup();
+    await using _db = db;
+    const created = await caseRepo.create(caseInput());
+    const target = await stepRepo.create(
+      stepInput({ caseId: created.id, order: 0, qrToken: "TOKEN-DEL" }),
+    );
+    const survivor = await stepRepo.create(
+      stepInput({ caseId: created.id, order: 1, qrToken: "TOKEN-KEEP2" }),
+    );
+
+    await stepRepo.delete(target.id);
+
+    expect(await stepRepo.getById(target.id)).toBeUndefined();
+    expect(await stepRepo.listByCaseId(created.id)).toEqual([survivor]);
+  });
+
   it("deleteByCaseId는 그 CASE의 단계만 지운다", async () => {
     const { db, caseRepo, stepRepo } = await setup();
     await using _db = db;

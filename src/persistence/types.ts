@@ -18,6 +18,7 @@ export interface StepRepo {
   getByQrToken(token: string): Promise<Step | undefined>;
   listByCaseId(caseId: Step["caseId"]): Promise<Step[]>;
   update(id: Step["id"], input: Omit<Step, "id" | "caseId">): Promise<Step>;
+  delete(id: Step["id"]): Promise<void>;
   deleteByCaseId(caseId: Step["caseId"]): Promise<void>;
   /** 아직 단계가 없는 CASE에 새 단계를 붙일 때 쓸 순서. */
   nextOrder(caseId: Step["caseId"]): Promise<number>;

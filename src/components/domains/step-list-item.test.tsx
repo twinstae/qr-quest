@@ -83,3 +83,54 @@ describe("StepListItem > 순서 이동", () => {
     );
   });
 });
+
+describe("StepListItem > 삭제", () => {
+  it("deleteStep을 넘기지 않으면 삭제 버튼이 없다", async () => {
+    await runSiheom(given.render(withQueryClient(<StepListItem step={STEP} />)));
+
+    expect(document.querySelector("button")?.textContent?.includes("삭제")).toBeFalsy();
+  });
+
+  it("삭제 확인하면 deleteStep을 한 번 호출한다", async () => {
+    let deleteCount = 0;
+
+    await runSiheom(
+      given.render(
+        withQueryClient(
+          <StepListItem
+            step={STEP}
+            deleteStep={async () => {
+              deleteCount += 1;
+            }}
+          />,
+        ),
+      ),
+      actions.click(query.button("삭제")),
+      assertions.visible(query.dialog("단계 삭제")),
+      actions.click(query.button("삭제하기")),
+    );
+
+    expect(deleteCount).toBe(1);
+  });
+
+  it("취소하면 deleteStep을 호출하지 않는다", async () => {
+    let deleteCount = 0;
+
+    await runSiheom(
+      given.render(
+        withQueryClient(
+          <StepListItem
+            step={STEP}
+            deleteStep={async () => {
+              deleteCount += 1;
+            }}
+          />,
+        ),
+      ),
+      actions.click(query.button("삭제")),
+      actions.click(query.button("취소")),
+    );
+
+    expect(deleteCount).toBe(0);
+  });
+});

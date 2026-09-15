@@ -208,6 +208,10 @@ function RouteComponent() {
                     }
                   : undefined
               }
+              deleteStep={async () => {
+                await getApiClient().steps({ id: step.id }).delete();
+                await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
+              }}
             />
           ))}
 

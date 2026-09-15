@@ -28,6 +28,9 @@ export function createFakeStepRepo(initState: Record<string, Step>): StepRepo {
       state.set(id, updated);
       return updated;
     },
+    async delete(id) {
+      state.delete(id);
+    },
     async deleteByCaseId(caseId) {
       for (const [id, step] of state) {
         if (step.caseId === caseId) state.delete(id);

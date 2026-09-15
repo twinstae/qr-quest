@@ -1,9 +1,11 @@
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 
+import { ConfirmDialog } from "@/components/domains/confirm-dialog.tsx";
 import { ReissueTokenButton } from "@/components/domains/reissue-token-button.tsx";
 import { EditStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { StepQrCodeDownload } from "@/components/domains/step-qr-code.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import * as Card from "@/components/ui/card.tsx";
 import { IconButton } from "@/components/ui/icon-button.tsx";
 import { css } from "styled-system/css";
@@ -28,6 +30,7 @@ export function StepListItem({
   onMoveUp,
   onMoveDown,
   reissueQrToken,
+  deleteStep,
 }: {
   /** 단계 수정 후 캐시 무효화 범위를 좁히는 데 쓴다 — 없으면 CASE 전체를 무효화한다. */
   caseId?: string;
@@ -39,6 +42,8 @@ export function StepListItem({
   onMoveDown?: () => void;
   /** 넘기면 QR이 있는 단계에 [QR 재발급] 버튼이 보인다. */
   reissueQrToken?: () => Promise<string>;
+  /** 넘기면 [삭제] 버튼이 보인다 — 단독 미리보기 등에서는 생략한다. */
+  deleteStep?: () => Promise<void>;
 }) {
   return (
     <Card.Root variant="outline">
@@ -92,6 +97,19 @@ export function StepListItem({
         )}
         <Flex gap="2">
           <EditStepDialog caseId={caseId} stepId={step.id} />
+          {deleteStep && (
+            <ConfirmDialog
+              title="단계 삭제"
+              description={`"${step.name}" 단계를 삭제할까요? 되돌릴 수 없어요.`}
+              confirmLabel="삭제하기"
+              trigger={
+                <Button variant="outline" size="sm">
+                  <Trash2 /> 삭제
+                </Button>
+              }
+              onConfirm={deleteStep}
+            />
+          )}
         </Flex>
       </Card.Footer>
     </Card.Root>

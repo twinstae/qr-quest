@@ -9,7 +9,8 @@ export const caseKeys = {
   lists: () => [...caseKeys.all, "list"] as const,
   detail: (caseId: string) => [...caseKeys.all, "detail", caseId] as const,
   steps: (caseId: string) => [...caseKeys.detail(caseId), "steps"] as const,
-  stats: (caseId: string, period: StatsPeriod) => [...caseKeys.detail(caseId), "stats", period] as const,
+  stats: (caseId: string, period: StatsPeriod) =>
+    [...caseKeys.detail(caseId), "stats", period] as const,
   byEntry: (entryToken: string) => [...caseKeys.all, "by-entry", entryToken] as const,
 };
 
@@ -60,9 +61,7 @@ export function caseStatsQueryOptions(caseId: string, period: StatsPeriod) {
   return queryOptions({
     queryKey: caseKeys.stats(caseId, period),
     queryFn: async () => {
-      const { data } = await getApiClient()
-        .cases({ id: caseId })
-        .stats.get({ query: { period } });
+      const { data } = await getApiClient().cases({ id: caseId }).stats.get({ query: { period } });
       if (!data) throw notFound();
       return data;
     },

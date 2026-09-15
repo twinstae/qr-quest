@@ -5,7 +5,7 @@ import { NotExistError } from "../domain/errors.ts";
 import { ANOTHER_STEP, TEST_CASE, TEST_STEP } from "../domain/fixtures.ts";
 import type { Step } from "../domain/step.ts";
 import createFakeStepRepo from "../persistence/FakeStepRepo.ts";
-import { createStep, getStepForEdit, listSteps, updateStep } from "./stepService.ts";
+import { createStep, deleteStep, getStepForEdit, listSteps, updateStep } from "./stepService.ts";
 
 function contextWith(steps: Step[] = []) {
   return createFakeContext({
@@ -97,6 +97,21 @@ describe("createStep", () => {
 
     expect(created.correctMessage).toBe("정답이에요!");
     expect(created.wrongMessage).toBe("다시 살펴보세요.");
+  });
+});
+
+describe("deleteStep", () => {
+  it("그 단계만 지우고 같은 CASE의 다른 단계는 남겨둔다", async () => {
+    const ctx = contextWith([
+      TEST_STEP,
+      { ...ANOTHER_STEP, id: "step-other", caseId: TEST_CASE.id },
+    ]);
+
+    await deleteStep(ctx, TEST_STEP.id);
+
+    expect(await listSteps(ctx, TEST_CASE.id)).toEqual([
+      expect.objectContaining({ id: "step-other" }),
+    ]);
   });
 });
 

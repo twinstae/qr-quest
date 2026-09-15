@@ -1,5 +1,13 @@
 import { describe, it } from "vitest";
-import { actions, assertions, effect, given, query, runSiheom, withFakeTimers } from "@siheom/react";
+import {
+  actions,
+  assertions,
+  effect,
+  given,
+  query,
+  runSiheom,
+  withFakeTimers,
+} from "@siheom/react";
 import * as v from "valibot";
 
 import { SimpleForm } from "./simple-form.tsx";

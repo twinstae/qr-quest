@@ -122,6 +122,10 @@ export async function createStep(
   });
 }
 
+export async function deleteStep(ctx: AppContext, id: string): Promise<void> {
+  await ctx.repo.step.delete(id);
+}
+
 export async function updateStep(
   ctx: AppContext,
   id: string,
