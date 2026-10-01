@@ -5,9 +5,6 @@ import type { Theme } from "@/domain/theme.ts";
 
 import { EMPTY_THEME_VALUES, ThemeEditorForm } from "./theme-editor-form.tsx";
 
-// 실제 api-client를 쓰면 서버 전용 모듈(drizzle/postgres)까지 브라우저로 딸려 온다.
-vi.mock("@/lib/api-client.ts", () => ({ getApiClient: () => ({}) }));
-
 describe("ThemeEditorForm", () => {
   it("이름·색·폰트·흐리기를 고르면 그 값으로 저장한다", async () => {
     let saved: Omit<Theme, "id"> | undefined;

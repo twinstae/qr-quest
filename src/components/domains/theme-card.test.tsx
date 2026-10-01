@@ -5,8 +5,6 @@ import type { ThemeWithUsage } from "@/application/themeService.ts";
 
 import { ThemeCard } from "./theme-card.tsx";
 
-vi.mock("@/lib/api-client.ts", () => ({ getApiClient: () => ({}) }));
-
 const UNUSED: ThemeWithUsage = {
   id: "theme-1",
   name: "팔레스타인",

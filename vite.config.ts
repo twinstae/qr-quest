@@ -7,6 +7,8 @@ import { nitro } from "nitro/vite";
 // import path from "node:path";
 // import { fileURLToPath } from "node:url";
 import { playwright } from "@vitest/browser-playwright";
+
+import { fakeAliases } from "./fake-aliases.ts";
 // const dirname =
 //   typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,6 +36,7 @@ const config = defineConfig({
       {
         extends: true,
         plugins: [],
+        resolve: { alias: fakeAliases },
         test: {
           setupFiles: ["src/setupTest.ts"],
           name: "browser",
