@@ -84,4 +84,23 @@ describe("theme routes", () => {
       theme: created,
     });
   });
+
+  it("CASE에 테마만 따로 걸고 뗄 수 있다", async () => {
+    const { admin, guest } = await setup();
+    const created = await (await admin.post("/api/themes", TEST_THEME_INPUT)).json();
+
+    expect((await guest.patch(`/api/cases/${TEST_CASE.id}/theme`, { themeId: null })).status).toBe(
+      401,
+    );
+    const attached = await admin.patch(`/api/cases/${TEST_CASE.id}/theme`, {
+      themeId: created.id,
+    });
+    expect(await attached.json()).toMatchObject({ id: TEST_CASE.id, themeId: created.id });
+
+    const detached = await admin.patch(`/api/cases/${TEST_CASE.id}/theme`, { themeId: null });
+    expect((await detached.json()).themeId).toBeUndefined();
+    expect(
+      (await admin.patch(`/api/cases/${TEST_CASE.id}/theme`, { themeId: "missing" })).status,
+    ).toBe(404);
+  });
 });

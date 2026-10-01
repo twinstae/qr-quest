@@ -10,6 +10,7 @@ import {
   deleteTheme,
   getThemeForCase,
   listThemes,
+  setCaseTheme,
   updateTheme,
 } from "./themeService.ts";
 
@@ -79,5 +80,23 @@ describe("themeService", () => {
     expect(await getThemeForCase(ctx, TEST_CASE.id)).toEqual(theme);
     expect(await getThemeForCase(ctx, ANOTHER_CASE.id)).toBeNull();
     await expect(getThemeForCase(ctx, "missing")).rejects.toThrow(NotExistError);
+  });
+
+  it("CASE의 다른 내용은 건드리지 않고 테마만 걸거나 뗀다", async () => {
+    const ctx = contextWith([TEST_CASE]);
+    const theme = await createTheme(ctx, TEST_THEME_INPUT);
+
+    expect(await setCaseTheme(ctx, TEST_CASE.id, theme.id)).toEqual({
+      ...TEST_CASE,
+      themeId: theme.id,
+    });
+    expect(await setCaseTheme(ctx, TEST_CASE.id, null)).toEqual(TEST_CASE);
+  });
+
+  it("없는 테마나 없는 CASE면 NotExistError", async () => {
+    const ctx = contextWith([TEST_CASE]);
+
+    await expect(setCaseTheme(ctx, TEST_CASE.id, "missing")).rejects.toThrow(NotExistError);
+    await expect(setCaseTheme(ctx, "missing", null)).rejects.toThrow(NotExistError);
   });
 });

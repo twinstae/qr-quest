@@ -6,10 +6,11 @@ import {
   getTheme,
   getThemeForCase,
   listThemes,
+  setCaseTheme,
   updateTheme,
 } from "../../application/themeService.ts";
 import type { AppContext } from "../context.ts";
-import { ThemeFieldsSchema, ThemeSchema, ThemeWithUsageSchema } from "./schemas.ts";
+import { CaseSchema, ThemeFieldsSchema, ThemeSchema, ThemeWithUsageSchema } from "./schemas.ts";
 
 /** 관리자는 테마를 관리하고, 참가자 화면은 CASE에 걸린 테마만 받는다 (ticket 18). */
 export function createThemeRoutes(ctx: AppContext) {
@@ -24,6 +25,12 @@ export function createThemeRoutes(ctx: AppContext) {
           response: t.Object({ theme: t.Nullable(ThemeSchema) }),
         },
       )
+      .patch("/cases/:id/theme", ({ params, body }) => setCaseTheme(ctx, params.id, body.themeId), {
+        auth: true,
+        params: t.Object({ id: t.String() }),
+        body: t.Object({ themeId: t.Nullable(t.String()) }),
+        response: CaseSchema,
+      })
       .get("/themes", () => listThemes(ctx), {
         auth: true,
         response: t.Array(ThemeWithUsageSchema),

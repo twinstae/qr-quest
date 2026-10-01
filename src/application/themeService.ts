@@ -10,6 +10,11 @@ export type ThemeWithUsage = Theme & {
   usedBy: Pick<Case, "id" | "number" | "title" | "status">[];
 };
 
+function withTheme(item: Case, themeId: string | null): Omit<Case, "id"> {
+  const { id: _id, themeId: _previous, ...rest } = item;
+  return themeId ? { ...rest, themeId } : rest;
+}
+
 async function getThemeOrThrow(ctx: AppContext, id: string): Promise<Theme> {
   const found = await ctx.repo.theme.getById(id);
   if (!found) throw new NotExistError(`Theme id=${id} not found`);
@@ -46,8 +51,7 @@ export async function updateTheme(ctx: AppContext, id: string, input: ThemeInput
 export async function deleteTheme(ctx: AppContext, id: string): Promise<void> {
   const cases = await ctx.repo.case.list();
   for (const item of cases.filter((candidate) => candidate.themeId === id)) {
-    const { themeId: _detached, ...rest } = item;
-    await ctx.repo.case.update(item.id, rest);
+    await ctx.repo.case.update(item.id, withTheme(item, null));
   }
   await ctx.repo.theme.delete(id);
 }
@@ -58,4 +62,16 @@ export async function getThemeForCase(ctx: AppContext, caseId: string): Promise<
   if (!found) throw new NotExistError(`Case id=${caseId} not found`);
   if (!found.themeId) return null;
   return (await ctx.repo.theme.getById(found.themeId)) ?? null;
+}
+
+/** CASE 편집 화면의 테마 고르기. 다른 필드를 다시 보내지 않아도 되게 테마만 바꾼다. */
+export async function setCaseTheme(
+  ctx: AppContext,
+  caseId: string,
+  themeId: string | null,
+): Promise<Case> {
+  const found = await ctx.repo.case.getById(caseId);
+  if (!found) throw new NotExistError(`Case id=${caseId} not found`);
+  if (themeId) await getThemeOrThrow(ctx, themeId);
+  return ctx.repo.case.update(caseId, withTheme(found, themeId));
 }
