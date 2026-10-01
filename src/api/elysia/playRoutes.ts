@@ -34,6 +34,11 @@ const LockedOnlySchema = t.Union([
  */
 export const PLAY_SESSION_COOKIE = "qr_play_session";
 
+/** 참가 세션 쿠키. 1년 동안 같은 휴대폰에서 이어 할 수 있다. */
+export function sessionCookieHeader(token: string): string {
+  return `${PLAY_SESSION_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 365}`;
+}
+
 export function readSessionToken(cookieHeader: string | undefined): string | undefined {
   if (!cookieHeader) return undefined;
   const prefix = `${PLAY_SESSION_COOKIE}=`;
@@ -66,11 +71,15 @@ export function createPlayRoutes(ctx: AppContext) {
   return new Elysia({ name: "play-routes" })
     .post(
       "/play/sessions",
-      async ({ body, headers }) => {
-        return startOrResumeSession(ctx, {
+      async ({ body, headers, set }) => {
+        const result = await startOrResumeSession(ctx, {
           entryToken: body.entryToken,
           existingToken: readSessionToken(headers.cookie),
         });
+        // SPA라 시작 화면의 loader가 브라우저에서 이 API를 직접 부른다 — 여기서 쿠키를 줘야
+        // 다음 단계 요청에 세션이 실린다. (서버 실행 경로는 play-session.ts의 setCookie가 맡는다.)
+        set.headers["set-cookie"] = sessionCookieHeader(result.token);
+        return result;
       },
       {
         body: t.Object({ entryToken: t.String() }),

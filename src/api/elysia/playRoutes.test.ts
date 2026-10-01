@@ -249,6 +249,24 @@ describe("POST /api/play/sessions", () => {
     expect(second.resumed).toBe(true);
   });
 
+  it("브라우저에서 시작해도 세션 쿠키를 받아, 다음 단계 요청에 세션이 실린다", async () => {
+    const app = appWith();
+
+    const response = await app.handle(
+      new Request("http://localhost/api/play/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entryToken: TEST_CASE.entryToken }),
+      }),
+    );
+    const { token } = await response.json();
+
+    const cookie = response.headers.get("set-cookie") ?? "";
+    expect(cookie).toContain(`${PLAY_SESSION_COOKIE}=${token}`);
+    expect(cookie).toContain("HttpOnly");
+    expect(cookie).toContain("Path=/");
+  });
+
   it("없는 시작 토큰은 404를 반환한다", async () => {
     const app = appWith();
 

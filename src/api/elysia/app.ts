@@ -36,7 +36,7 @@ import {
 } from "../../domain/errors.ts";
 import type { AppContext } from "../context.ts";
 import { createAuthGuard } from "./authGuard.ts";
-import { createPlayRoutes, PLAY_SESSION_COOKIE } from "./playRoutes.ts";
+import { createPlayRoutes, sessionCookieHeader } from "./playRoutes.ts";
 import { createRedeemRoutes } from "./redeemRoutes.ts";
 import {
   CaseFieldsSchema,
@@ -262,8 +262,7 @@ export function createApp(ctx: AppContext) {
           const result = await startTestSession(ctx, params.id);
           // 이 라우트는 항상 관리자 화면의 실제 fetch로만 호출된다(로더의 in-process
           // 호출이 아님) — Set-Cookie가 그대로 브라우저 응답에 실린다.
-          set.headers["set-cookie"] =
-            `${PLAY_SESSION_COOKIE}=${result.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 365}`;
+          set.headers["set-cookie"] = sessionCookieHeader(result.token);
           return result;
         },
         {
