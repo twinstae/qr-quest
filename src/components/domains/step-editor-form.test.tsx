@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { actions, assertions, given, query, runSiheom } from "@siheom/react";
 
+import { StepPreviewPanel } from "./step-preview-panel.tsx";
 import {
   EMPTY_STEP_EDITOR_VALUES,
   StepEditorForm,
@@ -247,5 +248,37 @@ describe("StepEditorForm > 정답/오답 메시지", () => {
       assertions.not.visible(query.textbox("정답 메시지")),
       assertions.not.visible(query.textbox("오답 메시지")),
     );
+  });
+});
+
+describe("StepEditorForm > 이미 올린 이미지 삭제", () => {
+  it("저장된 이미지를 지워도 화면이 죽지 않고, 이미지 없이 저장된다", async () => {
+    let saved: StepEditorSubmit | undefined;
+
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="QR"
+          submitLabel="저장"
+          defaultValues={{
+            ...EMPTY_STEP_EDITOR_VALUES,
+            title: "땅에는 얼마나 긴 시간이 쌓여 있을까?",
+            answerType: "SHORT_TEXT",
+            acceptedText: "예리코",
+            media: { src: "https://example.com/jericho.jpg", alt: "예리코", kind: "image" },
+          }}
+          preview={<StepPreviewPanel kind="QR" />}
+          onSubmit={async (payload) => {
+            saved = payload;
+          }}
+        />,
+      ),
+      actions.click(query.button("이미지 삭제")),
+      assertions.not.visible(query.button("이미지 삭제")),
+      actions.click(query.button("저장")),
+    );
+
+    await vi.waitFor(() => expect(saved).toBeDefined());
+    expect(saved?.media).toBeUndefined();
   });
 });

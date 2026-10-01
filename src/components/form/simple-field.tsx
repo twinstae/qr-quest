@@ -227,6 +227,7 @@ const FileUploadPreview = ({
             pos="absolute"
             top="-2"
             right="-2"
+            aria-label="이미지 삭제"
             onClick={(event) => {
               // Dropzone 클릭 = 파일 선택창 오픈이라 버블링을 막아야 한다.
               event.stopPropagation();

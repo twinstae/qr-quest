@@ -69,7 +69,7 @@ const StepEditorEntries = {
   name: v.pipe(v.string(), v.minLength(1, "단계 이름을 입력해주세요")),
   title: v.pipe(v.string(), v.minLength(1, "제목을 입력해주세요")),
   body: v.string(),
-  media: ImageValueSchema,
+  media: v.optional(ImageValueSchema),
   question: v.string(),
   answerType: v.picklist(ANSWER_TYPES),
   choiceALabel: v.string(),
@@ -106,7 +106,7 @@ export const EMPTY_STEP_EDITOR_VALUES: StepEditorDefaultValues = {
   name: "QR 05",
   title: "",
   body: "",
-  media: { src: "", alt: "" },
+  media: undefined,
   question: "",
   answerType: "SHORT_TEXT",
   choiceALabel: "",
@@ -277,6 +277,13 @@ export function toAnswerFormValues(
 
 export function toMedia(src: string, alt: string, kind: MediaKind = "image"): Media | undefined {
   return src ? { kind, src, alt } : undefined;
+}
+
+/** 업로드 필드에서 이미지를 지우면 값이 undefined가 된다. */
+export function mediaFromValue(
+  value: { src: string; alt: string; kind?: MediaKind } | undefined,
+): Media | undefined {
+  return value ? toMedia(value.src, value.alt, value.kind) : undefined;
 }
 
 export type StepEditorSubmit = {
@@ -514,10 +521,8 @@ export function StepEditorForm({
         await onSubmit({
           kind,
           values,
-          media: toMedia(values.media.src, values.media.alt, values.media.kind),
-          revealMedia: values.revealMedia
-            ? toMedia(values.revealMedia.src, values.revealMedia.alt, values.revealMedia.kind)
-            : undefined,
+          media: mediaFromValue(values.media),
+          revealMedia: mediaFromValue(values.revealMedia),
           answerSpec,
         });
       }}

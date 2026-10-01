@@ -83,7 +83,7 @@ export function EditStepDialog({ caseId, stepId }: { caseId?: string; stepId: st
           name: step.name,
           title: step.title,
           body: step.body,
-          media: { src: step.media?.src ?? "", alt: step.media?.alt ?? "" },
+          media: step.media,
           question: step.question ?? "",
           ...toAnswerFormValues(step.answerSpec),
           placeholder: step.placeholder ?? "",

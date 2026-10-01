@@ -4,7 +4,7 @@ import { Lightbulb, RotateCcw } from "lucide-react";
 
 import {
   isQuestionKind,
-  toMedia,
+  mediaFromValue,
   type StepEditorFormValues,
 } from "@/components/domains/step-editor-form.tsx";
 import { RevealPanel } from "@/components/domains/reveal-panel.tsx";
@@ -49,10 +49,8 @@ export function StepPreviewPanel({ kind }: { kind: StepKind }) {
 
   const isQuestion = isQuestionKind(kind);
   const answerPreview = isQuestion ? toAnswerPreviewSpec(values) : undefined;
-  const media = toMedia(values.media.src, values.media.alt, values.media.kind);
-  const revealMedia = values.revealMedia
-    ? toMedia(values.revealMedia.src, values.revealMedia.alt, values.revealMedia.kind)
-    : undefined;
+  const media = mediaFromValue(values.media);
+  const revealMedia = mediaFromValue(values.revealMedia);
   // 참가자 화면(step-experience.tsx)과 같은 규칙 — 단서 문구가 비어 있으면 정답 메시지가
   // 그 자리를 채우고, 그것도 비어 있으면 기본 문구가 나온다.
   const revealText =
