@@ -24,3 +24,4 @@ styled-system-studio
 **/__screenshots__/
 .vitest-attachments
 .env.production
+docs/asset/
