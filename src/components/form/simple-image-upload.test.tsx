@@ -1,6 +1,6 @@
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { actions, given, query, runSiheom } from "@siheom/react";
+import { given, runSiheom } from "@siheom/react";
 
 import { SimpleImageUpload } from "./simple-field.tsx";
 import { FormFieldStory } from "./story-utils.tsx";
@@ -57,6 +57,10 @@ async function selectFile(file: File): Promise<void> {
   });
 }
 
+function statusText(): string | undefined {
+  return document.querySelector('[role="status"]')?.textContent ?? undefined;
+}
+
 function alertText(): string | undefined {
   return document.querySelector('[role="alert"]')?.textContent ?? undefined;
 }
@@ -95,22 +99,7 @@ describe("SimpleImageUpload", () => {
     expect(document.body.textContent).toContain("5MB 이하 · JPG, PNG, WebP, GIF");
   });
 
-  it("한도를 넘으면 실제 크기와 함께 이유를 알리고 자동 압축을 제안한다", async () => {
-    presignPost.mockResolvedValue({
-      data: null,
-      error: tooLargeError(Math.round(8.2 * 1024 * 1024)),
-    });
-
-    await runSiheom(given.render(renderField()));
-    await selectFile(new File([new Uint8Array(64)], "big.jpg", { type: "image/jpeg" }));
-
-    await vi.waitFor(() =>
-      expect(alertText()).toBe("5MB 이하만 올릴 수 있어요. 선택한 파일은 8.2MB예요."),
-    );
-    await runSiheom(actions.click(query.button("자동 압축해서 올리기")));
-  });
-
-  it("자동 압축이 성공하면 줄어든 크기를 알려주고 업로드한 이미지를 값으로 쓴다", async () => {
+  it("한도를 넘으면 버튼 없이 바로 압축해서 올리고 줄어든 크기를 알려준다", async () => {
     const originalBytes = 8 * 1024 * 1024;
     presignPost
       .mockResolvedValueOnce({ data: null, error: tooLargeError(originalBytes) })
@@ -125,21 +114,40 @@ describe("SimpleImageUpload", () => {
       vi.fn(async () => new Response(null, { status: 200 })),
     );
 
-    const big = await createImageFile(2400, 1600);
+    await runSiheom(given.render(renderField()));
+    await selectFile(await createImageFile(2400, 1600));
+
+    await vi.waitFor(() => expect(statusText()).toContain("로 줄여서 올렸어요."));
+    expect(presignPost).toHaveBeenCalledTimes(2);
+    expect(presignPost.mock.calls[1]?.[0]).toMatchObject({ contentType: "image/webp" });
+    expect(alertText()).toBeUndefined();
+    expect(document.body.textContent).not.toContain("자동 압축해서 올리기");
+  });
+
+  it("두 번 줄여도 한도를 넘으면 더 작은 사진을 고르라고 안내한다", async () => {
+    presignPost.mockResolvedValue({ data: null, error: tooLargeError(8 * 1024 * 1024) });
 
     await runSiheom(given.render(renderField()));
-    await selectFile(big);
+    await selectFile(await createImageFile(2400, 1600));
+
+    await vi.waitFor(() =>
+      expect(document.body.textContent).toContain("더 작은 사진을 골라 주세요."),
+    );
+    expect(presignPost).toHaveBeenCalledTimes(3);
+    expect(alertText()).toBe("5MB 이하만 올릴 수 있어요. 선택한 파일은 8.2MB예요.");
+  });
+
+  it("GIF는 애니메이션이 사라지므로 압축하지 않는다", async () => {
+    presignPost.mockResolvedValue({ data: null, error: tooLargeError(8 * 1024 * 1024) });
+
+    await runSiheom(given.render(renderField()));
+    await selectFile(new File([new Uint8Array(64)], "moving.gif", { type: "image/gif" }));
+
     await vi.waitFor(() =>
       expect(alertText()).toBe("5MB 이하만 올릴 수 있어요. 선택한 파일은 8.2MB예요."),
     );
-
-    const status = () => document.querySelector('[role="status"]')?.textContent;
-    await runSiheom(actions.click(query.button("자동 압축해서 올리기")));
-    await vi.waitFor(() => expect(status()).toContain("로 줄여서 올렸어요."));
-
-    expect(presignPost).toHaveBeenCalledTimes(2);
-    expect(presignPost.mock.calls[1]?.[0]).toMatchObject({ byteSize: expect.any(Number) });
-    expect(alertText()).toBeUndefined();
+    expect(document.body.textContent).toContain("더 작은 사진을 골라 주세요.");
+    expect(presignPost).toHaveBeenCalledTimes(1);
   });
 
   it("지원하지 않는 형식이면 지원 형식을 알려준다", async () => {

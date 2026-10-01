@@ -1,6 +1,6 @@
 # 17. 큰 이미지 자동 압축
 
-Status: Not started.
+Status: Done. 413을 받으면 버튼 없이 압축해서 다시 올린다 (PNG→WebP, JPEG 유지, GIF·동영상 제외).
 PLAN.md item: 17
 
 ## Why

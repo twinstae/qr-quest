@@ -43,6 +43,6 @@ Phase 2(13·14)가 끝나면 사장님이 개발자 없이 CASE 02를 만들 수
 
 요청: `docs/asset/REQUEST.md` (자료 폴더는 git ignore)
 
-17. [ ] 한도를 넘는 이미지는 버튼 없이 자동으로 압축해서 올린다 (PNG→WebP, JPG는 JPEG 유지) ([ticket](docs/tickets/17-auto-compress-uploads.md))
+17. [x] 한도를 넘는 이미지는 버튼 없이 자동으로 압축해서 올린다 (PNG→WebP, JPG는 JPEG 유지) ([ticket](docs/tickets/17-auto-compress-uploads.md))
 18. [ ] 테마(팔레트·제목/본문 폰트·배경 이미지)를 만들고 CASE에 적용한다 ([ticket](docs/tickets/18-theme-system.md))
 19. [ ] 실제 서버에 팔레스타인 CASE와 테마 틀을 만든다 ([ticket](docs/tickets/19-palestine-case.md))

@@ -3,7 +3,12 @@ import { describe, expect, it } from "vitest";
 import { compressImage } from "./compress-image.ts";
 
 // 노이즈를 채워 압축률이 비현실적으로 좋아지지 않게 한다.
-async function createImageFile(width: number, height: number, name = "photo.png"): Promise<File> {
+async function createImageFile(
+  width: number,
+  height: number,
+  name = "photo.png",
+  type = "image/png",
+): Promise<File> {
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -19,9 +24,9 @@ async function createImageFile(width: number, height: number, name = "photo.png"
   }
   context.putImageData(pixels, 0, 0);
 
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type));
   if (!blob) throw new Error("no blob");
-  return new File([blob], name, { type: "image/png" });
+  return new File([blob], name, { type });
 }
 
 async function readSize(file: File) {
@@ -64,5 +69,15 @@ describe("compressImage", () => {
 
     expect(compressed).toBeInstanceOf(File);
     expect(compressed.name).toBe("우리집.사진.webp");
+  });
+
+  it("JPEG 사진은 형식을 바꾸지 않고 JPEG로 다시 인코딩한다", async () => {
+    const original = await createImageFile(2400, 1600, "photo.jfif", "image/jpeg");
+
+    const compressed = await compressImage(original);
+
+    expect(compressed.type).toBe("image/jpeg");
+    expect(compressed.name).toBe("photo.jpg");
+    await expect(readSize(compressed)).resolves.toEqual({ width: 1600, height: 1067 });
   });
 });

@@ -18,6 +18,11 @@ function extensionFor(contentType: string): string {
   return "webp";
 }
 
+/** JPEG 사진은 JPEG로 남긴다. 그 밖(PNG 등 무손실)은 WebP가 훨씬 작다. */
+function targetTypeFor(sourceType: string): string {
+  return sourceType === "image/jpeg" ? "image/jpeg" : "image/webp";
+}
+
 /**
  * 업로드 한도를 넘는 사진을 올릴 수 있는 크기로 줄인다.
  *
@@ -32,6 +37,7 @@ export async function compressImage(
     throw new Error("이 브라우저에서는 자동 압축을 지원하지 않아요.");
   }
 
+  const targetType = targetTypeFor(file.type);
   const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
 
   try {
@@ -48,11 +54,11 @@ export async function compressImage(
     context.drawImage(bitmap, 0, 0, width, height);
 
     const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/webp", quality),
+      canvas.toBlob(resolve, targetType, quality),
     );
     if (!blob) throw new Error("이미지를 다시 인코딩하지 못했어요.");
 
-    const contentType = blob.type || "image/webp";
+    const contentType = blob.type || targetType;
     return new File([blob], `${baseName(file.name)}.${extensionFor(contentType)}`, {
       type: contentType,
       lastModified: Date.now(),
