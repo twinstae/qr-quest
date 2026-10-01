@@ -194,3 +194,38 @@ describe("StepCardForm > 정답 보기 (테스트 모드)", () => {
     );
   });
 });
+
+describe("StepCardForm > 긴 보기", () => {
+  it("보기가 길면 잘리지 않고 여러 줄로 보인다", async () => {
+    const long =
+      "약 10,500 BCE까지 거슬러 올라가는 인간 활동의 흔적이 있으며, 기원전 9~8천년경에는 상당한 규모의 영구 정착지가 형성되었다.";
+
+    await runSiheom(
+      given.render(
+        <div style={{ width: 320 }}>
+          <StepCardForm
+            step={baseStep({
+              answerSpec: {
+                type: "SINGLE_CHOICE",
+                choices: [
+                  { id: "1", label: "짧은 보기" },
+                  { id: "2", label: long },
+                ],
+              },
+            })}
+            onSubmit={noSubmit}
+            onRequestHint={noHint}
+          />
+        </div>,
+      ),
+      assertions.visible(query.button(`2. ${long}`)),
+    );
+
+    const button = [...document.querySelectorAll("button")].find((element) =>
+      element.textContent?.startsWith("2."),
+    )!;
+    // 글자가 버튼 밖으로 넘치지 않고, 버튼이 여러 줄 높이로 늘어난다.
+    expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
+    expect(button.getBoundingClientRect().height).toBeGreaterThan(60);
+  });
+});

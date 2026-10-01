@@ -146,6 +146,12 @@ export function ChoiceFields({
           aria-pressed={selected.includes(choice.id)}
           justifyContent="flex-start"
           width="full"
+          // 버튼 기본값(한 줄·고정 높이)이면 긴 보기가 잘린다 — 줄을 바꾸고 높이를 늘린다.
+          whiteSpace="normal"
+          height="auto"
+          minHeight="11"
+          py="2.5"
+          textAlign="start"
           onClick={() => toggle(choice.id)}
         >
           {choice.id}. {choice.label}
