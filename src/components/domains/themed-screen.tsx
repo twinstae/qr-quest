@@ -4,7 +4,7 @@ import { fontStack, googleFontsHref, type Theme, type ThemePalette } from "@/dom
 import { css, cx } from "styled-system/css";
 
 // Panda는 빌드 때 클래스를 뽑으므로 팔레트마다 정적인 css() 호출이 있어야 한다.
-const PALETTE_CLASS: Record<ThemePalette, string> = {
+export const PALETTE_CLASS: Record<ThemePalette, string> = {
   green: css({ colorPalette: "green" }),
   olive: css({ colorPalette: "olive" }),
   red: css({ colorPalette: "red" }),
@@ -19,7 +19,6 @@ const PALETTE_CLASS: Record<ThemePalette, string> = {
 const root = css({
   position: "relative",
   isolation: "isolate",
-  minHeight: "screen",
   fontFamily: "var(--theme-body-font, inherit)",
   "& :is(h1, h2, h3, h4, h5, h6)": { fontFamily: "var(--theme-heading-font, inherit)" },
   // 배경 위에서도 글이 읽히게 카드를 불투명에 가깝게 올린다.
