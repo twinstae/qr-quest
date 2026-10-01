@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, MapPinPlus } from "lucide-react";
 
 import { CaseStatusControl } from "@/components/domains/case-status-control.tsx";
+import { CaseThemePicker } from "@/components/domains/case-theme-picker.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
 import { StartTestModeButton } from "@/components/domains/start-test-mode-button.tsx";
 import { CreateStepDialog } from "@/components/domains/step-form-dialog.tsx";
@@ -13,6 +14,7 @@ import { formatCaseNumber, type LiveViolation } from "@/domain/case.ts";
 import { getApiClient } from "@/lib/api-client";
 import { unwrapEdenError } from "@/lib/eden-error";
 import { caseKeys, caseQueryOptions, caseStepsQueryOptions } from "@/queries/cases.ts";
+import { themeKeys, themeListQueryOptions } from "@/queries/themes.ts";
 import { css } from "styled-system/css";
 import { Flex, styled, VStack } from "styled-system/jsx";
 
@@ -35,6 +37,7 @@ export const Route = createFileRoute("/admin/_authed/cases/$caseId/")({
     await Promise.all([
       context.queryClient.query({ ...caseQueryOptions(params.caseId), staleTime: "static" }),
       context.queryClient.query({ ...caseStepsQueryOptions(params.caseId), staleTime: "static" }),
+      context.queryClient.query({ ...themeListQueryOptions(), staleTime: "static" }),
     ]);
   },
 });
@@ -72,6 +75,7 @@ function RouteComponent() {
   const { caseId } = Route.useParams();
   const { data: caseItem } = useQuery(caseQueryOptions(caseId));
   const { data: steps } = useQuery(caseStepsQueryOptions(caseId));
+  const { data: themes } = useQuery(themeListQueryOptions());
   const queryClient = useQueryClient();
   if (!caseItem || !steps) return null;
   const sortedSteps = [...steps].sort((a, b) => a.order - b.order);
@@ -166,6 +170,28 @@ function RouteComponent() {
           </Link>
         </Flex>
       </Flex>
+
+      {themes && (
+        <section aria-label="테마" className={css({ mb: "8" })}>
+          <CaseThemePicker
+            themes={themes}
+            themeId={caseItem.themeId}
+            setTheme={async (themeId) => {
+              const { error } = await getApiClient().cases({ id: caseItem.id }).theme.patch({
+                themeId,
+              });
+              if (error) throw error;
+              await Promise.all([
+                queryClient.invalidateQueries({ queryKey: caseKeys.detail(caseId) }),
+                queryClient.invalidateQueries({ queryKey: themeKeys.all }),
+              ]);
+            }}
+          />
+          <Link to="/admin/themes" className={css({ textStyle: "sm", color: "fg.muted" })}>
+            테마 관리
+          </Link>
+        </section>
+      )}
 
       {steps.length === 0 ? (
         <EmptyState
