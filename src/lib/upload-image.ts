@@ -1,5 +1,6 @@
 import { ALLOWED_IMAGE_TYPE_LABEL, formatBytes } from "@/domain/upload";
 import type { MediaKind } from "@/domain/step";
+import { putToStorage, type PutToStorage } from "@/lib/storage-put.ts";
 
 export type UploadedImage = { src: string; alt: string; kind: MediaKind };
 
@@ -78,6 +79,7 @@ export function toUploadIssue(error: unknown): UploadIssue {
 export async function uploadImageFile(
   file: File,
   presign: PresignUpload,
+  put: PutToStorage = putToStorage,
 ): Promise<UploadImageResult> {
   const { data, error } = await presign({
     filename: file.name,
@@ -87,18 +89,7 @@ export async function uploadImageFile(
 
   if (!data) return { status: "issue", issue: toUploadIssue(error) };
 
-  try {
-    const response = await fetch(data.uploadUrl, {
-      method: "PUT",
-      headers: { "Content-Type": file.type },
-      body: file,
-    });
-
-    if (!response.ok) {
-      return { status: "issue", issue: { kind: "failed", message: UPLOAD_FAILED_MESSAGE } };
-    }
-  } catch {
-    // 네트워크가 끊기면 fetch가 던진다. 여기서 잡지 않으면 필드가 업로드 중인 채로 멈춘다.
+  if (!(await put(data.uploadUrl, file))) {
     return { status: "issue", issue: { kind: "failed", message: UPLOAD_FAILED_MESSAGE } };
   }
 

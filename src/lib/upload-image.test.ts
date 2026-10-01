@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
   UPLOAD_FAILED_MESSAGE,
@@ -22,9 +22,15 @@ function presignOk(uploadUrl = "https://fake-storage.test/upload/1") {
   return { presign, calls };
 }
 
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
+/** 스토리지에 올린 파일을 기록하는 가짜. ok=false면 스토리지가 거부한 것처럼 동작한다. */
+function storage(ok = true) {
+  const puts: { uploadUrl: string; name: string }[] = [];
+  const put = async (uploadUrl: string, file: File) => {
+    puts.push({ uploadUrl, name: file.name });
+    return ok;
+  };
+  return { put, puts };
+}
 
 describe("toUploadIssue", () => {
   it("413 응답을 한도 초과 이유로 바꾸고 숫자를 유지한다", () => {
@@ -117,14 +123,13 @@ describe("toUploadIssue", () => {
 describe("uploadImageFile", () => {
   it("파일 크기를 함께 보내고, 성공하면 이미지 값을 돌려준다", async () => {
     const { presign, calls } = presignOk();
-    const fetchStub = vi.fn(async () => new Response(null, { status: 200 }));
-    vi.stubGlobal("fetch", fetchStub);
+    const { put, puts } = storage();
     const file = imageFile(1024, "표지.jpg");
 
-    const result = await uploadImageFile(file, presign);
+    const result = await uploadImageFile(file, presign, put);
 
     expect(calls).toEqual([{ filename: "표지.jpg", contentType: "image/jpeg", byteSize: 1024 }]);
-    expect(fetchStub).toHaveBeenCalledTimes(1);
+    expect(puts).toEqual([{ uploadUrl: "https://fake-storage.test/upload/1", name: "표지.jpg" }]);
     expect(result).toEqual({
       status: "uploaded",
       image: {
@@ -137,30 +142,29 @@ describe("uploadImageFile", () => {
 
   it("동영상 파일이면 kind:video로 표시한다", async () => {
     const { presign } = presignOk();
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(null, { status: 200 })),
-    );
     const file = new File([new Uint8Array(1024)], "clue.mp4", { type: "video/mp4" });
 
-    const result = await uploadImageFile(file, presign);
+    const result = await uploadImageFile(file, presign, storage().put);
 
     expect(result).toMatchObject({ status: "uploaded", image: { kind: "video" } });
   });
 
   it("한도 초과로 거부되면 스토리지에 올리지 않고 이유를 돌려준다", async () => {
-    const fetchStub = vi.fn();
-    vi.stubGlobal("fetch", fetchStub);
+    const { put, puts } = storage();
 
-    const result = await uploadImageFile(imageFile(EIGHT_MB), async () => ({
-      data: null,
-      error: {
-        code: "FILE_TOO_LARGE",
-        message: "5MB 이하만 올릴 수 있어요. 선택한 파일은 8.2MB예요.",
-        limitBytes: 5 * 1024 * 1024,
-        actualBytes: EIGHT_MB,
-      },
-    }));
+    const result = await uploadImageFile(
+      imageFile(EIGHT_MB),
+      async () => ({
+        data: null,
+        error: {
+          code: "FILE_TOO_LARGE",
+          message: "5MB 이하만 올릴 수 있어요. 선택한 파일은 8.2MB예요.",
+          limitBytes: 5 * 1024 * 1024,
+          actualBytes: EIGHT_MB,
+        },
+      }),
+      put,
+    );
 
     expect(result).toEqual({
       status: "issue",
@@ -171,7 +175,7 @@ describe("uploadImageFile", () => {
         actualBytes: EIGHT_MB,
       },
     });
-    expect(fetchStub).not.toHaveBeenCalled();
+    expect(puts).toEqual([]);
   });
 
   it("허용되지 않는 형식이면 형식 안내를 돌려준다", async () => {
@@ -190,30 +194,9 @@ describe("uploadImageFile", () => {
   });
 
   it("스토리지 업로드가 실패하면 일반 실패 문구를 돌려준다", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(null, { status: 500 })),
-    );
     const { presign } = presignOk();
 
-    const result = await uploadImageFile(imageFile(1024), presign);
-
-    expect(result).toEqual({
-      status: "issue",
-      issue: { kind: "failed", message: UPLOAD_FAILED_MESSAGE },
-    });
-  });
-
-  it("네트워크가 끊겨 fetch가 던지면 업로드 중 상태로 멈추지 않고 실패를 돌려준다", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => {
-        throw new TypeError("Failed to fetch");
-      }),
-    );
-    const { presign } = presignOk();
-
-    const result = await uploadImageFile(imageFile(1024), presign);
+    const result = await uploadImageFile(imageFile(1024), presign, storage(false).put);
 
     expect(result).toEqual({
       status: "issue",
