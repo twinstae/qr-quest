@@ -102,6 +102,16 @@ describe("getCaseByEntryToken", () => {
 });
 
 describe("updateCase", () => {
+  it("테마를 걸었다가 뗄 수 있다", async () => {
+    const ctx = contextWith([TEST_CASE]);
+
+    await updateCase(ctx, TEST_CASE.id, { ...CREATE_INPUT, themeId: "theme-1" });
+    expect((await getCaseForEdit(ctx, TEST_CASE.id)).themeId).toBe("theme-1");
+
+    await updateCase(ctx, TEST_CASE.id, CREATE_INPUT);
+    expect((await getCaseForEdit(ctx, TEST_CASE.id)).themeId).toBeUndefined();
+  });
+
   it("내용을 고쳐도 시작 토큰과 상태는 그대로다", async () => {
     const ctx = contextWith([TEST_CASE]);
 

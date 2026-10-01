@@ -1,5 +1,6 @@
 import type { Case } from "./case.ts";
 import type { Step } from "./step.ts";
+import type { Theme } from "./theme.ts";
 
 export const TEST_CASE: Case = {
   id: "case-1",
@@ -68,4 +69,13 @@ export const TEST_ADMIN = {
   name: "Admin",
   email: "admin@example.com",
   password: "password1234",
+};
+
+export const TEST_THEME_INPUT: Omit<Theme, "id"> = {
+  name: "팔레스타인",
+  palette: "green",
+  headingFont: "noto-serif-kr",
+  bodyFont: "system",
+  background: { kind: "image", src: "https://example.com/tatreez.webp", alt: "타트리즈 문양" },
+  backgroundDim: 40,
 };

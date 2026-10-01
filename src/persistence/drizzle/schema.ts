@@ -12,6 +12,7 @@ import {
 import type { CaseStatus } from "../../domain/case.ts";
 import type { PlaySessionStatus } from "../../domain/playSession.ts";
 import type { AnswerSpec, Media, RevealPreset, SoundKey, StepKind } from "../../domain/step.ts";
+import type { ThemeFont, ThemePalette } from "../../domain/theme.ts";
 
 /** 정답 시 공개되는 것. 화면이 그대로 렌더할 수 있게 한 덩어리로 저장한다. */
 export type StepReveal = {
@@ -20,6 +21,18 @@ export type StepReveal = {
   preset?: RevealPreset;
   sound?: SoundKey;
 };
+
+export const themes = pgTable("themes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  palette: text("palette").$type<ThemePalette>().notNull(),
+  headingFont: text("heading_font").$type<ThemeFont>().notNull(),
+  bodyFont: text("body_font").$type<ThemeFont>().notNull(),
+  background: jsonb("background").$type<Media>(),
+  backgroundDim: integer("background_dim").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
 
 export const cases = pgTable("cases", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -35,6 +48,8 @@ export const cases = pgTable("cases", {
   entryToken: text("entry_token").notNull().unique(),
   finalBookTitle: text("final_book_title"),
   rewardNote: text("reward_note"),
+  // 테마를 지우면 CASE는 남고 테마만 빠진다 (ticket 18).
+  themeId: uuid("theme_id").references(() => themes.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

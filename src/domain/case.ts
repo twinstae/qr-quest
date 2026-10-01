@@ -20,6 +20,8 @@ export type Case = {
   finalBookTitle?: string;
   /** 완주 기념품 안내 문구. */
   rewardNote?: string;
+  /** 참가자 화면의 색·폰트·배경. 없으면 기본 모습 (ticket 18). */
+  themeId?: string;
 };
 
 export function formatCaseNumber(value: number): string {

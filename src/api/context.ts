@@ -8,12 +8,14 @@ import {
   createFakeStepAttemptRepo,
 } from "../persistence/FakePlaySessionRepo.ts";
 import createFakeStepRepo from "../persistence/FakeStepRepo.ts";
+import createFakeThemeRepo from "../persistence/FakeThemeRepo.ts";
 import type {
   CaseRepo,
   ImageStorage,
   PlaySessionRepo,
   StepAttemptRepo,
   StepRepo,
+  ThemeRepo,
 } from "../persistence/types.ts";
 import { createAuth } from "./auth.ts";
 
@@ -23,6 +25,7 @@ export interface AppContext {
     step: StepRepo;
     playSession: PlaySessionRepo;
     stepAttempt: StepAttemptRepo;
+    theme: ThemeRepo;
   };
   auth: ReturnType<typeof createAuth>;
   imageStorage: ImageStorage;
@@ -46,6 +49,7 @@ export function createFakeContext(
       step: createFakeStepRepo({}),
       playSession: createFakePlaySessionRepo(),
       stepAttempt: createFakeStepAttemptRepo(),
+      theme: createFakeThemeRepo(),
       ...override.repo,
     },
   };

@@ -4,6 +4,7 @@ import { DEFAULT_MAX_IMAGE_BYTES, DEFAULT_MAX_VIDEO_BYTES } from "../../domain/u
 import createFakeImageStorage from "../../persistence/FakeImageStorage.ts";
 import { createDatabase } from "../../persistence/drizzle/client.ts";
 import createDrizzleCaseRepo from "../../persistence/drizzle/DrizzleCaseRepo.ts";
+import createDrizzleThemeRepo from "../../persistence/drizzle/DrizzleThemeRepo.ts";
 import {
   createDrizzlePlaySessionRepo,
   createDrizzleStepAttemptRepo,
@@ -59,6 +60,7 @@ const ctx: AppContext = {
     step: createDrizzleStepRepo(db),
     playSession: createDrizzlePlaySessionRepo(db),
     stepAttempt: createDrizzleStepAttemptRepo(db),
+    theme: createDrizzleThemeRepo(db),
   },
   auth: createAuth(drizzleAdapter(db, { provider: "pg" })),
   imageStorage: createImageStorageFromEnv(),

@@ -18,6 +18,7 @@ function toDomain(row: typeof cases.$inferSelect): Case {
     entryToken: row.entryToken,
     finalBookTitle: row.finalBookTitle ?? undefined,
     rewardNote: row.rewardNote ?? undefined,
+    themeId: row.themeId ?? undefined,
   };
 }
 
@@ -33,6 +34,7 @@ function toRow(input: Omit<Case, "id">): typeof cases.$inferInsert {
     entryToken: input.entryToken,
     finalBookTitle: input.finalBookTitle ?? null,
     rewardNote: input.rewardNote ?? null,
+    themeId: input.themeId ?? null,
   };
 }
 

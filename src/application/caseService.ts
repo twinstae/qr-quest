@@ -13,6 +13,7 @@ export type CreateCaseInput = {
   thumbnail?: Media;
   finalBookTitle?: string;
   rewardNote?: string;
+  themeId?: string;
 };
 
 export type UpdateCaseInput = CreateCaseInput;
@@ -54,6 +55,7 @@ export async function createCase(ctx: AppContext, input: CreateCaseInput): Promi
     entryToken: generateQrToken(),
     finalBookTitle: input.finalBookTitle,
     rewardNote: input.rewardNote,
+    themeId: input.themeId,
   });
 
   for (const template of defaultStepTemplates()) {
@@ -89,6 +91,7 @@ export async function updateCase(
     thumbnail: input.thumbnail,
     finalBookTitle: input.finalBookTitle,
     rewardNote: input.rewardNote,
+    themeId: input.themeId,
   });
 }
 

@@ -1,6 +1,7 @@
 import type { Case } from "../domain/case.ts";
 import type { PlaySession, StepAttempt } from "../domain/playSession.ts";
 import type { Step } from "../domain/step.ts";
+import type { Theme } from "../domain/theme.ts";
 
 export interface CaseRepo {
   create(input: Omit<Case, "id">): Promise<Case>;
@@ -10,6 +11,14 @@ export interface CaseRepo {
   update(id: Case["id"], input: Omit<Case, "id">): Promise<Case>;
   /** CASE를 지우면 단계도 함께 지운다 (StepRepo.deleteByCaseId를 먼저 호출한다). */
   delete(id: Case["id"]): Promise<void>;
+}
+
+export interface ThemeRepo {
+  create(input: Omit<Theme, "id">): Promise<Theme>;
+  getById(id: Theme["id"]): Promise<Theme | undefined>;
+  list(): Promise<Theme[]>;
+  update(id: Theme["id"], input: Omit<Theme, "id">): Promise<Theme>;
+  delete(id: Theme["id"]): Promise<void>;
 }
 
 export interface StepRepo {
