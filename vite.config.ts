@@ -60,6 +60,8 @@ const config = defineConfig({
         test: {
           name: "server",
           environment: "node",
+          // DB 테스트는 매번 PGlite를 띄우고 마이그레이션한다 — 부하가 있으면 기본 5초를 넘는다.
+          testTimeout: 15_000,
           include: [
             "src/domain/**/*.test.ts",
             "src/application/**/*.test.ts",
