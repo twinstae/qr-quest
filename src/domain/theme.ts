@@ -21,7 +21,7 @@ export type ThemePalette = (typeof THEME_PALETTE_IDS)[number];
 
 export const THEME_PALETTE_LABELS: Record<ThemePalette, string> = {
   green: "초록",
-  olive: "올리브",
+  olive: "올리브 그레이",
   red: "빨강",
   tomato: "토마토",
   amber: "호박색",

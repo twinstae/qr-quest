@@ -2,6 +2,11 @@ import { green } from "@/theme/colors/green";
 import { red } from "@/theme/colors/red";
 import { mauve } from "@/theme/colors/mauve";
 import { blue } from "@/theme/colors/blue";
+import { olive } from "@/theme/colors/olive";
+import { tomato } from "@/theme/colors/tomato";
+import { amber } from "@/theme/colors/amber";
+import { iris } from "@/theme/colors/iris";
+import { brown } from "@/theme/colors/brown";
 import { animationStyles } from "@/theme/animation-styles";
 import { zIndex } from "@/theme/tokens/z-index";
 import { shadows } from "@/theme/tokens/shadows";
@@ -84,6 +89,12 @@ export default defineConfig({
           gray: mauve,
           red: red,
           green: green,
+          // 테마에서 고를 수 있는 팔레트 (ticket 18)
+          olive: olive,
+          tomato: tomato,
+          amber: amber,
+          iris: iris,
+          brown: brown,
         },
 
         shadows: shadows,
