@@ -151,7 +151,7 @@ export function ThemeEditorForm({
 }) {
   return (
     <SimpleForm schema={schema} defaultValues={defaultValues} onSubmit={onSubmit}>
-      {ALL_FONTS_HREF && <link rel="stylesheet" href={ALL_FONTS_HREF} precedence="theme-fonts" />}
+      {ALL_FONTS_HREF && <link rel="stylesheet" href={ALL_FONTS_HREF} />}
       <Grid columns={{ base: 1, md: 2 }} gap="6" alignItems="start">
         <VStack alignItems="stretch" gap="5">
           <SimpleInput name="name" label="테마 이름" placeholder="팔레스타인" />

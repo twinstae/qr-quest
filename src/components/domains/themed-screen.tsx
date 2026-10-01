@@ -65,7 +65,8 @@ export function ThemedScreen({ theme, children }: { theme: Theme | null; childre
         } as CSSProperties
       }
     >
-      {fontsHref && <link rel="stylesheet" href={fontsHref} precedence="theme-fonts" />}
+      {/* precedence를 주면 React가 폰트 CSS가 올 때까지 화면 갱신을 멈춘다 — 느린 망에서 굳는다. */}
+      {fontsHref && <link rel="stylesheet" href={fontsHref} />}
       {theme.background && (
         <div
           data-theme-background
