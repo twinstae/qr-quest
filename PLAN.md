@@ -47,7 +47,19 @@ Phase 2(13·14)가 끝나면 사장님이 개발자 없이 CASE 02를 만들 수
 18. [x] 테마(팔레트·제목/본문 폰트·배경 이미지)를 만들고 CASE에 적용한다 ([ticket](docs/tickets/18-theme-system.md))
 19. [ ] 실제 서버에 팔레스타인 CASE와 테마 틀을 만든다 ([ticket](docs/tickets/19-palestine-case.md))
 
+20. [x] QA 피드백 (`docs/asset/QA.md`)
+    - 저장된 이미지를 지우면 단계 편집기가 죽던 문제 (media를 선택 값으로)
+    - 긴 객관식 보기가 잘리던 문제 (보기 버튼 줄바꿈)
+    - 앱 안 카메라로 다음 QR을 바로 찍기 (`QrScanPanel`, 대기 화면)
+21. [x] 하다가 찾은 운영 버그
+    - SPA 전환(09-15) 뒤 브라우저에서 시작하면 세션 쿠키가 안 생겨 `/play`·`/t`가 "먼저 시작 QR을 찍어주세요"만 보이던 문제
+    - 단계 순서 바꾸기가 Postgres에서 (case_id, order) 유일 인덱스에 걸려 500이던 문제
+22. [x] 테스트 규칙: `vi.mock`/`vi.fn`/`vi.spyOn`/`vi.stubGlobal` 금지 (oxlint `vitest/no-restricted-vi-methods`).
+    가짜는 props로 주입하거나 `fake-aliases.ts`로 연결한다.
+
 남은 일 / 새로 발견한 것:
 
 - [ ] CASE 기본 정보(제목·소개·썸네일 등) 수정 폼 — 지금은 생성만 있다. `PATCH /cases/:id`는 전체 교체다.
-- [ ] 전체 테스트를 한 번에 돌리면 PGlite DB 테스트 3개가 가끔 실패한다(프로젝트별로는 통과) — 자원 경합 조사.
+- [x] 전체 테스트를 한 번에 돌리면 PGlite DB 테스트가 가끔 실패한다 — 부하에서 첫 테스트가 5초를 넘었다. 서버 테스트 제한 시간 15초.
+- [ ] 꺼 둔 lint 규칙 켜기: `vitest/no-conditional-expect`(9곳), `vitest/require-to-throw-message`(6곳).
+- [ ] 휴대폰 실기기에서 앱 안 카메라 확인 (iOS Safari는 BarcodeDetector가 없어 ZXing wasm을 CDN에서 받는다).
