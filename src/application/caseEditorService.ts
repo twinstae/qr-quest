@@ -111,14 +111,23 @@ export async function reorderSteps(
   caseId: string,
   orderedStepIds: string[],
 ): Promise<Step[]> {
-  const updated: Step[] = [];
-  for (let index = 0; index < orderedStepIds.length; index++) {
-    const stepId = orderedStepIds[index];
-    if (!stepId) continue;
-    const { id: _id, caseId: stepCaseId, ...rest } = await getStepOrThrow(ctx, stepId);
-    if (stepCaseId !== caseId) throw new NotExistError(`Step id=${stepId} not in case=${caseId}`);
-    updated.push(await ctx.repo.step.update(stepId, { ...rest, order: index }));
+  const steps: Step[] = [];
+  for (const stepId of orderedStepIds) {
+    const step = await getStepOrThrow(ctx, stepId);
+    if (step.caseId !== caseId) throw new NotExistError(`Step id=${stepId} not in case=${caseId}`);
+    steps.push(step);
   }
+
+  // (case_id, order)는 유일하다. 바로 새 순서를 쓰면 아직 그 자리에 있는 단계와 부딪히므로
+  // 먼저 모두 비어 있는 음수 자리로 옮긴 뒤 최종 순서를 쓴다.
+  const moveTo = (step: Step, order: number) => {
+    const { id, caseId: _caseId, ...rest } = step;
+    return ctx.repo.step.update(id, { ...rest, order });
+  };
+  for (const [index, step] of steps.entries()) await moveTo(step, -(index + 1));
+
+  const updated: Step[] = [];
+  for (const [index, step] of steps.entries()) updated.push(await moveTo(step, index));
   return updated;
 }
 
