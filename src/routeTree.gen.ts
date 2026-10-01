@@ -18,6 +18,7 @@ import { Route as SEntryTokenRouteImport } from './routes/s/$entryToken'
 import { Route as TQrTokenRouteImport } from './routes/t/$qrToken'
 import { Route as AdminAuthedRedeemRouteImport } from './routes/admin/_authed/redeem'
 import { Route as AdminAuthedCasesIndexRouteImport } from './routes/admin/_authed/cases/index'
+import { Route as AdminAuthedThemesIndexRouteImport } from './routes/admin/_authed/themes/index'
 import { Route as AdminAuthedCasesCaseIdIndexRouteImport } from './routes/admin/_authed/cases/$caseId/index'
 import { Route as AdminAuthedCasesCaseIdCheckRouteImport } from './routes/admin/_authed/cases/$caseId/check'
 import { Route as AdminAuthedCasesCaseIdPrintRouteImport } from './routes/admin/_authed/cases/$caseId/print'
@@ -68,6 +69,11 @@ const AdminAuthedCasesIndexRoute = AdminAuthedCasesIndexRouteImport.update({
   path: '/cases/',
   getParentRoute: () => AdminAuthedRoute,
 } as any)
+const AdminAuthedThemesIndexRoute = AdminAuthedThemesIndexRouteImport.update({
+  id: '/themes/',
+  path: '/themes/',
+  getParentRoute: () => AdminAuthedRoute,
+} as any)
 const AdminAuthedCasesCaseIdIndexRoute =
   AdminAuthedCasesCaseIdIndexRouteImport.update({
     id: '/cases/$caseId/',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/t/$qrToken': typeof TQrTokenRoute
   '/admin/redeem': typeof AdminAuthedRedeemRoute
   '/admin/cases/': typeof AdminAuthedCasesIndexRoute
+  '/admin/themes/': typeof AdminAuthedThemesIndexRoute
   '/admin/cases/$caseId/check': typeof AdminAuthedCasesCaseIdCheckRoute
   '/admin/cases/$caseId/print': typeof AdminAuthedCasesCaseIdPrintRoute
   '/admin/cases/$caseId/stats': typeof AdminAuthedCasesCaseIdStatsRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/t/$qrToken': typeof TQrTokenRoute
   '/admin/redeem': typeof AdminAuthedRedeemRoute
   '/admin/cases': typeof AdminAuthedCasesIndexRoute
+  '/admin/themes': typeof AdminAuthedThemesIndexRoute
   '/admin/cases/$caseId/check': typeof AdminAuthedCasesCaseIdCheckRoute
   '/admin/cases/$caseId/print': typeof AdminAuthedCasesCaseIdPrintRoute
   '/admin/cases/$caseId/stats': typeof AdminAuthedCasesCaseIdStatsRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/t/$qrToken': typeof TQrTokenRoute
   '/admin/_authed/redeem': typeof AdminAuthedRedeemRoute
   '/admin/_authed/cases/': typeof AdminAuthedCasesIndexRoute
+  '/admin/_authed/themes/': typeof AdminAuthedThemesIndexRoute
   '/admin/_authed/cases/$caseId/check': typeof AdminAuthedCasesCaseIdCheckRoute
   '/admin/_authed/cases/$caseId/print': typeof AdminAuthedCasesCaseIdPrintRoute
   '/admin/_authed/cases/$caseId/stats': typeof AdminAuthedCasesCaseIdStatsRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/t/$qrToken'
     | '/admin/redeem'
     | '/admin/cases/'
+    | '/admin/themes/'
     | '/admin/cases/$caseId/check'
     | '/admin/cases/$caseId/print'
     | '/admin/cases/$caseId/stats'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/t/$qrToken'
     | '/admin/redeem'
     | '/admin/cases'
+    | '/admin/themes'
     | '/admin/cases/$caseId/check'
     | '/admin/cases/$caseId/print'
     | '/admin/cases/$caseId/stats'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/t/$qrToken'
     | '/admin/_authed/redeem'
     | '/admin/_authed/cases/'
+    | '/admin/_authed/themes/'
     | '/admin/_authed/cases/$caseId/check'
     | '/admin/_authed/cases/$caseId/print'
     | '/admin/_authed/cases/$caseId/stats'
@@ -262,6 +274,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthedCasesIndexRouteImport
       parentRoute: typeof AdminAuthedRoute
     }
+    '/admin/_authed/themes/': {
+      id: '/admin/_authed/themes/'
+      path: '/themes'
+      fullPath: '/admin/themes/'
+      preLoaderRoute: typeof AdminAuthedThemesIndexRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
     '/admin/_authed/cases/$caseId/': {
       id: '/admin/_authed/cases/$caseId/'
       path: '/cases/$caseId'
@@ -296,6 +315,7 @@ declare module '@tanstack/react-router' {
 interface AdminAuthedRouteChildren {
   AdminAuthedRedeemRoute: typeof AdminAuthedRedeemRoute
   AdminAuthedCasesIndexRoute: typeof AdminAuthedCasesIndexRoute
+  AdminAuthedThemesIndexRoute: typeof AdminAuthedThemesIndexRoute
   AdminAuthedCasesCaseIdCheckRoute: typeof AdminAuthedCasesCaseIdCheckRoute
   AdminAuthedCasesCaseIdPrintRoute: typeof AdminAuthedCasesCaseIdPrintRoute
   AdminAuthedCasesCaseIdStatsRoute: typeof AdminAuthedCasesCaseIdStatsRoute
@@ -305,6 +325,7 @@ interface AdminAuthedRouteChildren {
 const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
   AdminAuthedRedeemRoute: AdminAuthedRedeemRoute,
   AdminAuthedCasesIndexRoute: AdminAuthedCasesIndexRoute,
+  AdminAuthedThemesIndexRoute: AdminAuthedThemesIndexRoute,
   AdminAuthedCasesCaseIdCheckRoute: AdminAuthedCasesCaseIdCheckRoute,
   AdminAuthedCasesCaseIdPrintRoute: AdminAuthedCasesCaseIdPrintRoute,
   AdminAuthedCasesCaseIdStatsRoute: AdminAuthedCasesCaseIdStatsRoute,
@@ -327,12 +348,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

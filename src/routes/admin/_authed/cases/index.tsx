@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FolderPlus, ScanLine } from "lucide-react";
+import { FolderPlus, Palette, ScanLine } from "lucide-react";
 
 import { CaseListItem } from "@/components/domains/case-list-item.tsx";
 import { CreateCaseDialog } from "@/components/domains/case-form-dialog.tsx";
@@ -54,6 +54,11 @@ function RouteComponent() {
           <Link to="/admin/redeem" className={css({ display: "inline-flex" })}>
             <Button variant="outline">
               <ScanLine /> 리워드 확인
+            </Button>
+          </Link>
+          <Link to="/admin/themes" className={css({ display: "inline-flex" })}>
+            <Button variant="outline">
+              <Palette /> 테마
             </Button>
           </Link>
           <CreateCaseDialog />
