@@ -9,4 +9,9 @@ const fake = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 export const fakeAliases = [
   { find: /^@\/lib\/api-client(\.ts)?$/, replacement: fake("./src/lib/api-client.fake.ts") },
   { find: /^@\/lib\/storage-put(\.ts)?$/, replacement: fake("./src/lib/storage-put.fake.ts") },
+  // 카메라가 없으므로 QR 인식을 흉내 내는 컴포넌트로 바꾼다.
+  {
+    find: /^@yudiel\/react-qr-scanner$/,
+    replacement: fake("./src/fakes/react-qr-scanner.fake.tsx"),
+  },
 ];

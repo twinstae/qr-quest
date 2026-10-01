@@ -1,17 +1,17 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { CompletionScreen } from "@/components/domains/completion-screen.tsx";
 import { CaseThemedScreen } from "@/components/domains/case-themed-screen.tsx";
 import { GuidanceScreen } from "@/components/domains/guidance-screen.tsx";
 import { ProgressDots } from "@/components/domains/progress-dots.tsx";
+import { QrScanPanel } from "@/components/domains/qr-scan-panel.tsx";
 import { StepMedia } from "@/components/domains/step-card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import * as Card from "@/components/ui/card.tsx";
 import { getApiClient } from "@/lib/api-client";
 import { playKeys, playProgressQueryOptions } from "@/queries/play.ts";
 import { caseThemeQueryOptions } from "@/queries/themes.ts";
-import { css } from "styled-system/css";
 import { VStack } from "styled-system/jsx";
 
 export const Route = createFileRoute("/play/$caseId")({
@@ -39,6 +39,7 @@ function RouteComponent() {
 function PlayScreen({ caseId }: { caseId: string }) {
   const { data: progress } = useQuery(playProgressQueryOptions(caseId));
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   if (!progress) return null;
 
@@ -93,11 +94,20 @@ function PlayScreen({ caseId }: { caseId: string }) {
 
   // WAITING: 다음 QR을 아직 찾지 못했다.
   return (
-    <VStack minHeight="screen" justify="center" p="4" gap="4" textAlign="center">
+    <VStack minHeight="screen" justify="center" p="4" gap="6">
       <ProgressDots resolved={progress.resolved} total={progress.total} />
-      <p className={css({ textStyle: "lg", fontWeight: "medium" })}>
-        {progress.stepName}을(를) 찾아주세요
-      </p>
+      <QrScanPanel
+        stepName={progress.stepName}
+        onScanned={(target) => {
+          if (target.kind === "start") {
+            navigate({ to: "/s/$entryToken", params: { entryToken: target.entryToken } });
+            return;
+          }
+          // 카메라 앱으로 열 때처럼 매번 새로 판단한다 — 예전에 일찍 찍어 잠겼던 결과를 다시 쓰지 않는다.
+          queryClient.removeQueries({ queryKey: playKeys.step(target.qrToken) });
+          navigate({ to: "/t/$qrToken", params: { qrToken: target.qrToken } });
+        }}
+      />
     </VStack>
   );
 }

@@ -39,6 +39,7 @@
     "@tanstack/react-router-ssr-query": "latest",
     "@tanstack/react-start": "latest",
     "@tanstack/react-table": "latest",
+    "@yudiel/react-qr-scanner": "^2.6.0",
     "better-auth": "^1.7.2",
     "bunja": "^3.0.0",
     "class-variance-authority": "^0.7.1",
