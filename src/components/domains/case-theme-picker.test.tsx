@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { actions, assertions, given, query, runSiheom } from "@siheom/react";
 
 import type { Theme } from "@/domain/theme.ts";
@@ -16,7 +16,10 @@ const PALESTINE: Theme = {
 
 describe("CaseThemePicker", () => {
   it("테마를 고르면 바로 저장하고 미리보기를 보여주고, 테마 없음으로 되돌릴 수 있다", async () => {
-    const setTheme = vi.fn(async (_themeId: string | null) => {});
+    const saved: (string | null)[] = [];
+    const setTheme = async (themeId: string | null) => {
+      saved.push(themeId);
+    };
 
     await runSiheom(
       given.render(
@@ -31,7 +34,7 @@ describe("CaseThemePicker", () => {
       assertions.not.visible(query.figure("팔레스타인 미리보기")),
     );
 
-    expect(setTheme.mock.calls).toEqual([["theme-1"], [null]]);
+    expect(saved).toEqual(["theme-1", null]);
   });
 
   it("저장에 실패하면 원래 테마로 되돌리고 알려준다", async () => {

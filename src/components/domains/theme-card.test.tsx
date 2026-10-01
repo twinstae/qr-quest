@@ -1,9 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { actions, assertions, given, query, runSiheom } from "@siheom/react";
 
 import type { ThemeWithUsage } from "@/application/themeService.ts";
 
 import { ThemeCard } from "./theme-card.tsx";
+import type { ThemeInput } from "./theme-editor-form.tsx";
 
 const UNUSED: ThemeWithUsage = {
   id: "theme-1",
@@ -35,7 +36,10 @@ describe("ThemeCard", () => {
   });
 
   it("쓰는 CASE가 있으면 삭제 전에 어떤 CASE가 테마 없음이 되는지 경고한다", async () => {
-    const onDelete = vi.fn(noop);
+    let deleted = 0;
+    const onDelete = async () => {
+      deleted++;
+    };
 
     await runSiheom(
       given.render(<ThemeCard theme={USED} onSave={noop} onDelete={onDelete} />),
@@ -48,7 +52,7 @@ describe("ThemeCard", () => {
       assertions.not.visible(query.dialog("테마 삭제")),
     );
 
-    expect(onDelete).toHaveBeenCalledOnce();
+    expect(deleted).toBe(1);
   });
 
   it("쓰는 CASE가 없으면 되돌릴 수 없다는 것만 알린다", async () => {
@@ -64,7 +68,10 @@ describe("ThemeCard", () => {
   });
 
   it("수정하면 지금 값이 채워진 폼에서 고쳐 저장한다", async () => {
-    const onSave = vi.fn(noop);
+    const saved: ThemeInput[] = [];
+    const onSave = async (input: ThemeInput) => {
+      saved.push(input);
+    };
 
     await runSiheom(
       given.render(<ThemeCard theme={UNUSED} onSave={onSave} onDelete={noop} />),
@@ -75,12 +82,14 @@ describe("ThemeCard", () => {
       assertions.not.visible(query.dialog("테마 수정")),
     );
 
-    expect(onSave).toHaveBeenCalledWith({
-      name: "올리브 숲",
-      palette: "green",
-      headingFont: "noto-serif-kr",
-      bodyFont: "system",
-      backgroundDim: 40,
-    });
+    expect(saved).toEqual([
+      {
+        name: "올리브 숲",
+        palette: "green",
+        headingFont: "noto-serif-kr",
+        bodyFont: "system",
+        backgroundDim: 40,
+      },
+    ]);
   });
 });

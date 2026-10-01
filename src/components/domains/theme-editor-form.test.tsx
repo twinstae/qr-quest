@@ -58,7 +58,10 @@ describe("ThemeEditorForm", () => {
   });
 
   it("이름이 없으면 저장하지 않고 알려준다", async () => {
-    const onSubmit = vi.fn(async () => {});
+    let submitted = 0;
+    const onSubmit = async () => {
+      submitted++;
+    };
 
     await runSiheom(
       given.render(
@@ -72,6 +75,6 @@ describe("ThemeEditorForm", () => {
       assertions.visible(query.alert("테마 이름을 입력해 주세요")),
     );
 
-    expect(onSubmit).not.toHaveBeenCalled();
+    expect(submitted).toBe(0);
   });
 });

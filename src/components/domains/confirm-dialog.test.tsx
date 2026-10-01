@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { actions, assertions, given, query, runSiheom } from "@siheom/react";
 
 import { Button } from "@/components/ui/button.tsx";
@@ -34,42 +34,49 @@ describe("ConfirmDialog", () => {
   });
 
   it("취소하면 onConfirm을 호출하지 않는다", async () => {
-    const onConfirm = vi.fn();
+    let confirmed = 0;
 
     await runSiheom(
-      given.render(renderDialog(onConfirm)),
+      given.render(renderDialog(() => void confirmed++)),
       actions.click(query.button("삭제")),
       actions.click(query.button("취소")),
     );
 
-    expect(onConfirm).not.toHaveBeenCalled();
+    expect(confirmed).toBe(0);
   });
 
   it("확인하면 onConfirm을 한 번 호출한다", async () => {
-    const onConfirm = vi.fn(async () => {});
+    let confirmed = 0;
 
     await runSiheom(
-      given.render(renderDialog(onConfirm)),
+      given.render(
+        renderDialog(async () => {
+          confirmed++;
+        }),
+      ),
       actions.click(query.button("삭제")),
       actions.click(query.button("삭제하기")),
     );
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(confirmed).toBe(1);
   });
 
   it("실패하면 열어둔 채로 이유를 알리고 다시 시도할 수 있다", async () => {
-    const onConfirm = vi.fn(async () => {
-      throw new Error("boom");
-    });
+    let confirmed = 0;
 
     await runSiheom(
-      given.render(renderDialog(onConfirm)),
+      given.render(
+        renderDialog(async () => {
+          confirmed++;
+          throw new Error("boom");
+        }),
+      ),
       actions.click(query.button("삭제")),
       actions.click(query.button("삭제하기")),
       assertions.visible(query.button("삭제하기")),
     );
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(confirmed).toBe(1);
     expect(document.querySelector('[role="alert"]')?.textContent).toBe(
       "처리하지 못했어요. 잠시 후 다시 시도해 주세요.",
     );
