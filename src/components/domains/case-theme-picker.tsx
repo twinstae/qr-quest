@@ -4,22 +4,10 @@ import type { Theme } from "@/domain/theme.ts";
 import { css } from "styled-system/css";
 import { Flex, VStack } from "styled-system/jsx";
 
+import { choiceChip, choiceLegend } from "./choice-chip.ts";
 import { ThemePreview } from "./theme-preview.tsx";
 
 const NO_THEME = "";
-
-const chip = css({
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "2",
-  borderWidth: "1px",
-  borderColor: "border",
-  borderRadius: "l2",
-  px: "3",
-  py: "1.5",
-  cursor: "pointer",
-  "&:has(input:checked)": { borderColor: "gray.12", bg: "gray.subtle.bg" },
-});
 
 /**
  * CASE의 참가자 화면 테마를 고른다. 고르는 즉시 저장하고, 실패하면 원래 값으로 되돌린다.
@@ -56,12 +44,10 @@ export function CaseThemePicker({
     <Flex gap="6" wrap="wrap" align="flex-start">
       <VStack alignItems="stretch" gap="3" flex="1" minWidth="60">
         <fieldset>
-          <legend className={css({ textStyle: "sm", fontWeight: "medium", mb: "2" })}>
-            참가자 화면 테마
-          </legend>
+          <legend className={choiceLegend}>참가자 화면 테마</legend>
           <Flex wrap="wrap" gap="2">
             {options.map((option) => (
-              <label key={option.id} className={chip}>
+              <label key={option.id} className={choiceChip}>
                 <input
                   type="radio"
                   name="case-theme"

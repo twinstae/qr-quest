@@ -20,6 +20,7 @@ import {
 import { css, cx } from "styled-system/css";
 import { Flex, Grid, VStack } from "styled-system/jsx";
 
+import { choiceChip, choiceLegend } from "./choice-chip.ts";
 import { ThemePreview } from "./theme-preview.tsx";
 import { PALETTE_CLASS } from "./themed-screen.tsx";
 
@@ -59,21 +60,6 @@ const schema = v.object({
 // 폰트 보기를 그 폰트로 그려 보여주려면 목록 전체를 한 번 불러와야 한다(관리자 화면만).
 const ALL_FONTS_HREF = googleFontsHref([...THEME_FONT_IDS]);
 
-const chip = css({
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "2",
-  borderWidth: "1px",
-  borderColor: "border",
-  borderRadius: "l2",
-  px: "3",
-  py: "1.5",
-  cursor: "pointer",
-  "&:has(input:checked)": { borderColor: "gray.12", bg: "gray.subtle.bg" },
-});
-
-const legend = css({ textStyle: "sm", fontWeight: "medium", mb: "2" });
-
 function RadioChoices<T extends string>({
   name,
   label,
@@ -87,10 +73,14 @@ function RadioChoices<T extends string>({
 
   return (
     <fieldset>
-      <legend className={legend}>{label}</legend>
+      <legend className={choiceLegend}>{label}</legend>
       <Flex wrap="wrap" gap="2">
         {options.map((option) => (
-          <label key={option.value} className={chip} style={{ fontFamily: option.fontFamily }}>
+          <label
+            key={option.value}
+            className={choiceChip}
+            style={{ fontFamily: option.fontFamily }}
+          >
             <input type="radio" value={option.value} {...register(name)} />
             {option.render}
             {option.label}
