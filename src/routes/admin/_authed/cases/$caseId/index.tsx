@@ -172,7 +172,7 @@ function RouteComponent() {
       </Flex>
 
       {themes && (
-        <section aria-label="테마" className={css({ mb: "8" })}>
+        <section aria-label="테마" className={css({ mb: "8", maxWidth: "2xl" })}>
           <CaseThemePicker
             themes={themes}
             themeId={caseItem.themeId}

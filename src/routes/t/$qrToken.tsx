@@ -2,27 +2,48 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { CaseThemedScreen } from "@/components/domains/case-themed-screen.tsx";
 import { CompletionScreen } from "@/components/domains/completion-screen.tsx";
 import { GuidanceScreen } from "@/components/domains/guidance-screen.tsx";
 import { StepExperience, type StepExperienceState } from "@/components/domains/step-experience.tsx";
-import type { SubmitAnswerResult, HintResult } from "@/application/playService.ts";
+import type { HintResult, PlayStepResult, SubmitAnswerResult } from "@/application/playService.ts";
 import { getApiClient } from "@/lib/api-client";
 import { unwrapPlayResult } from "@/lib/play-client";
 import { useWakeLock } from "@/lib/use-wake-lock";
 import { playStepQueryOptions } from "@/queries/play.ts";
+import { caseThemeQueryOptions } from "@/queries/themes.ts";
 
 export const Route = createFileRoute("/t/$qrToken")({
   component: RouteComponent,
   loader: async ({ params, context }) => {
-    await context.queryClient.query({
+    const result = await context.queryClient.query({
       ...playStepQueryOptions(params.qrToken),
       staleTime: "static",
     });
+    const caseId = result && caseIdOf(result);
+    if (caseId) {
+      await context.queryClient.query({ ...caseThemeQueryOptions(caseId), staleTime: "static" });
+    }
   },
 });
 
+function caseIdOf(result: PlayStepResult): string {
+  return result.kind === "ALLOWED" ? result.step.caseId : result.caseId;
+}
+
 function RouteComponent() {
   const { qrToken } = Route.useParams();
+  const { data: result } = useQuery(playStepQueryOptions(qrToken));
+  if (!result) return null;
+
+  return (
+    <CaseThemedScreen caseId={caseIdOf(result)}>
+      <StepScreen qrToken={qrToken} />
+    </CaseThemedScreen>
+  );
+}
+
+function StepScreen({ qrToken }: { qrToken: string }) {
   const { data: result } = useQuery(playStepQueryOptions(qrToken));
   const navigate = useNavigate();
   const [state, setState] = useState<StepExperienceState>({ status: "idle" });

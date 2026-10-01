@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { CompletionScreen } from "@/components/domains/completion-screen.tsx";
+import { CaseThemedScreen } from "@/components/domains/case-themed-screen.tsx";
 import { GuidanceScreen } from "@/components/domains/guidance-screen.tsx";
 import { ProgressDots } from "@/components/domains/progress-dots.tsx";
 import { StepMedia } from "@/components/domains/step-card.tsx";
@@ -9,21 +10,33 @@ import { Button } from "@/components/ui/button.tsx";
 import * as Card from "@/components/ui/card.tsx";
 import { getApiClient } from "@/lib/api-client";
 import { playKeys, playProgressQueryOptions } from "@/queries/play.ts";
+import { caseThemeQueryOptions } from "@/queries/themes.ts";
 import { css } from "styled-system/css";
 import { VStack } from "styled-system/jsx";
 
 export const Route = createFileRoute("/play/$caseId")({
   component: RouteComponent,
   loader: async ({ params, context }) => {
-    await context.queryClient.query({
-      ...playProgressQueryOptions(params.caseId),
-      staleTime: "static",
-    });
+    await Promise.all([
+      context.queryClient.query({
+        ...playProgressQueryOptions(params.caseId),
+        staleTime: "static",
+      }),
+      context.queryClient.query({ ...caseThemeQueryOptions(params.caseId), staleTime: "static" }),
+    ]);
   },
 });
 
 function RouteComponent() {
   const { caseId } = Route.useParams();
+  return (
+    <CaseThemedScreen caseId={caseId}>
+      <PlayScreen caseId={caseId} />
+    </CaseThemedScreen>
+  );
+}
+
+function PlayScreen({ caseId }: { caseId: string }) {
   const { data: progress } = useQuery(playProgressQueryOptions(caseId));
   const queryClient = useQueryClient();
 
