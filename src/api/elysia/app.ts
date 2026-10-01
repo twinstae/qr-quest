@@ -48,6 +48,7 @@ import {
   StepPreviewSchema,
 } from "./schemas.ts";
 import { createStatsRoutes } from "./statsRoutes.ts";
+import { createThemeRoutes } from "./themeRoutes.ts";
 
 export function createApp(ctx: AppContext) {
   return (
@@ -99,6 +100,7 @@ export function createApp(ctx: AppContext) {
       // ── 관리자 ────────────────────────────────────────────────
       .use(createRedeemRoutes(ctx))
       .use(createStatsRoutes(ctx))
+      .use(createThemeRoutes(ctx))
       .get("/cases", () => listCases(ctx), {
         auth: true,
         response: t.Array(CaseSchema),

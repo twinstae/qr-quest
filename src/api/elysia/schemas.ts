@@ -1,5 +1,7 @@
 import { t } from "elysia";
 
+import { THEME_FONT_IDS, THEME_PALETTE_IDS } from "../../domain/theme.ts";
+
 // 관리자·참가자 라우트가 함께 쓰는 스키마. 한 곳에서만 고치면 요청/응답이 같이 맞는다.
 
 export const MediaSchema = t.Object({
@@ -66,6 +68,7 @@ export const CaseSchema = t.Object({
   entryToken: t.String(),
   finalBookTitle: t.Optional(t.String()),
   rewardNote: t.Optional(t.String()),
+  themeId: t.Optional(t.String()),
 });
 
 export const CaseFieldsSchema = {
@@ -77,6 +80,7 @@ export const CaseFieldsSchema = {
   thumbnail: t.Optional(MediaSchema),
   finalBookTitle: t.Optional(t.String()),
   rewardNote: t.Optional(t.String()),
+  themeId: t.Optional(t.String()),
 };
 
 export const RevealSchema = t.Object({
@@ -214,3 +218,27 @@ export const QrCheckResultSchema = t.Union([
   t.Object({ kind: t.Literal("OTHER_CASE"), caseNumber: t.Number() }),
   t.Object({ kind: t.Literal("UNKNOWN") }),
 ]);
+
+export const ThemeFieldsSchema = {
+  name: t.String({ minLength: 1 }),
+  palette: t.UnionEnum(THEME_PALETTE_IDS),
+  headingFont: t.UnionEnum(THEME_FONT_IDS),
+  bodyFont: t.UnionEnum(THEME_FONT_IDS),
+  background: t.Optional(MediaSchema),
+  backgroundDim: t.Integer({ minimum: 0, maximum: 80 }),
+};
+
+export const ThemeSchema = t.Object({ id: t.String(), ...ThemeFieldsSchema });
+
+export const ThemeWithUsageSchema = t.Object({
+  id: t.String(),
+  ...ThemeFieldsSchema,
+  usedBy: t.Array(
+    t.Object({
+      id: t.String(),
+      number: t.Number(),
+      title: t.String(),
+      status: CaseSchema.properties.status,
+    }),
+  ),
+});
