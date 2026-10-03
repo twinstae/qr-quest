@@ -1,6 +1,6 @@
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { given, runSiheom } from "@siheom/react";
+import { actions, given, query, runSiheom } from "@siheom/react";
 
 // @/lib/api-client는 브라우저 테스트에서 가짜(api-client.fake.ts)로 연결된다 — fake-aliases.ts
 import { fakeServer } from "@/lib/api-client.fake.ts";
@@ -168,5 +168,25 @@ describe("SimpleImageUpload", () => {
 
     expect(document.querySelector("video")).not.toBeNull();
     expect(document.querySelector("img")).toBeNull();
+  });
+
+  // QA: "다시 폼을 열어서 초기값으로 이미지가 있는 경우에 X를 눌러도 아무 일도 일어나지 않는다."
+  it("초기값으로 들어온 이미지도 X를 누르면 칸이 바로 비는 걸 보여준다", async () => {
+    await runSiheom(
+      given.render(
+        <FormFieldStory
+          defaultValues={{
+            image: { src: "https://example.com/clue.png", alt: "단서", kind: "image" },
+          }}
+        >
+          <SimpleImageUpload name="image" label="문제 이미지" />
+        </FormFieldStory>,
+      ),
+      actions.click(query.button("이미지 삭제")),
+    );
+
+    expect(document.querySelector('[aria-label="이미지 삭제"]')).toBeNull();
+    expect(document.querySelector("img")).toBeNull();
+    expect(document.body.textContent).toContain("이미지를 업로드하세요");
   });
 });

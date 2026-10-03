@@ -51,11 +51,24 @@ Phase 2(13·14)가 끝나면 사장님이 개발자 없이 CASE 02를 만들 수
     - 저장된 이미지를 지우면 단계 편집기가 죽던 문제 (media를 선택 값으로)
     - 긴 객관식 보기가 잘리던 문제 (보기 버튼 줄바꿈)
     - 앱 안 카메라로 다음 QR을 바로 찍기 (`QrScanPanel`, 대기 화면)
+    - 초기값으로 들어온 이미지의 X가 먹지 않던 문제 — `Controller`의 `field.value`는 값이
+      `undefined`로 비워졌을 때 mount 시점 기본값(처음 들어있던 이미지)으로 되돌아와 칸이 그대로
+      남았다. 실제 폼 값을 보는 `useWatch` 구독 하나로 갈아끼웠다. (재현·검증: 로컬 PGlite로
+      CASE 생성 → 단계 편집 → 저장 → 재오픈 → X)
 21. [x] 하다가 찾은 운영 버그
     - SPA 전환(09-15) 뒤 브라우저에서 시작하면 세션 쿠키가 안 생겨 `/play`·`/t`가 "먼저 시작 QR을 찍어주세요"만 보이던 문제
     - 단계 순서 바꾸기가 Postgres에서 (case_id, order) 유일 인덱스에 걸려 500이던 문제
 22. [x] 테스트 규칙: `vi.mock`/`vi.fn`/`vi.spyOn`/`vi.stubGlobal` 금지 (oxlint `vitest/no-restricted-vi-methods`).
-    가짜는 props로 주입하거나 `fake-aliases.ts`로 연결한다.
+        가짜는 props로 주입하거나 `fake-aliases.ts`로 연결한다.
+23. [x] 여러 CASE를 동시에, 순서와 무관하게 플레이한다 + 프롤로그/에필로그 QR 옵션 + 스탬프판
+    - 세션 쿠키를 토큰 여러 개(`tok1,tok2`)로 바꿔 CASE마다 세션이 따로 살아 있는 것처럼 취급한다.
+      서버는 요청마다 caseId에 맞는 세션을 고른다(같으면 가장 최근). 다른 CASE 세션은 시작 안내로 풀어준다.
+    - CASE 진행 옵션 3개: `freeOrder`(자유 순서), `prologueEnabled`(시작 QR), `epilogueEnabled`(마지막 문지기).
+      모두 DB 기본값 true, CASE 상세 환면에서 토글(`PATCH /api/cases/:id/play-options`). 마이그레이션 `0002`.
+    - 프롤로그 OFF면 문제 QR 하나를 풀어야 시작, 에필로그 OFF면 문제를 다 풀면 즉시 완주(에필로그는 투어에서 제외).
+    - 진행 표시를 점(`ProgressDots`, 삭제) 대신 스탬프판 `StampBoard`로 — 푼 문제 칸에 도장이 찍힌다.
+      에필로그는 스탬프판이 아니라 완주 안내로 분리했다.
+    - 완주 시 인증번호는 에필로그 ON/OFF와 무관하게 항상 발급한다.
 
 남은 일 / 새로 발견한 것:
 

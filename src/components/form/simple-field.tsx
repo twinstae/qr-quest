@@ -1,5 +1,5 @@
 import { useId, useState, type ComponentProps } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { Input } from "@/components/ui/input.tsx";
 import * as Field from "@/components/ui/field.tsx";
@@ -269,6 +269,12 @@ export function SimpleImageUpload({
   const [tooLargeHint, setTooLargeHint] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
+  // Controller의 field.value는 값이 undefined로 비워졌을 때 mount 시점의 기본값(처음 들어있던
+  // 이미지)으로 되돌아온다 — useWatch가 defaultValue를 물려받는 규칙 때문이다. 그 값을 그대로
+  // 그리면 X를 눌러도 칸이 그대로 남아 "아무 일도 일어나지 않는다"가 된다(QA). defaultValue 없이
+  // 값을 직접 보는 구독 하나를 더 두어 화면이 "지웠다"를 따라가게 한다.
+  const currentValue = useWatch({ control, name }) as SimpleImageValue | undefined;
+
   const descriptionId = useId();
   const errorId = useId();
 
@@ -333,7 +339,7 @@ export function SimpleImageUpload({
                 // 새로 골랐던 파일을 지우면(delete trigger) 폼 값도 함께 비운다.
                 // 기존 값 미리보기는 acceptedFiles에 안 들어있으므로 여기서 건드리지 않는다.
                 if (details.acceptedFiles.length === 0) {
-                  if (field.value?.src) field.onChange(undefined);
+                  if (currentValue?.src) field.onChange(undefined);
                   return;
                 }
 
@@ -350,7 +356,7 @@ export function SimpleImageUpload({
                 aria-errormessage={isError ? errorId : undefined}
               />
               <FileUploadPreview
-                existingValue={field.value}
+                existingValue={currentValue}
                 onRemoveExisting={() => field.onChange(undefined)}
                 allowVideo={allowVideo}
               />
