@@ -22,6 +22,12 @@ export type Case = {
   rewardNote?: string;
   /** 참가자 화면의 색·폰트·배경. 없으면 기본 모습 (ticket 18). */
   themeId?: string;
+  /** 자유 진행: 문제를 순서 없이 풀 수 있다(스탬프 투어). 끄면 앞 단계부터 차례대로. */
+  freeOrder: boolean;
+  /** 프롤로그 QR: 시작 QR을 찍어야 참여가 시작된다. 끄면 문제 하나를 풀면 시작한다. */
+  prologueEnabled: boolean;
+  /** 에필로그 QR: 마지막 단서를 풀어야 완주한다. 끄면 문제를 다 풀면 바로 완주한다. */
+  epilogueEnabled: boolean;
 };
 
 export function formatCaseNumber(value: number): string {
@@ -74,13 +80,18 @@ export type LiveViolation =
   | { kind: "MISSING_CLOSING" }
   | { kind: "MISSING_INTRO_BODY" }
   | { kind: "MISSING_ANSWER"; stepId: string; stepName: string }
-  | { kind: "MISSING_QR_TOKEN"; stepId: string; stepName: string };
+  | { kind: "MISSING_QR_TOKEN"; stepId: string; stepName: string }
+  /** 에필로그 QR을 켜뒀는데 찍을 단계가 없다 — 참가자가 에필로그 없이 완주하게 된다. */
+  | { kind: "MISSING_EPILOGUE" };
 
 /**
  * LIVE로 바꾸기 전 검사(요구 30). 순수 함수라 테스트가 가장 싸다 — 저장소 없이
  * 이미 가져온 단계 목록만으로 판단한다.
  */
-export function checkCaseLiveReadiness(steps: Step[]): LiveViolation[] {
+export function checkCaseLiveReadiness(
+  steps: Step[],
+  options: Pick<Case, "epilogueEnabled"> = { epilogueEnabled: false },
+): LiveViolation[] {
   const sorted = [...steps].sort((a, b) => a.order - b.order);
   const violations: LiveViolation[] = [];
 
@@ -89,6 +100,10 @@ export function checkCaseLiveReadiness(steps: Step[]): LiveViolation[] {
 
   if (!sorted.some((step) => step.kind === "CLOSING")) {
     violations.push({ kind: "MISSING_CLOSING" });
+  }
+
+  if (options.epilogueEnabled && !sorted.some((step) => step.kind === "FINAL")) {
+    violations.push({ kind: "MISSING_EPILOGUE" });
   }
 
   for (const step of sorted) {
@@ -121,5 +136,7 @@ export function describeLiveViolation(violation: LiveViolation): string {
       return `${violation.stepName} 단계에 정답이 없어요.`;
     case "MISSING_QR_TOKEN":
       return `${violation.stepName} 단계에 QR 코드가 없어요.`;
+    case "MISSING_EPILOGUE":
+      return "에필로그 QR을 켜두셨는데 마지막 단서 단계가 없어요.";
   }
 }

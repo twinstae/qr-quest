@@ -4,8 +4,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { CompletionScreen } from "@/components/domains/completion-screen.tsx";
 import { CaseThemedScreen } from "@/components/domains/case-themed-screen.tsx";
 import { GuidanceScreen } from "@/components/domains/guidance-screen.tsx";
-import { ProgressDots } from "@/components/domains/progress-dots.tsx";
 import { QrScanPanel } from "@/components/domains/qr-scan-panel.tsx";
+import { StampBoard } from "@/components/domains/stamp-board.tsx";
 import { StepMedia } from "@/components/domains/step-card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import * as Card from "@/components/ui/card.tsx";
@@ -44,11 +44,7 @@ function PlayScreen({ caseId }: { caseId: string }) {
   if (!progress) return null;
 
   if (progress.kind === "NOT_STARTED") {
-    return <GuidanceScreen text="먼저 시작 QR을 찍어주세요." />;
-  }
-
-  if (progress.kind === "OTHER_CASE") {
-    return <GuidanceScreen text="이 사건은 지금 진행 중인 사건이 아니에요." />;
+    return <GuidanceScreen text={progress.message} />;
   }
 
   if (progress.kind === "COMPLETED") {
@@ -92,12 +88,13 @@ function PlayScreen({ caseId }: { caseId: string }) {
     );
   }
 
-  // WAITING: 다음 QR을 아직 찾지 못했다.
+  // WAITING: 남은 문제(또는 에필로그) QR을 아직 찾지 못했다.
   return (
     <VStack minHeight="screen" justify="center" p="4" gap="6">
-      <ProgressDots resolved={progress.resolved} total={progress.total} />
+      <StampBoard stamps={progress.stamps} />
       <QrScanPanel
         stepName={progress.stepName}
+        anyOrder={progress.anyOrder}
         onScanned={(target) => {
           if (target.kind === "start") {
             navigate({ to: "/s/$entryToken", params: { entryToken: target.entryToken } });

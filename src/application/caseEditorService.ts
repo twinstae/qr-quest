@@ -46,6 +46,10 @@ export async function cloneCase(ctx: AppContext, caseId: string): Promise<Case> 
     entryToken: generateQrToken(),
     finalBookTitle: original.finalBookTitle,
     rewardNote: original.rewardNote,
+    // 진행 규칙(자유 순서·프롤로그/에필로그 QR)도 원본 그대로 복제한다.
+    freeOrder: original.freeOrder,
+    prologueEnabled: original.prologueEnabled,
+    epilogueEnabled: original.epilogueEnabled,
   });
 
   for (const step of [...steps].sort((a, b) => a.order - b.order)) {
@@ -80,8 +84,11 @@ export async function checkLiveReadiness(
   ctx: AppContext,
   caseId: string,
 ): Promise<LiveViolation[]> {
-  const steps = await ctx.repo.step.listByCaseId(caseId);
-  return checkCaseLiveReadiness(steps);
+  const [steps, caseItem] = await Promise.all([
+    ctx.repo.step.listByCaseId(caseId),
+    getCaseOrThrow(ctx, caseId),
+  ]);
+  return checkCaseLiveReadiness(steps, caseItem);
 }
 
 /** LIVE로 바꾸려는데 위반이 있으면 거부한다. 그 외 상태 변경은 그대로 저장한다. */

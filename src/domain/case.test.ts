@@ -117,6 +117,35 @@ describe("checkCaseLiveReadiness", () => {
 
     expect(checkCaseLiveReadiness(steps)).toEqual([]);
   });
+
+  it("에필로그 QR을 켜두고 마지막 단서 단계를 지우면 위반이다", () => {
+    const withoutFinal: Step[] = [
+      {
+        ...baseStep,
+        id: "intro",
+        order: 0,
+        kind: "INTRO",
+        qrToken: null,
+        body: "소개",
+        answerSpec: undefined,
+      },
+      { ...baseStep, id: "qr1", order: 1 },
+      {
+        ...baseStep,
+        id: "closing",
+        order: 2,
+        kind: "CLOSING",
+        qrToken: null,
+        answerSpec: undefined,
+      },
+    ];
+
+    expect(checkCaseLiveReadiness(withoutFinal, { epilogueEnabled: true })).toEqual([
+      { kind: "MISSING_EPILOGUE" },
+    ]);
+    // 에필로그를 꺼두었으면 문제가 다 풀려 끝나는 CASE라 단계가 더 필요 없다.
+    expect(checkCaseLiveReadiness(withoutFinal, { epilogueEnabled: false })).toEqual([]);
+  });
 });
 
 describe("describeLiveViolation", () => {
@@ -130,6 +159,7 @@ describe("describeLiveViolation", () => {
         { kind: "MISSING_QR_TOKEN", stepId: "s1", stepName: "QR 02" },
         "QR 02 단계에 QR 코드가 없어요.",
       ],
+      [{ kind: "MISSING_EPILOGUE" }, "에필로그 QR을 켜두셨는데 마지막 단서 단계가 없어요."],
     ];
 
     for (const [violation, expected] of cases) {

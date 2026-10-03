@@ -50,6 +50,12 @@ export const cases = pgTable("cases", {
   rewardNote: text("reward_note"),
   // 테마를 지우면 CASE는 남고 테마만 빠진다 (ticket 18).
   themeId: uuid("theme_id").references(() => themes.id, { onDelete: "set null" }),
+  /** 자유 진행(스탬프 투어). 꺼져 있으면 단계를 순서대로만 연다. */
+  freeOrder: boolean("free_order").notNull().default(true),
+  /** 프롤로그 QR로 참여 시작. */
+  prologueEnabled: boolean("prologue_enabled").notNull().default(true),
+  /** 에필로그 QR로 완주. */
+  epilogueEnabled: boolean("epilogue_enabled").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

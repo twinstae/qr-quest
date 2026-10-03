@@ -13,6 +13,9 @@ export const TEST_CASE: Case = {
   entryToken: "ENTRYTOKEN",
   finalBookTitle: "헌법논증이론",
   rewardNote: "기념 엽서",
+  freeOrder: true,
+  prologueEnabled: true,
+  epilogueEnabled: true,
 };
 
 export const ANOTHER_CASE: Case = {

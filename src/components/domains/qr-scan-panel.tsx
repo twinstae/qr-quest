@@ -56,10 +56,13 @@ export function cameraErrorMessage(kind: IScannerError["kind"]): string {
  */
 export function QrScanPanel({
   stepName,
+  anyOrder = false,
   onScanned,
   scanner: Scanner = LazyScanner,
 }: {
   stepName: string;
+  /** 자유 진행 — 남은 문제 QR을 아무 순서로나 찍으면 된다. */
+  anyOrder?: boolean;
   onScanned: (target: Exclude<ScannedQr, { kind: "unknown" }>) => void;
   /** 기본은 실제 카메라 스캐너(필요할 때 불러옴). */
   scanner?: ScannerComponent;
@@ -71,18 +74,21 @@ export function QrScanPanel({
     void loadScanner();
   }, []);
 
+  const heading = anyOrder ? "남은 문제 QR을 찾아주세요" : `다음은 ${stepName} 차례예요`;
+  const findGuide = anyOrder
+    ? "전시실에 붙은 문제 QR 중 하나를 찾으세요. 순서는 상관없어요. 찾았다면 아래 버튼을 눌러 이 화면에서 바로 찍으면 돼요."
+    : `전시실에 붙은 QR 코드 중 ${stepName}을(를) 찾아보세요. 찾았다면 아래 버튼을 눌러 이 화면에서 바로 찍으면 돼요.`;
+
   return (
     // 카드 안에 두어야 테마 배경 위에서도 안내 문구가 읽힌다(다른 참가자 화면과 같은 모양).
     <Card.Root variant="elevated" width="full" maxWidth="sm">
       <Card.Body pt="6">
         <VStack gap="4" textAlign="center">
-          <h2 className={css({ textStyle: "xl", fontWeight: "bold" })}>
-            다음은 {stepName} 차례예요
-          </h2>
+          <h2 className={css({ textStyle: "xl", fontWeight: "bold" })}>{heading}</h2>
           <p className={css({ color: "fg.muted" })}>
             {open
               ? "QR 코드가 네모 칸 안에 들어오게 비춰 주세요. 인식되면 바로 다음 화면으로 넘어가요."
-              : `전시실에 붙은 QR 코드 중 ${stepName}을(를) 찾아보세요. 찾았다면 아래 버튼을 눌러 이 화면에서 바로 찍으면 돼요.`}
+              : findGuide}
           </p>
 
           {open ? (

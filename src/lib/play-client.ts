@@ -1,6 +1,6 @@
-// 참가 세션 쿠키 이름. src/api/elysia/playRoutes.ts의 PLAY_SESSION_COOKIE와 반드시 같아야 한다.
-// (그 파일은 서버 전용 코드를 포함하므로 클라이언트 번들에 그대로 끌어오지 않는다.)
-export const PLAY_SESSION_COOKIE = "qr_play_session";
+// 참가 세션 쿠키 이름 — 서버(에lysia 라우트)와 클라이언트가 반드시 같은 값을 쓰도록
+// src/lib/play-session-cookie.ts 한 곳에서 정의한다.
+export { PLAY_SESSION_COOKIE } from "./play-session-cookie.ts";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;

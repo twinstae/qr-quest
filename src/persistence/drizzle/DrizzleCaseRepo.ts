@@ -19,6 +19,9 @@ function toDomain(row: typeof cases.$inferSelect): Case {
     finalBookTitle: row.finalBookTitle ?? undefined,
     rewardNote: row.rewardNote ?? undefined,
     themeId: row.themeId ?? undefined,
+    freeOrder: row.freeOrder,
+    prologueEnabled: row.prologueEnabled,
+    epilogueEnabled: row.epilogueEnabled,
   };
 }
 
@@ -35,6 +38,9 @@ function toRow(input: Omit<Case, "id">): typeof cases.$inferInsert {
     finalBookTitle: input.finalBookTitle ?? null,
     rewardNote: input.rewardNote ?? null,
     themeId: input.themeId ?? null,
+    freeOrder: input.freeOrder,
+    prologueEnabled: input.prologueEnabled,
+    epilogueEnabled: input.epilogueEnabled,
   };
 }
 

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, MapPinPlus } from "lucide-react";
 
+import { CasePlayOptionsPanel } from "@/components/domains/case-play-options.tsx";
 import { CaseStatusControl } from "@/components/domains/case-status-control.tsx";
 import { CaseThemePicker } from "@/components/domains/case-theme-picker.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
@@ -192,6 +193,23 @@ function RouteComponent() {
           </Link>
         </section>
       )}
+
+      <section aria-label="진행 설정" className={css({ mb: "8", maxWidth: "2xl" })}>
+        <CasePlayOptionsPanel
+          options={{
+            freeOrder: caseItem.freeOrder,
+            prologueEnabled: caseItem.prologueEnabled,
+            epilogueEnabled: caseItem.epilogueEnabled,
+          }}
+          onChange={async (patch) => {
+            const { error } = await getApiClient()
+              .cases({ id: caseItem.id })
+              ["play-options"].patch(patch);
+            if (error) throw error;
+            await queryClient.invalidateQueries({ queryKey: caseKeys.detail(caseId) });
+          }}
+        />
+      </section>
 
       {steps.length === 0 ? (
         <EmptyState

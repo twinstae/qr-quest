@@ -73,13 +73,18 @@ function RouteComponent() {
 
   const cards: Card[] = [
     {
-      name: "시작 QR",
-      title: caseItem.title,
+      // 프로그램 QR(프롤로그)은 결제한 참가자에게만 나눠준다 — 인쇄물부터 그 구분이 보여야 한다.
+      name: caseItem.prologueEnabled ? "프로그램 QR" : "시작 QR",
+      title: caseItem.prologueEnabled
+        ? `${caseItem.title} · 결제한 참가자에게만 나눠주세요`
+        : caseItem.title,
       url: `${origin}/s/${caseItem.entryToken}`,
       token: caseItem.entryToken,
     },
     ...qrSteps.map((step) => ({
-      name: step.name,
+      // 에필로그 QR은 완주한 참가자에게만 찍게 한다 — 카드 이름부터 구분해 둔다.
+      name:
+        step.kind === "FINAL" && caseItem.epilogueEnabled ? `${step.name} (에필로그)` : step.name,
       title: step.title,
       url: `${origin}/t/${step.qrToken}`,
       token: step.qrToken ?? "",

@@ -11,56 +11,56 @@ import {
 } from "../../application/playService.ts";
 import type { AnswerSubmission } from "../../domain/step.ts";
 import type { AppContext } from "../context.ts";
+import {
+  mergeSessionTokens,
+  readSessionTokens,
+  sessionCookieHeader,
+} from "../../lib/play-session-cookie.ts";
 import { RevealSchema, StepDisplaySchema } from "./schemas.ts";
+
+// 참가 세션 쿠키 이름/병합 규칙은 한 기기에서 여러 CASE를 동시에 이어서 하기 때문에
+// src/lib/play-session-cookie.ts 한 곳에서 정의하고 여기서는 가져다 쓴다.
+export { PLAY_SESSION_COOKIE, sessionCookieHeader } from "../../lib/play-session-cookie.ts";
 
 const CompletedSchema = t.Object({ kind: t.Literal("COMPLETED"), caseId: t.String() });
 const LockedOnlySchema = t.Union([
-  t.Object({ kind: t.Literal("NOT_STARTED"), caseId: t.String() }),
+  t.Object({ kind: t.Literal("NOT_STARTED"), caseId: t.String(), message: t.String() }),
   t.Object({
     kind: t.Literal("LOCKED"),
     caseId: t.String(),
     currentStepOrder: t.Number(),
     requestedOrder: t.Number(),
     stepName: t.String(),
+    message: t.String(),
   }),
-  t.Object({ kind: t.Literal("OTHER_CASE"), caseId: t.String(), sessionCaseId: t.String() }),
 ]);
 
+const StampSchema = t.Object({
+  stepId: t.String(),
+  name: t.String(),
+  solved: t.Boolean(),
+});
+
 /**
- * 참가 세션 토큰은 httpOnly 쿠키에 담는다. 여기서는 읽기만 한다 — 새로 쓰거나
+ * 참가 세션 토큰은 httpOnly 쿠키에 담는다. 여기서는 읽기만 하고 — 새로 쓰거나
  * 바꿀 때는 TanStack Start 쪽(loader/서버 함수)의 setCookie가 실제 응답에 반영한다.
  * (Eden treaty의 서버 사이드 in-process 호출은 이 인스턴스의 Set-Cookie를
  * 바깥 응답으로 그대로 흘려보내지 않기 때문이다.)
+ *
+ * 쿠키 하나에 CASE마다 세션 토큰이 여러 개 들어 있다 — 여러 CASE를 동시에 진행하게.
  */
-export const PLAY_SESSION_COOKIE = "qr_play_session";
-
-/** 참가 세션 쿠키. 1년 동안 같은 휴대폰에서 이어 할 수 있다. */
-export function sessionCookieHeader(token: string): string {
-  return `${PLAY_SESSION_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 365}`;
-}
-
-export function readSessionToken(cookieHeader: string | undefined): string | undefined {
-  if (!cookieHeader) return undefined;
-  const prefix = `${PLAY_SESSION_COOKIE}=`;
-  const match = cookieHeader
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(prefix));
-  return match?.slice(prefix.length) || undefined;
-}
 
 function toSubmission(body: { answer?: string; choiceIds?: string[] }): AnswerSubmission {
   if (body.choiceIds) return { type: "CHOICE", choiceIds: body.choiceIds };
   return { type: "TEXT", value: body.answer ?? "" };
 }
 
-/** LOCKED만 423, NOT_STARTED/OTHER_CASE는 서버 에러가 아닌 4xx, COMPLETED는 200으로 내려준다. */
+/** LOCKED만 423, NOT_STARTED는 서버 에러가 아닌 4xx, COMPLETED는 200으로 내려준다. */
 function lockedResponse(result: LockedResult) {
   switch (result.kind) {
     case "LOCKED":
       return status(423, result);
     case "NOT_STARTED":
-    case "OTHER_CASE":
       return status(409, result);
     case "COMPLETED":
       return result;
@@ -72,13 +72,17 @@ export function createPlayRoutes(ctx: AppContext) {
     .post(
       "/play/sessions",
       async ({ body, headers, set }) => {
+        const existingTokens = readSessionTokens(headers.cookie);
         const result = await startOrResumeSession(ctx, {
           entryToken: body.entryToken,
-          existingToken: readSessionToken(headers.cookie),
+          existingTokens,
         });
         // SPA라 시작 화면의 loader가 브라우저에서 이 API를 직접 부른다 — 여기서 쿠키를 줘야
         // 다음 단계 요청에 세션이 실린다. (서버 실행 경로는 play-session.ts의 setCookie가 맡는다.)
-        set.headers["set-cookie"] = sessionCookieHeader(result.token);
+        // 다른 CASE 세션 토큰은 남겨 두어야 여러 CASE를 동시에 이어서 할 수 있다.
+        set.headers["set-cookie"] = sessionCookieHeader(
+          mergeSessionTokens(existingTokens, result.token),
+        );
         return result;
       },
       {
@@ -98,7 +102,7 @@ export function createPlayRoutes(ctx: AppContext) {
       async ({ params, headers }) => {
         const result = await getStepForPlay(ctx, {
           qrToken: params.qrToken,
-          sessionToken: readSessionToken(headers.cookie),
+          sessionTokens: readSessionTokens(headers.cookie),
         });
         return result.kind === "ALLOWED" ? result : lockedResponse(result);
       },
@@ -119,7 +123,7 @@ export function createPlayRoutes(ctx: AppContext) {
       async ({ params, body, headers }) => {
         const result = await submitAnswer(ctx, {
           stepId: params.id,
-          sessionToken: readSessionToken(headers.cookie),
+          sessionTokens: readSessionTokens(headers.cookie),
           submission: toSubmission(body),
         });
         return result.kind === "INCORRECT" || result.kind === "CORRECT"
@@ -153,7 +157,7 @@ export function createPlayRoutes(ctx: AppContext) {
       async ({ params, headers }) => {
         const result = await advanceNarrativeStep(ctx, {
           stepId: params.id,
-          sessionToken: readSessionToken(headers.cookie),
+          sessionTokens: readSessionTokens(headers.cookie),
         });
         return result.kind === "ADVANCED" ? result : lockedResponse(result);
       },
@@ -171,7 +175,7 @@ export function createPlayRoutes(ctx: AppContext) {
       async ({ params, headers }) => {
         const result = await requestHint(ctx, {
           stepId: params.id,
-          sessionToken: readSessionToken(headers.cookie),
+          sessionTokens: readSessionTokens(headers.cookie),
         });
         return result.kind === "HINT" ? result : lockedResponse(result);
       },
@@ -192,14 +196,13 @@ export function createPlayRoutes(ctx: AppContext) {
       async ({ params, headers }) => {
         return getPlayProgress(ctx, {
           caseId: params.caseId,
-          sessionToken: readSessionToken(headers.cookie),
+          sessionTokens: readSessionTokens(headers.cookie),
         });
       },
       {
         params: t.Object({ caseId: t.String() }),
         response: t.Union([
-          t.Object({ kind: t.Literal("NOT_STARTED") }),
-          t.Object({ kind: t.Literal("OTHER_CASE") }),
+          t.Object({ kind: t.Literal("NOT_STARTED"), message: t.String() }),
           t.Object({
             kind: t.Literal("COMPLETED"),
             completionCode: t.Optional(t.String()),
@@ -211,8 +214,10 @@ export function createPlayRoutes(ctx: AppContext) {
           t.Object({
             kind: t.Literal("WAITING"),
             stepName: t.String(),
-            resolved: t.Number(),
-            total: t.Number(),
+            // true면 남은 문제 QR을 아무 순서로나 찍으면 된다(자유 진행).
+            anyOrder: t.Boolean(),
+            // 스탬프판 동그라미 칸 — 푼 문제에만 도장이 찍혀 있다.
+            stamps: t.Array(StampSchema),
           }),
         ]),
       },

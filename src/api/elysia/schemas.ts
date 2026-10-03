@@ -69,6 +69,10 @@ export const CaseSchema = t.Object({
   finalBookTitle: t.Optional(t.String()),
   rewardNote: t.Optional(t.String()),
   themeId: t.Optional(t.String()),
+  // 진행 규칙 — 자유 진행(스탬프 투어)과 프로그램/에필로그 QR on·off.
+  freeOrder: t.Boolean(),
+  prologueEnabled: t.Boolean(),
+  epilogueEnabled: t.Boolean(),
 });
 
 export const CaseFieldsSchema = {
@@ -81,7 +85,17 @@ export const CaseFieldsSchema = {
   finalBookTitle: t.Optional(t.String()),
   rewardNote: t.Optional(t.String()),
   themeId: t.Optional(t.String()),
+  freeOrder: t.Optional(t.Boolean()),
+  prologueEnabled: t.Optional(t.Boolean()),
+  epilogueEnabled: t.Optional(t.Boolean()),
 };
+
+/** CASE 상세 화면의 진행 설정 토글이 보내는 값 — 보낸 항목만 바뀐다. */
+export const CasePlayOptionsSchema = t.Object({
+  freeOrder: t.Optional(t.Boolean()),
+  prologueEnabled: t.Optional(t.Boolean()),
+  epilogueEnabled: t.Optional(t.Boolean()),
+});
 
 export const RevealSchema = t.Object({
   text: t.Optional(t.String()),
@@ -154,6 +168,7 @@ export const LiveViolationSchema = t.Union([
   t.Object({ kind: t.Literal("MISSING_INTRO_BODY") }),
   t.Object({ kind: t.Literal("MISSING_ANSWER"), stepId: t.String(), stepName: t.String() }),
   t.Object({ kind: t.Literal("MISSING_QR_TOKEN"), stepId: t.String(), stepName: t.String() }),
+  t.Object({ kind: t.Literal("MISSING_EPILOGUE") }),
 ]);
 
 /** 직원 리딤 화면(16b)의 판정. 상태 코드로도 구분하지만 화면은 kind만 본다. */

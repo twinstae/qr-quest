@@ -118,10 +118,14 @@ describe("GET /api/play/steps/:qrToken", () => {
     const payload = await response.json();
 
     expect(response.status).toBeLessThan(500);
-    expect(payload).toEqual({ kind: "NOT_STARTED", caseId: TEST_CASE.id });
+    expect(payload).toEqual({
+      kind: "NOT_STARTED",
+      caseId: TEST_CASE.id,
+      message: "먼저 시작 QR을 찍어주세요.",
+    });
   });
 
-  it("다른 CASE의 QR을 찍으면 서버 에러가 아닌 안내 상태를 돌려준다", async () => {
+  it("다른 CASE의 세션으로 이 CASE QR을 찍어도 서버 에러가 아닌 안내 상태를 돌려준다", async () => {
     const app = appWith();
     const client = rawClient(app);
     const session = await startSession(app, ANOTHER_CASE.entryToken);
@@ -131,7 +135,8 @@ describe("GET /api/play/steps/:qrToken", () => {
 
     expect(response.status).toBeLessThan(500);
     expect(response.status).toBeGreaterThanOrEqual(400);
-    expect(payload).toMatchObject({ kind: "OTHER_CASE" });
+    // 여러 CASE를 동시에 진행하므로 "다른 사건"이 아니라 아직 시작하지 않은 것으로 안내한다.
+    expect(payload).toMatchObject({ kind: "NOT_STARTED", caseId: TEST_CASE.id });
   });
 
   it("없는 QR 토큰은 404를 반환한다", async () => {
@@ -290,7 +295,10 @@ describe("GET /api/play/cases/:caseId/progress", () => {
     const response = await client.get(`/api/play/cases/${TEST_CASE.id}/progress`);
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ kind: "NOT_STARTED" });
+    expect(await response.json()).toEqual({
+      kind: "NOT_STARTED",
+      message: "먼저 시작 QR을 찍어주세요.",
+    });
   });
 
   it("INTRO 단계에서는 소개 내용을 돌려준다", async () => {

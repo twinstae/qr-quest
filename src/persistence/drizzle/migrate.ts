@@ -1,4 +1,5 @@
 import { mkdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
@@ -9,7 +10,8 @@ import postgres from "postgres";
 
 import * as schema from "./fullSchema.ts";
 
-const migrationsFolder = new URL("./migrations", import.meta.url).pathname;
+// URL.pathname은 Windows에서 `/C:/...`가 되어 폴더를 찾지 못한다 — fileURLToPath로 바꾼다.
+const migrationsFolder = fileURLToPath(new URL("./migrations", import.meta.url));
 
 export async function migrateDatabase(databaseUrl: string): Promise<void> {
   if (databaseUrl.startsWith("pglite://")) {

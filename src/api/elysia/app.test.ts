@@ -265,6 +265,33 @@ describe("/api/cases", () => {
   });
 });
 
+describe("PATCH /api/cases/:id/play-options", () => {
+  it("보낸 항목만 바꾸고 나머지 진행 설정은 그대로 둔다", async () => {
+    const { client } = await signedInClient(
+      createFakeContext({ repo: { case: createFakeCaseRepo({ [TEST_CASE.id]: TEST_CASE }) } }),
+    );
+
+    const response = await client.patch(`/api/cases/${TEST_CASE.id}/play-options`, {
+      prologueEnabled: false,
+    });
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({
+      prologueEnabled: false,
+      freeOrder: TEST_CASE.freeOrder,
+      epilogueEnabled: TEST_CASE.epilogueEnabled,
+      entryToken: TEST_CASE.entryToken,
+    });
+  });
+
+  it("세션이 없으면 401을 반환한다", async () => {
+    const client = createTestClient(appWith(TEST_CASE));
+
+    expect((await client.patch(`/api/cases/${TEST_CASE.id}/play-options`, {})).status).toBe(401);
+  });
+});
+
 describe("GET /api/steps/:id/edit", () => {
   it("세션이 없으면 401을 반환한다", async () => {
     const client = createTestClient(appWith(TEST_CASE, [TEST_STEP]));

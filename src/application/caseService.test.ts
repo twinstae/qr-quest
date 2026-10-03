@@ -12,6 +12,7 @@ import {
   getCaseByEntryToken,
   getCaseForEdit,
   listCases,
+  setCasePlayOptions,
   updateCase,
 } from "./caseService.ts";
 
@@ -71,6 +72,59 @@ describe("createCase", () => {
     const tokens = steps.filter((step) => step.qrToken !== null).map((step) => step.qrToken);
     expect(tokens).toHaveLength(5);
     expect(new Set(tokens).size).toBe(5);
+  });
+
+  it("기본으로 스탬프 투어(자유 진행) + 프로그램/에필로그 QR로 만든다", async () => {
+    const ctx = contextWith();
+
+    const created = await createCase(ctx, CREATE_INPUT);
+
+    expect(created).toMatchObject({
+      freeOrder: true,
+      prologueEnabled: true,
+      epilogueEnabled: true,
+    });
+  });
+
+  it("생성 옵션을 보내면 그대로 반영된다", async () => {
+    const ctx = contextWith();
+
+    const created = await createCase(ctx, {
+      ...CREATE_INPUT,
+      freeOrder: false,
+      prologueEnabled: false,
+      epilogueEnabled: false,
+    });
+
+    expect(created).toMatchObject({
+      freeOrder: false,
+      prologueEnabled: false,
+      epilogueEnabled: false,
+    });
+  });
+});
+
+describe("setCasePlayOptions", () => {
+  it("보낸 항목만 바꾸고 나머지는 그대로 둔다", async () => {
+    const ctx = contextWith([TEST_CASE]);
+
+    const updated = await setCasePlayOptions(ctx, TEST_CASE.id, { freeOrder: false });
+
+    expect(updated).toMatchObject({
+      freeOrder: false,
+      prologueEnabled: TEST_CASE.prologueEnabled,
+      epilogueEnabled: TEST_CASE.epilogueEnabled,
+      // 진행 설정만 바꾼다 — 제목·토큰·상태는 손대지 않는다.
+      title: TEST_CASE.title,
+      entryToken: TEST_CASE.entryToken,
+      status: TEST_CASE.status,
+    });
+  });
+
+  it("없는 CASE는 NotExistError를 던진다", async () => {
+    const ctx = contextWith();
+
+    await expect(setCasePlayOptions(ctx, "missing", {})).rejects.toThrow(NotExistError);
   });
 });
 

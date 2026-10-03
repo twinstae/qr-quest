@@ -285,6 +285,9 @@ describe("reorderSteps", () => {
     const step3 = await ctx.repo.step.getById("step-3");
     const step1 = await ctx.repo.step.getById("step-1");
     if (!step3 || !step1) throw new Error("steps not found");
+    const stepsAfterReorder = await ctx.repo.step.listByCaseId(TEST_CASE.id);
+    // 자유 진행을 꺼둬야 순서 잠금이 그대로인지 확인한다.
+    const options = { freeOrder: false, prologueEnabled: true, epilogueEnabled: true };
 
     const session = {
       caseId: TEST_CASE.id,
@@ -292,8 +295,12 @@ describe("reorderSteps", () => {
       currentStepOrder: 1,
       isTest: false,
     };
-    expect(openStep({ session, step: step3 }).kind).toBe("ALLOWED");
-    expect(openStep({ session, step: step1 }).kind).toBe("LOCKED");
+    expect(openStep({ session, step: step3, steps: stepsAfterReorder, options }).kind).toBe(
+      "ALLOWED",
+    );
+    expect(openStep({ session, step: step1, steps: stepsAfterReorder, options }).kind).toBe(
+      "LOCKED",
+    );
   });
 });
 

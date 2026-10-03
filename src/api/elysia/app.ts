@@ -18,6 +18,7 @@ import {
   getCaseByEntryToken,
   getCaseForEdit,
   listCases,
+  setCasePlayOptions,
   updateCase,
 } from "../../application/caseService.ts";
 import {
@@ -37,9 +38,11 @@ import {
 import type { AppContext } from "../context.ts";
 import { createAuthGuard } from "./authGuard.ts";
 import { createPlayRoutes, sessionCookieHeader } from "./playRoutes.ts";
+import { mergeSessionTokens, readSessionTokens } from "../../lib/play-session-cookie.ts";
 import { createRedeemRoutes } from "./redeemRoutes.ts";
 import {
   CaseFieldsSchema,
+  CasePlayOptionsSchema,
   CaseSchema,
   LiveViolationSchema,
   QrCheckResultSchema,
@@ -121,6 +124,16 @@ export function createApp(ctx: AppContext) {
         body: t.Object(CaseFieldsSchema),
         response: CaseSchema,
       })
+      .patch(
+        "/cases/:id/play-options",
+        ({ params, body }) => setCasePlayOptions(ctx, params.id, body),
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          body: CasePlayOptionsSchema,
+          response: CaseSchema,
+        },
+      )
       .delete(
         "/cases/:id",
         async ({ params }) => {
@@ -258,11 +271,14 @@ export function createApp(ctx: AppContext) {
       )
       .post(
         "/cases/:id/test-session",
-        async ({ params, set }) => {
+        async ({ params, set, headers }) => {
           const result = await startTestSession(ctx, params.id);
           // 이 라우트는 항상 관리자 화면의 실제 fetch로만 호출된다(로더의 in-process
           // 호출이 아님) — Set-Cookie가 그대로 브라우저 응답에 실린다.
-          set.headers["set-cookie"] = sessionCookieHeader(result.token);
+          // 참가자로 쓰던 다른 CASE 세션 토큰은 남겨 둔다 — 여러 CASE를 동시에 이어서 하므로.
+          set.headers["set-cookie"] = sessionCookieHeader(
+            mergeSessionTokens(readSessionTokens(headers.cookie), result.token),
+          );
           return result;
         },
         {

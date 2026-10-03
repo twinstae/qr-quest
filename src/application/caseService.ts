@@ -14,9 +14,20 @@ export type CreateCaseInput = {
   finalBookTitle?: string;
   rewardNote?: string;
   themeId?: string;
+  /** 자유 진행(스탬프 투어). 없으면 새로 만드는 CASE는 자유 진행으로 시작한다. */
+  freeOrder?: boolean;
+  /** 프롤로그 QR로 참여 시작. */
+  prologueEnabled?: boolean;
+  /** 에필로그 QR로 완주. */
+  epilogueEnabled?: boolean;
 };
 
 export type UpdateCaseInput = CreateCaseInput;
+
+/** 진행 규칙만 따로 바꿀 때 쓴다 — CASE 상세 화면의 토글이 여기만 보낸다. */
+export type CasePlayOptionsPatch = Partial<
+  Pick<Case, "freeOrder" | "prologueEnabled" | "epilogueEnabled">
+>;
 
 async function getCaseOrThrow(ctx: AppContext, id: string): Promise<Case> {
   const found = await ctx.repo.case.getById(id);
@@ -56,6 +67,10 @@ export async function createCase(ctx: AppContext, input: CreateCaseInput): Promi
     finalBookTitle: input.finalBookTitle,
     rewardNote: input.rewardNote,
     themeId: input.themeId,
+    // 새 CASE는 기본으로 스탬프 투어(자유 진행) + 프로그램/에필로그 QR를 쓴다.
+    freeOrder: input.freeOrder ?? true,
+    prologueEnabled: input.prologueEnabled ?? true,
+    epilogueEnabled: input.epilogueEnabled ?? true,
   });
 
   for (const template of defaultStepTemplates()) {
@@ -92,7 +107,20 @@ export async function updateCase(
     finalBookTitle: input.finalBookTitle,
     rewardNote: input.rewardNote,
     themeId: input.themeId,
+    freeOrder: input.freeOrder ?? existing.freeOrder,
+    prologueEnabled: input.prologueEnabled ?? existing.prologueEnabled,
+    epilogueEnabled: input.epilogueEnabled ?? existing.epilogueEnabled,
   });
+}
+
+/** CASE 상세 화면의 진행 설정 토글. 보낸 항목만 바꾸고 나머지는 그대로 둔다. */
+export async function setCasePlayOptions(
+  ctx: AppContext,
+  id: string,
+  patch: CasePlayOptionsPatch,
+): Promise<Case> {
+  const existing = await getCaseOrThrow(ctx, id);
+  return ctx.repo.case.update(id, { ...existing, ...patch });
 }
 
 /**

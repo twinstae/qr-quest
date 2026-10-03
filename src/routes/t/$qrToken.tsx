@@ -52,11 +52,7 @@ function StepScreen({ qrToken }: { qrToken: string }) {
   if (!result) return null;
 
   if (result.kind === "NOT_STARTED") {
-    return <GuidanceScreen text="먼저 시작 QR을 찍어주세요." />;
-  }
-
-  if (result.kind === "OTHER_CASE") {
-    return <GuidanceScreen text="이 QR은 다른 사건의 것이에요." />;
+    return <GuidanceScreen text={result.message} />;
   }
 
   if (result.kind === "COMPLETED") {
@@ -66,7 +62,7 @@ function StepScreen({ qrToken }: { qrToken: string }) {
   if (result.kind === "LOCKED") {
     return (
       <GuidanceScreen
-        text={`아직이에요. 지금은 ${result.stepName}을(를) 찾을 차례예요.`}
+        text={result.message}
         onReturn={() => navigate({ to: "/play/$caseId", params: { caseId: result.caseId } })}
       />
     );
