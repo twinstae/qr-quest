@@ -8,314 +8,318 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as AdminAuthedRouteImport } from "./routes/admin/_authed";
-import { Route as AdminLoginRouteImport } from "./routes/admin/login";
-import { Route as ApiSplatRouteImport } from "./routes/api/$";
-import { Route as PlayCaseIdRouteImport } from "./routes/play/$caseId";
-import { Route as SEntryTokenRouteImport } from "./routes/s/$entryToken";
-import { Route as TQrTokenRouteImport } from "./routes/t/$qrToken";
-import { Route as AdminAuthedRedeemRouteImport } from "./routes/admin/_authed/redeem";
-import { Route as AdminAuthedCasesIndexRouteImport } from "./routes/admin/_authed/cases/index";
-import { Route as AdminAuthedThemesIndexRouteImport } from "./routes/admin/_authed/themes/index";
-import { Route as AdminAuthedCasesCaseIdIndexRouteImport } from "./routes/admin/_authed/cases/$caseId/index";
-import { Route as AdminAuthedCasesCaseIdCheckRouteImport } from "./routes/admin/_authed/cases/$caseId/check";
-import { Route as AdminAuthedCasesCaseIdPrintRouteImport } from "./routes/admin/_authed/cases/$caseId/print";
-import { Route as AdminAuthedCasesCaseIdStatsRouteImport } from "./routes/admin/_authed/cases/$caseId/stats";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminAuthedRouteImport } from './routes/admin/_authed'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as ApiSplatRouteImport } from './routes/api/$'
+import { Route as PlayCaseIdRouteImport } from './routes/play/$caseId'
+import { Route as SEntryTokenRouteImport } from './routes/s/$entryToken'
+import { Route as TQrTokenRouteImport } from './routes/t/$qrToken'
+import { Route as AdminAuthedRedeemRouteImport } from './routes/admin/_authed/redeem'
+import { Route as AdminAuthedCasesIndexRouteImport } from './routes/admin/_authed/cases/index'
+import { Route as AdminAuthedThemesIndexRouteImport } from './routes/admin/_authed/themes/index'
+import { Route as AdminAuthedCasesCaseIdIndexRouteImport } from './routes/admin/_authed/cases/$caseId/index'
+import { Route as AdminAuthedCasesCaseIdCheckRouteImport } from './routes/admin/_authed/cases/$caseId/check'
+import { Route as AdminAuthedCasesCaseIdPrintRouteImport } from './routes/admin/_authed/cases/$caseId/print'
+import { Route as AdminAuthedCasesCaseIdStatsRouteImport } from './routes/admin/_authed/cases/$caseId/stats'
 
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AdminAuthedRoute = AdminAuthedRouteImport.update({
-  id: "/admin/_authed",
-  path: "/admin",
+  id: '/admin/_authed',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
-  id: "/admin/login",
-  path: "/admin/login",
+  id: '/admin/login',
+  path: '/admin/login',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiSplatRoute = ApiSplatRouteImport.update({
-  id: "/api/$",
-  path: "/api/$",
+  id: '/api/$',
+  path: '/api/$',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const PlayCaseIdRoute = PlayCaseIdRouteImport.update({
-  id: "/play/$caseId",
-  path: "/play/$caseId",
+  id: '/play/$caseId',
+  path: '/play/$caseId',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const SEntryTokenRoute = SEntryTokenRouteImport.update({
-  id: "/s/$entryToken",
-  path: "/s/$entryToken",
+  id: '/s/$entryToken',
+  path: '/s/$entryToken',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const TQrTokenRoute = TQrTokenRouteImport.update({
-  id: "/t/$qrToken",
-  path: "/t/$qrToken",
+  id: '/t/$qrToken',
+  path: '/t/$qrToken',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AdminAuthedRedeemRoute = AdminAuthedRedeemRouteImport.update({
-  id: "/redeem",
-  path: "/redeem",
+  id: '/redeem',
+  path: '/redeem',
   getParentRoute: () => AdminAuthedRoute,
-} as any);
+} as any)
 const AdminAuthedCasesIndexRoute = AdminAuthedCasesIndexRouteImport.update({
-  id: "/cases/",
-  path: "/cases/",
+  id: '/cases/',
+  path: '/cases/',
   getParentRoute: () => AdminAuthedRoute,
-} as any);
+} as any)
 const AdminAuthedThemesIndexRoute = AdminAuthedThemesIndexRouteImport.update({
-  id: "/themes/",
-  path: "/themes/",
+  id: '/themes/',
+  path: '/themes/',
   getParentRoute: () => AdminAuthedRoute,
-} as any);
-const AdminAuthedCasesCaseIdIndexRoute = AdminAuthedCasesCaseIdIndexRouteImport.update({
-  id: "/cases/$caseId/",
-  path: "/cases/$caseId/",
-  getParentRoute: () => AdminAuthedRoute,
-} as any);
-const AdminAuthedCasesCaseIdCheckRoute = AdminAuthedCasesCaseIdCheckRouteImport.update({
-  id: "/cases/$caseId/check",
-  path: "/cases/$caseId/check",
-  getParentRoute: () => AdminAuthedRoute,
-} as any);
-const AdminAuthedCasesCaseIdPrintRoute = AdminAuthedCasesCaseIdPrintRouteImport.update({
-  id: "/cases/$caseId/print",
-  path: "/cases/$caseId/print",
-  getParentRoute: () => AdminAuthedRoute,
-} as any);
-const AdminAuthedCasesCaseIdStatsRoute = AdminAuthedCasesCaseIdStatsRouteImport.update({
-  id: "/cases/$caseId/stats",
-  path: "/cases/$caseId/stats",
-  getParentRoute: () => AdminAuthedRoute,
-} as any);
+} as any)
+const AdminAuthedCasesCaseIdIndexRoute =
+  AdminAuthedCasesCaseIdIndexRouteImport.update({
+    id: '/cases/$caseId/',
+    path: '/cases/$caseId/',
+    getParentRoute: () => AdminAuthedRoute,
+  } as any)
+const AdminAuthedCasesCaseIdCheckRoute =
+  AdminAuthedCasesCaseIdCheckRouteImport.update({
+    id: '/cases/$caseId/check',
+    path: '/cases/$caseId/check',
+    getParentRoute: () => AdminAuthedRoute,
+  } as any)
+const AdminAuthedCasesCaseIdPrintRoute =
+  AdminAuthedCasesCaseIdPrintRouteImport.update({
+    id: '/cases/$caseId/print',
+    path: '/cases/$caseId/print',
+    getParentRoute: () => AdminAuthedRoute,
+  } as any)
+const AdminAuthedCasesCaseIdStatsRoute =
+  AdminAuthedCasesCaseIdStatsRouteImport.update({
+    id: '/cases/$caseId/stats',
+    path: '/cases/$caseId/stats',
+    getParentRoute: () => AdminAuthedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/admin": typeof AdminAuthedRouteWithChildren;
-  "/admin/login": typeof AdminLoginRoute;
-  "/api/$": typeof ApiSplatRoute;
-  "/play/$caseId": typeof PlayCaseIdRoute;
-  "/s/$entryToken": typeof SEntryTokenRoute;
-  "/t/$qrToken": typeof TQrTokenRoute;
-  "/admin/redeem": typeof AdminAuthedRedeemRoute;
-  "/admin/cases/": typeof AdminAuthedCasesIndexRoute;
-  "/admin/themes/": typeof AdminAuthedThemesIndexRoute;
-  "/admin/cases/$caseId/check": typeof AdminAuthedCasesCaseIdCheckRoute;
-  "/admin/cases/$caseId/print": typeof AdminAuthedCasesCaseIdPrintRoute;
-  "/admin/cases/$caseId/stats": typeof AdminAuthedCasesCaseIdStatsRoute;
-  "/admin/cases/$caseId/": typeof AdminAuthedCasesCaseIdIndexRoute;
+  '/': typeof IndexRoute
+  '/admin': typeof AdminAuthedRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/api/$': typeof ApiSplatRoute
+  '/play/$caseId': typeof PlayCaseIdRoute
+  '/s/$entryToken': typeof SEntryTokenRoute
+  '/t/$qrToken': typeof TQrTokenRoute
+  '/admin/redeem': typeof AdminAuthedRedeemRoute
+  '/admin/cases/': typeof AdminAuthedCasesIndexRoute
+  '/admin/themes/': typeof AdminAuthedThemesIndexRoute
+  '/admin/cases/$caseId/check': typeof AdminAuthedCasesCaseIdCheckRoute
+  '/admin/cases/$caseId/print': typeof AdminAuthedCasesCaseIdPrintRoute
+  '/admin/cases/$caseId/stats': typeof AdminAuthedCasesCaseIdStatsRoute
+  '/admin/cases/$caseId/': typeof AdminAuthedCasesCaseIdIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/admin": typeof AdminAuthedRouteWithChildren;
-  "/admin/login": typeof AdminLoginRoute;
-  "/api/$": typeof ApiSplatRoute;
-  "/play/$caseId": typeof PlayCaseIdRoute;
-  "/s/$entryToken": typeof SEntryTokenRoute;
-  "/t/$qrToken": typeof TQrTokenRoute;
-  "/admin/redeem": typeof AdminAuthedRedeemRoute;
-  "/admin/cases": typeof AdminAuthedCasesIndexRoute;
-  "/admin/themes": typeof AdminAuthedThemesIndexRoute;
-  "/admin/cases/$caseId/check": typeof AdminAuthedCasesCaseIdCheckRoute;
-  "/admin/cases/$caseId/print": typeof AdminAuthedCasesCaseIdPrintRoute;
-  "/admin/cases/$caseId/stats": typeof AdminAuthedCasesCaseIdStatsRoute;
-  "/admin/cases/$caseId": typeof AdminAuthedCasesCaseIdIndexRoute;
+  '/': typeof IndexRoute
+  '/admin': typeof AdminAuthedRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/api/$': typeof ApiSplatRoute
+  '/play/$caseId': typeof PlayCaseIdRoute
+  '/s/$entryToken': typeof SEntryTokenRoute
+  '/t/$qrToken': typeof TQrTokenRoute
+  '/admin/redeem': typeof AdminAuthedRedeemRoute
+  '/admin/cases': typeof AdminAuthedCasesIndexRoute
+  '/admin/themes': typeof AdminAuthedThemesIndexRoute
+  '/admin/cases/$caseId/check': typeof AdminAuthedCasesCaseIdCheckRoute
+  '/admin/cases/$caseId/print': typeof AdminAuthedCasesCaseIdPrintRoute
+  '/admin/cases/$caseId/stats': typeof AdminAuthedCasesCaseIdStatsRoute
+  '/admin/cases/$caseId': typeof AdminAuthedCasesCaseIdIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/admin/_authed": typeof AdminAuthedRouteWithChildren;
-  "/admin/login": typeof AdminLoginRoute;
-  "/api/$": typeof ApiSplatRoute;
-  "/play/$caseId": typeof PlayCaseIdRoute;
-  "/s/$entryToken": typeof SEntryTokenRoute;
-  "/t/$qrToken": typeof TQrTokenRoute;
-  "/admin/_authed/redeem": typeof AdminAuthedRedeemRoute;
-  "/admin/_authed/cases/": typeof AdminAuthedCasesIndexRoute;
-  "/admin/_authed/themes/": typeof AdminAuthedThemesIndexRoute;
-  "/admin/_authed/cases/$caseId/check": typeof AdminAuthedCasesCaseIdCheckRoute;
-  "/admin/_authed/cases/$caseId/print": typeof AdminAuthedCasesCaseIdPrintRoute;
-  "/admin/_authed/cases/$caseId/stats": typeof AdminAuthedCasesCaseIdStatsRoute;
-  "/admin/_authed/cases/$caseId/": typeof AdminAuthedCasesCaseIdIndexRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/admin/_authed': typeof AdminAuthedRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/api/$': typeof ApiSplatRoute
+  '/play/$caseId': typeof PlayCaseIdRoute
+  '/s/$entryToken': typeof SEntryTokenRoute
+  '/t/$qrToken': typeof TQrTokenRoute
+  '/admin/_authed/redeem': typeof AdminAuthedRedeemRoute
+  '/admin/_authed/cases/': typeof AdminAuthedCasesIndexRoute
+  '/admin/_authed/themes/': typeof AdminAuthedThemesIndexRoute
+  '/admin/_authed/cases/$caseId/check': typeof AdminAuthedCasesCaseIdCheckRoute
+  '/admin/_authed/cases/$caseId/print': typeof AdminAuthedCasesCaseIdPrintRoute
+  '/admin/_authed/cases/$caseId/stats': typeof AdminAuthedCasesCaseIdStatsRoute
+  '/admin/_authed/cases/$caseId/': typeof AdminAuthedCasesCaseIdIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/admin"
-    | "/admin/login"
-    | "/api/$"
-    | "/play/$caseId"
-    | "/s/$entryToken"
-    | "/t/$qrToken"
-    | "/admin/redeem"
-    | "/admin/cases/"
-    | "/admin/themes/"
-    | "/admin/cases/$caseId/check"
-    | "/admin/cases/$caseId/print"
-    | "/admin/cases/$caseId/stats"
-    | "/admin/cases/$caseId/";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/admin'
+    | '/admin/login'
+    | '/api/$'
+    | '/play/$caseId'
+    | '/s/$entryToken'
+    | '/t/$qrToken'
+    | '/admin/redeem'
+    | '/admin/cases/'
+    | '/admin/themes/'
+    | '/admin/cases/$caseId/check'
+    | '/admin/cases/$caseId/print'
+    | '/admin/cases/$caseId/stats'
+    | '/admin/cases/$caseId/'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/admin"
-    | "/admin/login"
-    | "/api/$"
-    | "/play/$caseId"
-    | "/s/$entryToken"
-    | "/t/$qrToken"
-    | "/admin/redeem"
-    | "/admin/cases"
-    | "/admin/themes"
-    | "/admin/cases/$caseId/check"
-    | "/admin/cases/$caseId/print"
-    | "/admin/cases/$caseId/stats"
-    | "/admin/cases/$caseId";
+    | '/'
+    | '/admin'
+    | '/admin/login'
+    | '/api/$'
+    | '/play/$caseId'
+    | '/s/$entryToken'
+    | '/t/$qrToken'
+    | '/admin/redeem'
+    | '/admin/cases'
+    | '/admin/themes'
+    | '/admin/cases/$caseId/check'
+    | '/admin/cases/$caseId/print'
+    | '/admin/cases/$caseId/stats'
+    | '/admin/cases/$caseId'
   id:
-    | "__root__"
-    | "/"
-    | "/admin/_authed"
-    | "/admin/login"
-    | "/api/$"
-    | "/play/$caseId"
-    | "/s/$entryToken"
-    | "/t/$qrToken"
-    | "/admin/_authed/redeem"
-    | "/admin/_authed/cases/"
-    | "/admin/_authed/themes/"
-    | "/admin/_authed/cases/$caseId/check"
-    | "/admin/_authed/cases/$caseId/print"
-    | "/admin/_authed/cases/$caseId/stats"
-    | "/admin/_authed/cases/$caseId/";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/admin/_authed'
+    | '/admin/login'
+    | '/api/$'
+    | '/play/$caseId'
+    | '/s/$entryToken'
+    | '/t/$qrToken'
+    | '/admin/_authed/redeem'
+    | '/admin/_authed/cases/'
+    | '/admin/_authed/themes/'
+    | '/admin/_authed/cases/$caseId/check'
+    | '/admin/_authed/cases/$caseId/print'
+    | '/admin/_authed/cases/$caseId/stats'
+    | '/admin/_authed/cases/$caseId/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AdminAuthedRoute: typeof AdminAuthedRouteWithChildren;
-  AdminLoginRoute: typeof AdminLoginRoute;
-  ApiSplatRoute: typeof ApiSplatRoute;
-  PlayCaseIdRoute: typeof PlayCaseIdRoute;
-  SEntryTokenRoute: typeof SEntryTokenRoute;
-  TQrTokenRoute: typeof TQrTokenRoute;
+  IndexRoute: typeof IndexRoute
+  AdminAuthedRoute: typeof AdminAuthedRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
+  ApiSplatRoute: typeof ApiSplatRoute
+  PlayCaseIdRoute: typeof PlayCaseIdRoute
+  SEntryTokenRoute: typeof SEntryTokenRoute
+  TQrTokenRoute: typeof TQrTokenRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/admin/_authed": {
-      id: "/admin/_authed";
-      path: "/admin";
-      fullPath: "/admin";
-      preLoaderRoute: typeof AdminAuthedRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/admin/login": {
-      id: "/admin/login";
-      path: "/admin/login";
-      fullPath: "/admin/login";
-      preLoaderRoute: typeof AdminLoginRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/$": {
-      id: "/api/$";
-      path: "/api/$";
-      fullPath: "/api/$";
-      preLoaderRoute: typeof ApiSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/play/$caseId": {
-      id: "/play/$caseId";
-      path: "/play/$caseId";
-      fullPath: "/play/$caseId";
-      preLoaderRoute: typeof PlayCaseIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/s/$entryToken": {
-      id: "/s/$entryToken";
-      path: "/s/$entryToken";
-      fullPath: "/s/$entryToken";
-      preLoaderRoute: typeof SEntryTokenRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/t/$qrToken": {
-      id: "/t/$qrToken";
-      path: "/t/$qrToken";
-      fullPath: "/t/$qrToken";
-      preLoaderRoute: typeof TQrTokenRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/admin/_authed/redeem": {
-      id: "/admin/_authed/redeem";
-      path: "/redeem";
-      fullPath: "/admin/redeem";
-      preLoaderRoute: typeof AdminAuthedRedeemRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
-    "/admin/_authed/cases/": {
-      id: "/admin/_authed/cases/";
-      path: "/cases";
-      fullPath: "/admin/cases/";
-      preLoaderRoute: typeof AdminAuthedCasesIndexRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
-    "/admin/_authed/themes/": {
-      id: "/admin/_authed/themes/";
-      path: "/themes";
-      fullPath: "/admin/themes/";
-      preLoaderRoute: typeof AdminAuthedThemesIndexRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
-    "/admin/_authed/cases/$caseId/": {
-      id: "/admin/_authed/cases/$caseId/";
-      path: "/cases/$caseId";
-      fullPath: "/admin/cases/$caseId/";
-      preLoaderRoute: typeof AdminAuthedCasesCaseIdIndexRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
-    "/admin/_authed/cases/$caseId/check": {
-      id: "/admin/_authed/cases/$caseId/check";
-      path: "/cases/$caseId/check";
-      fullPath: "/admin/cases/$caseId/check";
-      preLoaderRoute: typeof AdminAuthedCasesCaseIdCheckRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
-    "/admin/_authed/cases/$caseId/print": {
-      id: "/admin/_authed/cases/$caseId/print";
-      path: "/cases/$caseId/print";
-      fullPath: "/admin/cases/$caseId/print";
-      preLoaderRoute: typeof AdminAuthedCasesCaseIdPrintRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
-    "/admin/_authed/cases/$caseId/stats": {
-      id: "/admin/_authed/cases/$caseId/stats";
-      path: "/cases/$caseId/stats";
-      fullPath: "/admin/cases/$caseId/stats";
-      preLoaderRoute: typeof AdminAuthedCasesCaseIdStatsRouteImport;
-      parentRoute: typeof AdminAuthedRoute;
-    };
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/_authed': {
+      id: '/admin/_authed'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminAuthedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/$': {
+      id: '/api/$'
+      path: '/api/$'
+      fullPath: '/api/$'
+      preLoaderRoute: typeof ApiSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/$caseId': {
+      id: '/play/$caseId'
+      path: '/play/$caseId'
+      fullPath: '/play/$caseId'
+      preLoaderRoute: typeof PlayCaseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/s/$entryToken': {
+      id: '/s/$entryToken'
+      path: '/s/$entryToken'
+      fullPath: '/s/$entryToken'
+      preLoaderRoute: typeof SEntryTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/t/$qrToken': {
+      id: '/t/$qrToken'
+      path: '/t/$qrToken'
+      fullPath: '/t/$qrToken'
+      preLoaderRoute: typeof TQrTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/_authed/redeem': {
+      id: '/admin/_authed/redeem'
+      path: '/redeem'
+      fullPath: '/admin/redeem'
+      preLoaderRoute: typeof AdminAuthedRedeemRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
+    '/admin/_authed/cases/': {
+      id: '/admin/_authed/cases/'
+      path: '/cases'
+      fullPath: '/admin/cases/'
+      preLoaderRoute: typeof AdminAuthedCasesIndexRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
+    '/admin/_authed/themes/': {
+      id: '/admin/_authed/themes/'
+      path: '/themes'
+      fullPath: '/admin/themes/'
+      preLoaderRoute: typeof AdminAuthedThemesIndexRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
+    '/admin/_authed/cases/$caseId/': {
+      id: '/admin/_authed/cases/$caseId/'
+      path: '/cases/$caseId'
+      fullPath: '/admin/cases/$caseId/'
+      preLoaderRoute: typeof AdminAuthedCasesCaseIdIndexRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
+    '/admin/_authed/cases/$caseId/check': {
+      id: '/admin/_authed/cases/$caseId/check'
+      path: '/cases/$caseId/check'
+      fullPath: '/admin/cases/$caseId/check'
+      preLoaderRoute: typeof AdminAuthedCasesCaseIdCheckRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
+    '/admin/_authed/cases/$caseId/print': {
+      id: '/admin/_authed/cases/$caseId/print'
+      path: '/cases/$caseId/print'
+      fullPath: '/admin/cases/$caseId/print'
+      preLoaderRoute: typeof AdminAuthedCasesCaseIdPrintRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
+    '/admin/_authed/cases/$caseId/stats': {
+      id: '/admin/_authed/cases/$caseId/stats'
+      path: '/cases/$caseId/stats'
+      fullPath: '/admin/cases/$caseId/stats'
+      preLoaderRoute: typeof AdminAuthedCasesCaseIdStatsRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
   }
 }
 
 interface AdminAuthedRouteChildren {
-  AdminAuthedRedeemRoute: typeof AdminAuthedRedeemRoute;
-  AdminAuthedCasesIndexRoute: typeof AdminAuthedCasesIndexRoute;
-  AdminAuthedThemesIndexRoute: typeof AdminAuthedThemesIndexRoute;
-  AdminAuthedCasesCaseIdCheckRoute: typeof AdminAuthedCasesCaseIdCheckRoute;
-  AdminAuthedCasesCaseIdPrintRoute: typeof AdminAuthedCasesCaseIdPrintRoute;
-  AdminAuthedCasesCaseIdStatsRoute: typeof AdminAuthedCasesCaseIdStatsRoute;
-  AdminAuthedCasesCaseIdIndexRoute: typeof AdminAuthedCasesCaseIdIndexRoute;
+  AdminAuthedRedeemRoute: typeof AdminAuthedRedeemRoute
+  AdminAuthedCasesIndexRoute: typeof AdminAuthedCasesIndexRoute
+  AdminAuthedThemesIndexRoute: typeof AdminAuthedThemesIndexRoute
+  AdminAuthedCasesCaseIdCheckRoute: typeof AdminAuthedCasesCaseIdCheckRoute
+  AdminAuthedCasesCaseIdPrintRoute: typeof AdminAuthedCasesCaseIdPrintRoute
+  AdminAuthedCasesCaseIdStatsRoute: typeof AdminAuthedCasesCaseIdStatsRoute
+  AdminAuthedCasesCaseIdIndexRoute: typeof AdminAuthedCasesCaseIdIndexRoute
 }
 
 const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
@@ -326,9 +330,11 @@ const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
   AdminAuthedCasesCaseIdPrintRoute: AdminAuthedCasesCaseIdPrintRoute,
   AdminAuthedCasesCaseIdStatsRoute: AdminAuthedCasesCaseIdStatsRoute,
   AdminAuthedCasesCaseIdIndexRoute: AdminAuthedCasesCaseIdIndexRoute,
-};
+}
 
-const AdminAuthedRouteWithChildren = AdminAuthedRoute._addFileChildren(AdminAuthedRouteChildren);
+const AdminAuthedRouteWithChildren = AdminAuthedRoute._addFileChildren(
+  AdminAuthedRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -338,16 +344,16 @@ const rootRouteChildren: RootRouteChildren = {
   PlayCaseIdRoute: PlayCaseIdRoute,
   SEntryTokenRoute: SEntryTokenRoute,
   TQrTokenRoute: TQrTokenRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }
