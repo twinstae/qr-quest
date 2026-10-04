@@ -1,11 +1,11 @@
 "use client";
 import { Checkbox, useCheckboxContext } from "@ark-ui/react/checkbox";
 import { type ComponentProps, forwardRef } from "react";
-import { createStyleContext, styled } from "styled-system/jsx";
+import { createSlotRecipeContext, styled } from "styled-system/jsx";
 import { checkbox } from "styled-system/recipes";
 import type { HTMLStyledProps } from "styled-system/types";
 
-const { withProvider, withContext } = createStyleContext(checkbox);
+const { withProvider, withContext } = createSlotRecipeContext(checkbox);
 
 export type RootProps = ComponentProps<typeof Root>;
 export type HiddenInputProps = ComponentProps<typeof HiddenInput>;

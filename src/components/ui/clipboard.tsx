@@ -2,10 +2,10 @@
 import { Clipboard } from "@ark-ui/react/clipboard";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { type ComponentProps, forwardRef } from "react";
-import { createStyleContext } from "styled-system/jsx";
+import { createSlotRecipeContext } from "styled-system/jsx";
 import { clipboard } from "styled-system/recipes";
 
-const { withProvider, withContext } = createStyleContext(clipboard);
+const { withProvider, withContext } = createSlotRecipeContext(clipboard);
 
 export type RootProps = ComponentProps<typeof Root>;
 export const Root = withProvider(Clipboard.Root, "root");

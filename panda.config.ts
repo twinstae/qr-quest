@@ -21,6 +21,11 @@ import { slotRecipes, recipes } from "@/theme/recipes";
 import { defineConfig } from "@pandacss/dev";
 
 export default defineConfig({
+  // Panda v2는 기본 preset을 자동으로 추가하지 않으므로 명시해야 한다.
+  // (v1은 eject가 아니면 항상 preset-base/preset-panda를 추가했음)
+  // preset-panda가 기본 breakpoints(sm, md, lg, xl, 2xl)와 토큰을 제공한다.
+  presets: ["@pandacss/preset-base", "@pandacss/preset-panda"],
+
   // Whether to use css reset
   preflight: true,
 

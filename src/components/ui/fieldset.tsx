@@ -2,10 +2,10 @@
 import { ark } from "@ark-ui/react/factory";
 import { Fieldset } from "@ark-ui/react/fieldset";
 import type { ComponentProps } from "react";
-import { createStyleContext } from "styled-system/jsx";
+import { createSlotRecipeContext } from "styled-system/jsx";
 import { fieldset } from "styled-system/recipes";
 
-const { withProvider, withContext } = createStyleContext(fieldset);
+const { withProvider, withContext } = createSlotRecipeContext(fieldset);
 
 export type RootProps = ComponentProps<typeof Root>;
 export const Root = withProvider(Fieldset.Root, "root");

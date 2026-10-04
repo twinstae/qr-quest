@@ -1,10 +1,10 @@
 "use client";
 import { Field } from "@ark-ui/react/field";
 import type { ComponentProps } from "react";
-import { createStyleContext, styled } from "styled-system/jsx";
+import { createSlotRecipeContext, styled } from "styled-system/jsx";
 import { field } from "styled-system/recipes";
 
-const { withProvider, withContext } = createStyleContext(field);
+const { withProvider, withContext } = createSlotRecipeContext(field);
 
 export type RootProps = ComponentProps<typeof Root>;
 export const Root = withProvider(Field.Root, "root");

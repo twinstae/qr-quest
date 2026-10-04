@@ -19,17 +19,21 @@ export const recipes = {
   group,
   absoluteCenter,
   spinner,
+  input,
+  badge,
+  revealAnimation,
+};
+
+// defineSlotRecipe로 정의한 레시피는 slotRecipes에 등록해야 v2 codegen이
+// slots를 포함해 생성한다 (recipes에 넣으면 base/slots가 빠진 cva로 생성됨).
+export const slotRecipes = {
   card,
   dialog,
   table,
-  input,
   fieldset,
   field,
   checkbox,
   collapsible,
-  badge,
   fileUpload,
   clipboard,
-  revealAnimation,
 };
-export const slotRecipes = {};

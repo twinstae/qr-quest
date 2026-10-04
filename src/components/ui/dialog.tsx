@@ -2,10 +2,10 @@
 import { Dialog } from "@ark-ui/react/dialog";
 import { Portal } from "@ark-ui/react";
 import type { ComponentProps } from "react";
-import { createStyleContext } from "styled-system/jsx";
+import { createSlotRecipeContext } from "styled-system/jsx";
 import { dialog } from "styled-system/recipes";
 
-const { withProvider, withContext } = createStyleContext(dialog);
+const { withProvider, withContext } = createSlotRecipeContext(dialog);
 
 export type RootProps = ComponentProps<typeof Root>;
 export const Root = withProvider(Dialog.Root, "root");

@@ -72,6 +72,23 @@ Phase 2(13·14)가 끝나면 사장님이 개발자 없이 CASE 02를 만들 수
 
 남은 일 / 새로 발견한 것:
 
+- [x] Panda v2 업그레이드 마이그레이션 (Vercel `bun run build` 46 MISSING_EXPORT 복구)
+    - v2는 v1과 달리 preset을 자동으로 추가하지 않는다. presets에 `@pandacss/preset-base`와
+      `@pandacss/preset-panda`(기본 breakpoints·토큰)를 명시해야 `styled-system/jsx`에
+      VStack/Flex/Grid 패턴 컴포넌트가 생성된다. preset 누락 시 radii.sm 토큰 missing,
+      `unknown_condition` 경고가 함께 난다.
+    - v1은 `.mjs`를, v2는 `.js`를 쓰고 v2는 더 이상 만들지 않는 파일을 지우지 않는다.
+      Vite는 `index.mjs`를 먼저 해석하므로 로컬의 옛 `.mjs` 잔재가 새 코드보다 우선해
+      로컬 빌드만 우연히 통과하고 Vercel(매번 클린 설치)에서만 깨졌다. → `panda codegen --clean`
+      (prepare 스크립트에도 --clean 추가, Vercel build cache 대비).
+    - `createStyleContext`는 v2에서 제거 → 9개 UI 컴포넌트를 `createSlotRecipeContext`로 교체.
+    - defineSlotRecipe로 정의한 레시피(card·table 등 9개)를 `recipes`가 아니라
+      `slotRecipes`에 등록해야 slots/base가 포함된 cva 대신 sva로 생성된다.
+    - checkbox `solid` variant에 `control.control` 중복 중첩이 있었고, control 스타일이
+      CSS에 안 나오던 버그를 함께 수정. `RecipeConfig` 타입은 v2에서 제거 → input도 defineRecipe로.
+    - 검증: 클린 설치 시뮬레이션(`rm -rf styled-system && prepare && build`) 통과,
+      codegen 경고 0건, typecheck/lint 통과.
+
 - [ ] CASE 기본 정보(제목·소개·썸네일 등) 수정 폼 — 지금은 생성만 있다. `PATCH /cases/:id`는 전체 교체다.
 - [x] 전체 테스트를 한 번에 돌리면 PGlite DB 테스트가 가끔 실패한다 — 부하에서 첫 테스트가 5초를 넘었다. 서버 테스트 제한 시간 15초.
 - [ ] 꺼 둔 lint 규칙 켜기: `vitest/no-conditional-expect`(9곳), `vitest/require-to-throw-message`(6곳).

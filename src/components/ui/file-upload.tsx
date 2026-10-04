@@ -2,11 +2,11 @@
 import { FileUpload, useFileUploadContext } from "@ark-ui/react/file-upload";
 import { FileIcon, XIcon } from "lucide-react";
 import { type ComponentProps, forwardRef, useMemo } from "react";
-import { createStyleContext, type HTMLStyledProps, Stack } from "styled-system/jsx";
+import { createSlotRecipeContext, type HTMLStyledProps, Stack } from "styled-system/jsx";
 import { fileUpload } from "styled-system/recipes";
 import { Span } from "@/components/ui";
 
-const { withProvider, withContext } = createStyleContext(fileUpload);
+const { withProvider, withContext } = createSlotRecipeContext(fileUpload);
 
 export type RootProps = ComponentProps<typeof Root>;
 export type ItemProps = ComponentProps<typeof Item>;
