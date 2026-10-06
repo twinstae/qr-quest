@@ -34,6 +34,19 @@ describe("createDrizzleCaseRepo", () => {
     expect(found?.thumbnail).toEqual(thumbnail);
   });
 
+  it("시작 화면 문구(안내·버튼)를 저장하고 그대로 읽는다", async () => {
+    await using db = await createTestDatabase();
+    const repo = createDrizzleCaseRepo(db);
+
+    const created = await repo.create(
+      caseInput({ startNote: "2인 이상 추천", startButtonLabel: "사건 속으로" }),
+    );
+    const found = await repo.getById(created.id);
+
+    expect(found?.startNote).toBe("2인 이상 추천");
+    expect(found?.startButtonLabel).toBe("사건 속으로");
+  });
+
   it("존재하지 않는 id는 undefined를 반환한다", async () => {
     await using db = await createTestDatabase();
 

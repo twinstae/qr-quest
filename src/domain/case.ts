@@ -28,7 +28,22 @@ export type Case = {
   prologueEnabled: boolean;
   /** 에필로그 QR: 마지막 단서를 풀어야 완주한다. 끄면 문제를 다 풀면 바로 완주한다. */
   epilogueEnabled: boolean;
+  /** 시작 화면에 덧붙이는 안내 문구. 예: "2인 이상 추천". */
+  startNote?: string;
+  /** 시작 화면의 버튼 문구. 비어 있으면 기본 문구("시작하기"). */
+  startButtonLabel?: string;
 };
+
+export const DEFAULT_START_BUTTON_LABEL = "시작하기";
+
+export function resolveStartButtonLabel(item: Pick<Case, "startButtonLabel">): string {
+  return item.startButtonLabel?.trim() || DEFAULT_START_BUTTON_LABEL;
+}
+
+/** 시작 화면의 예상 소요 시간 줄. 0분이면 줄 자체를 숨긴다. */
+export function describeEstimatedTime(minutes: number): string | undefined {
+  return minutes > 0 ? `예상 소요 시간 약 ${minutes}분` : undefined;
+}
 
 export function formatCaseNumber(value: number): string {
   return `CASE ${String(value).padStart(2, "0")}`;

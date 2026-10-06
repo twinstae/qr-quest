@@ -7,6 +7,7 @@ import { CaseStatusControl } from "@/components/domains/case-status-control.tsx"
 import { CaseThemePicker } from "@/components/domains/case-theme-picker.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
 import { SortableList } from "@/components/domains/sortable-list.tsx";
+import { EditStartScreenDialog } from "@/components/domains/start-screen-editor.tsx";
 import { StartQrCard } from "@/components/domains/start-qr-card.tsx";
 import { StartTestModeButton } from "@/components/domains/start-test-mode-button.tsx";
 import { CreateStepDialog } from "@/components/domains/step-form-dialog.tsx";
@@ -212,7 +213,26 @@ function RouteComponent() {
 
       <VStack gap="3" alignItems="stretch" maxWidth="2xl">
         {/* 시작 QR은 단계가 아니라 CASE 자산이라 단계가 없어도 항상 맨 위에 보여준다. */}
-        <StartQrCard entryToken={caseItem.entryToken} prologueEnabled={caseItem.prologueEnabled} />
+        <StartQrCard entryToken={caseItem.entryToken} prologueEnabled={caseItem.prologueEnabled}>
+          <EditStartScreenDialog
+            caseNumber={caseItem.number}
+            thumbnail={caseItem.thumbnail}
+            defaultValues={{
+              title: caseItem.title,
+              teaser: caseItem.teaser,
+              estimatedMinutes: caseItem.estimatedMinutes,
+              startNote: caseItem.startNote ?? "",
+              startButtonLabel: caseItem.startButtonLabel ?? "",
+            }}
+            save={async (values) => {
+              const { error } = await getApiClient()
+                .cases({ id: caseItem.id })
+                ["start-screen"].patch(values);
+              if (error) throw error;
+              await queryClient.invalidateQueries({ queryKey: caseKeys.all });
+            }}
+          />
+        </StartQrCard>
 
         {steps.length === 0 ? (
           <EmptyState

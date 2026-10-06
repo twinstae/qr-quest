@@ -14,6 +14,7 @@ import {
   listCases,
   setCasePlayOptions,
   updateCase,
+  updateStartScreen,
 } from "./caseService.ts";
 
 function contextWith(cases: Case[] = []) {
@@ -217,5 +218,55 @@ describe("deleteCase", () => {
     await deleteCase(ctx, created.id);
 
     expect(await ctx.repo.step.listByCaseId(other.id)).toHaveLength(7);
+  });
+});
+
+describe("updateStartScreen", () => {
+  it("시작 화면 문구만 바꾸고 나머지는 그대로 둔다", async () => {
+    const ctx = contextWith([TEST_CASE]);
+
+    const updated = await updateStartScreen(ctx, TEST_CASE.id, {
+      title: "새 제목",
+      teaser: "새 소개",
+      estimatedMinutes: 45,
+      startNote: "2인 이상 추천",
+      startButtonLabel: "사건 속으로",
+    });
+
+    expect(updated).toEqual({
+      ...TEST_CASE,
+      title: "새 제목",
+      teaser: "새 소개",
+      estimatedMinutes: 45,
+      startNote: "2인 이상 추천",
+      startButtonLabel: "사건 속으로",
+    });
+  });
+
+  it("빈 문구는 저장하지 않는다 — 버튼은 기본 문구로 돌아간다", async () => {
+    const ctx = contextWith([
+      { ...TEST_CASE, startNote: "예전 안내", startButtonLabel: "예전 버튼" },
+    ]);
+
+    const updated = await updateStartScreen(ctx, TEST_CASE.id, {
+      title: TEST_CASE.title,
+      teaser: TEST_CASE.teaser,
+      estimatedMinutes: 20,
+      startNote: "  ",
+      startButtonLabel: "",
+    });
+
+    expect(updated.startNote).toBeUndefined();
+    expect(updated.startButtonLabel).toBeUndefined();
+  });
+
+  it("없는 CASE면 NotExistError", async () => {
+    await expect(
+      updateStartScreen(contextWith(), "missing", {
+        title: "t",
+        teaser: "",
+        estimatedMinutes: 0,
+      }),
+    ).rejects.toThrow(NotExistError);
   });
 });

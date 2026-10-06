@@ -73,6 +73,8 @@ export const CaseSchema = t.Object({
   freeOrder: t.Boolean(),
   prologueEnabled: t.Boolean(),
   epilogueEnabled: t.Boolean(),
+  startNote: t.Optional(t.String()),
+  startButtonLabel: t.Optional(t.String()),
 });
 
 export const CaseFieldsSchema = {
@@ -89,6 +91,15 @@ export const CaseFieldsSchema = {
   prologueEnabled: t.Optional(t.Boolean()),
   epilogueEnabled: t.Optional(t.Boolean()),
 };
+
+/** 시작 화면 편집기가 보내는 값. */
+export const StartScreenSchema = t.Object({
+  title: t.String({ minLength: 1 }),
+  teaser: t.String(),
+  estimatedMinutes: t.Number({ minimum: 0 }),
+  startNote: t.Optional(t.String()),
+  startButtonLabel: t.Optional(t.String()),
+});
 
 /** CASE 상세 화면의 진행 설정 토글이 보내는 값 — 보낸 항목만 바뀐다. */
 export const CasePlayOptionsSchema = t.Object({

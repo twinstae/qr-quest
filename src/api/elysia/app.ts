@@ -22,6 +22,7 @@ import {
   listCases,
   setCasePlayOptions,
   updateCase,
+  updateStartScreen,
 } from "../../application/caseService.ts";
 import {
   createStep,
@@ -49,6 +50,7 @@ import {
   CaseSchema,
   LiveViolationSchema,
   QrCheckResultSchema,
+  StartScreenSchema,
   StepFieldsSchema,
   StepKindSchema,
   StepPreviewSchema,
@@ -143,6 +145,16 @@ export function createApp(ctx: AppContext) {
           auth: true,
           params: t.Object({ id: t.String() }),
           body: CasePlayOptionsSchema,
+          response: CaseSchema,
+        },
+      )
+      .patch(
+        "/cases/:id/start-screen",
+        ({ params, body }) => updateStartScreen(ctx, params.id, body),
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          body: StartScreenSchema,
           response: CaseSchema,
         },
       )

@@ -555,6 +555,31 @@ describe("CASE 편집기 (ticket 13)", () => {
     });
   });
 
+  describe("PATCH /api/cases/:id/start-screen", () => {
+    it("시작 화면 문구를 저장하고, 참가자용 조회에도 그대로 나온다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+
+      const response = await client.patch(`/api/cases/${created.id}/start-screen`, {
+        title: "새 제목",
+        teaser: "새 소개",
+        estimatedMinutes: 40,
+        startNote: "2인 이상 추천",
+        startButtonLabel: "사건 속으로",
+      });
+
+      expect(response.status).toBe(200);
+      const byEntry = await (await client.get(`/api/cases/by-entry/${created.entryToken}`)).json();
+      expect(byEntry).toMatchObject({
+        title: "새 제목",
+        teaser: "새 소개",
+        estimatedMinutes: 40,
+        startNote: "2인 이상 추천",
+        startButtonLabel: "사건 속으로",
+      });
+    });
+  });
+
   describe("POST /api/cases/:id/test-session", () => {
     it("isTest 세션을 만들어 토큰을 돌려준다", async () => {
       const { client } = await signedInClient();

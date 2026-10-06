@@ -22,6 +22,8 @@ function toDomain(row: typeof cases.$inferSelect): Case {
     freeOrder: row.freeOrder,
     prologueEnabled: row.prologueEnabled,
     epilogueEnabled: row.epilogueEnabled,
+    startNote: row.startNote ?? undefined,
+    startButtonLabel: row.startButtonLabel ?? undefined,
   };
 }
 
@@ -41,6 +43,8 @@ function toRow(input: Omit<Case, "id">): typeof cases.$inferInsert {
     freeOrder: input.freeOrder,
     prologueEnabled: input.prologueEnabled,
     epilogueEnabled: input.epilogueEnabled,
+    startNote: input.startNote ?? null,
+    startButtonLabel: input.startButtonLabel ?? null,
   };
 }
 

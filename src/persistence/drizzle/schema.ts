@@ -56,6 +56,10 @@ export const cases = pgTable("cases", {
   prologueEnabled: boolean("prologue_enabled").notNull().default(true),
   /** 에필로그 QR로 완주. */
   epilogueEnabled: boolean("epilogue_enabled").notNull().default(true),
+  /** 시작 화면 안내 문구. */
+  startNote: text("start_note"),
+  /** 시작 화면 버튼 문구. 없으면 화면이 기본 문구를 쓴다. */
+  startButtonLabel: text("start_button_label"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

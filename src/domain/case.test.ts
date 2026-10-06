@@ -3,9 +3,11 @@ import { describe, expect, it } from "vitest";
 import {
   checkCaseLiveReadiness,
   defaultStepTemplates,
+  describeEstimatedTime,
   describeLiveViolation,
   formatCaseNumber,
   isLastStep,
+  resolveStartButtonLabel,
   summarizeCaseStatuses,
   type LiveViolation,
 } from "./case.ts";
@@ -173,5 +175,26 @@ describe("isLastStep", () => {
     const steps = [{ order: 0 }, { order: 2 }];
     expect(isLastStep(steps, 2)).toBe(true);
     expect(isLastStep(steps, 0)).toBe(false);
+  });
+});
+
+describe("resolveStartButtonLabel", () => {
+  it('비어 있으면 기본 문구 "시작하기"', () => {
+    expect(resolveStartButtonLabel({})).toBe("시작하기");
+    expect(resolveStartButtonLabel({ startButtonLabel: "   " })).toBe("시작하기");
+  });
+
+  it("관리자가 정한 문구를 그대로 쓴다", () => {
+    expect(resolveStartButtonLabel({ startButtonLabel: "사건 속으로" })).toBe("사건 속으로");
+  });
+});
+
+describe("describeEstimatedTime", () => {
+  it("분을 안내 문구로 바꾼다", () => {
+    expect(describeEstimatedTime(30)).toBe("예상 소요 시간 약 30분");
+  });
+
+  it("0분이면 줄을 숨긴다", () => {
+    expect(describeEstimatedTime(0)).toBeUndefined();
   });
 });

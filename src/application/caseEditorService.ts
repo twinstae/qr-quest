@@ -50,6 +50,8 @@ export async function cloneCase(ctx: AppContext, caseId: string): Promise<Case> 
     freeOrder: original.freeOrder,
     prologueEnabled: original.prologueEnabled,
     epilogueEnabled: original.epilogueEnabled,
+    startNote: original.startNote,
+    startButtonLabel: original.startButtonLabel,
   });
 
   for (const step of [...steps].sort((a, b) => a.order - b.order)) {

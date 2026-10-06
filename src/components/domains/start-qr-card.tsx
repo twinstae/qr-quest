@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { QrCodeDownload } from "@/components/domains/qr-code-download.tsx";
 import * as Card from "@/components/ui/card.tsx";
 
@@ -9,9 +11,12 @@ import * as Card from "@/components/ui/card.tsx";
 export function StartQrCard({
   entryToken,
   prologueEnabled,
+  children,
 }: {
   entryToken: string;
   prologueEnabled: boolean;
+  /** QR 옆에 둘 동작 — 예: [시작 화면 편집]. */
+  children?: ReactNode;
 }) {
   return (
     <Card.Root variant="outline">
@@ -23,8 +28,9 @@ export function StartQrCard({
             : "지금은 프로그램 QR을 쓰지 않아요. 켜면 참가자가 이 QR을 찍어서 시작해요."}
         </Card.Description>
       </Card.Header>
-      <Card.Footer>
+      <Card.Footer justifyContent="space-between" alignItems="center" flexWrap="wrap" gap="2">
         <QrCodeDownload path={`/s/${entryToken}`} label="시작 QR" />
+        {children}
       </Card.Footer>
     </Card.Root>
   );

@@ -123,6 +123,31 @@ export async function setCasePlayOptions(
   return ctx.repo.case.update(id, { ...existing, ...patch });
 }
 
+export type StartScreenInput = {
+  title: string;
+  teaser: string;
+  estimatedMinutes: number;
+  startNote?: string;
+  startButtonLabel?: string;
+};
+
+/** 시작 QR을 찍으면 보이는 화면의 문구. 빈 문구는 저장하지 않아 화면이 기본값을 쓴다. */
+export async function updateStartScreen(
+  ctx: AppContext,
+  id: string,
+  input: StartScreenInput,
+): Promise<Case> {
+  const existing = await getCaseOrThrow(ctx, id);
+  return ctx.repo.case.update(id, {
+    ...existing,
+    title: input.title,
+    teaser: input.teaser,
+    estimatedMinutes: input.estimatedMinutes,
+    startNote: input.startNote?.trim() || undefined,
+    startButtonLabel: input.startButtonLabel?.trim() || undefined,
+  });
+}
+
 /**
  * 스키마의 FK는 RESTRICT라 자식(단계)부터 지운다.
  * 단계까지 사라진다는 사실은 화면의 확인 다이얼로그에서 먼저 알린다.
