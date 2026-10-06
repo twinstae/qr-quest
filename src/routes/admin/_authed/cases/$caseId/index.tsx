@@ -6,6 +6,7 @@ import { CasePlayOptionsPanel } from "@/components/domains/case-play-options.tsx
 import { CaseStatusControl } from "@/components/domains/case-status-control.tsx";
 import { CaseThemePicker } from "@/components/domains/case-theme-picker.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
+import { SortableList } from "@/components/domains/sortable-list.tsx";
 import { StartQrCard } from "@/components/domains/start-qr-card.tsx";
 import { StartTestModeButton } from "@/components/domains/start-test-mode-button.tsx";
 import { CreateStepDialog } from "@/components/domains/step-form-dialog.tsx";
@@ -14,6 +15,7 @@ import { StepListItem } from "@/components/domains/step-list-item.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { formatCaseNumber, type LiveViolation } from "@/domain/case.ts";
 import { getApiClient } from "@/lib/api-client";
+import { moveItem } from "@/lib/move-item.ts";
 import { unwrapEdenError } from "@/lib/eden-error";
 import { caseKeys, caseQueryOptions, caseStepsQueryOptions } from "@/queries/cases.ts";
 import { themeKeys, themeListQueryOptions } from "@/queries/themes.ts";
@@ -83,11 +85,7 @@ function RouteComponent() {
   const sortedSteps = [...steps].sort((a, b) => a.order - b.order);
 
   async function moveStep(fromIndex: number, toIndex: number) {
-    const reordered = [...sortedSteps];
-    const [moved] = reordered.splice(fromIndex, 1);
-    if (!moved) return;
-    reordered.splice(toIndex, 0, moved);
-
+    const reordered = moveItem(sortedSteps, fromIndex, toIndex);
     await getApiClient()
       .cases({ id: caseId })
       .steps.reorder.patch({ orderedStepIds: reordered.map((step) => step.id) });
@@ -225,26 +223,31 @@ function RouteComponent() {
           />
         ) : (
           <>
-            {sortedSteps.map((step, index) => (
-              <StepListItem
-                key={step.id}
-                caseId={caseId}
-                step={step}
-                isEpilogue={step.kind === "FINAL" && caseItem.epilogueEnabled}
-                canMoveUp={index > 0}
-                canMoveDown={index < sortedSteps.length - 1}
-                onMoveUp={() => moveStep(index, index - 1)}
-                onMoveDown={() => moveStep(index, index + 1)}
-                duplicateStep={async () => {
-                  await getApiClient().steps({ id: step.id }).duplicate.post();
-                  await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
-                }}
-                deleteStep={async () => {
-                  await getApiClient().steps({ id: step.id }).delete();
-                  await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
-                }}
-              />
-            ))}
+            <SortableList
+              items={sortedSteps}
+              getKey={(step) => step.id}
+              onMove={moveStep}
+              renderItem={(step, index) => (
+                <StepListItem
+                  key={step.id}
+                  caseId={caseId}
+                  step={step}
+                  isEpilogue={step.kind === "FINAL" && caseItem.epilogueEnabled}
+                  canMoveUp={index > 0}
+                  canMoveDown={index < sortedSteps.length - 1}
+                  onMoveUp={() => moveStep(index, index - 1)}
+                  onMoveDown={() => moveStep(index, index + 1)}
+                  duplicateStep={async () => {
+                    await getApiClient().steps({ id: step.id }).duplicate.post();
+                    await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
+                  }}
+                  deleteStep={async () => {
+                    await getApiClient().steps({ id: step.id }).delete();
+                    await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
+                  }}
+                />
+              )}
+            />
 
             <CreateStepDialog caseId={caseItem.id} />
           </>
