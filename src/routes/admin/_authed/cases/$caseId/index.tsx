@@ -237,6 +237,18 @@ function RouteComponent() {
                   canMoveDown={index < sortedSteps.length - 1}
                   onMoveUp={() => moveStep(index, index - 1)}
                   onMoveDown={() => moveStep(index, index + 1)}
+                  setAsEpilogue={
+                    caseItem.epilogueEnabled && step.kind === "QR"
+                      ? async () => {
+                          await getApiClient()
+                            .cases({ id: caseId })
+                            .epilogue.patch({ stepId: step.id });
+                          await queryClient.invalidateQueries({
+                            queryKey: caseKeys.steps(caseId),
+                          });
+                        }
+                      : undefined
+                  }
                   duplicateStep={async () => {
                     await getApiClient().steps({ id: step.id }).duplicate.post();
                     await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });

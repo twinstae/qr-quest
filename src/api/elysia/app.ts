@@ -9,6 +9,7 @@ import {
   reissueStepQrToken,
   reorderSteps,
   resetTestSessionCompletion,
+  setEpilogueStep,
   startTestSession,
   stepBackTestSession,
   updateCaseStatus,
@@ -32,6 +33,7 @@ import {
 import { presignUpload } from "../../application/uploadService.ts";
 import {
   FileTooLargeError,
+  InvalidRequestError,
   LiveReadinessError,
   NotExistError,
   UnsupportedFileTypeError,
@@ -59,9 +61,18 @@ export function createApp(ctx: AppContext) {
     new Elysia({ prefix: "/api" })
       .mount(ctx.auth.handler)
       .use(createAuthGuard(ctx))
-      .error({ NotExistError, FileTooLargeError, UnsupportedFileTypeError, LiveReadinessError })
+      .error({
+        NotExistError,
+        InvalidRequestError,
+        FileTooLargeError,
+        UnsupportedFileTypeError,
+        LiveReadinessError,
+      })
       .onError(({ code, error }) => {
         if (code === "NotExistError") return status("Not Found");
+        if (code === "InvalidRequestError") {
+          return status(400, { code: "INVALID_REQUEST", message: error.message });
+        }
 
         // 업로드 실패는 화면에서 그대로 보여줄 수 있게 숫자를 함께 내려준다.
         // ("5MB 이하만 올릴 수 있어요. 선택한 파일은 8.2MB예요.")
@@ -246,6 +257,22 @@ export function createApp(ctx: AppContext) {
               message: t.String(),
               violations: t.Array(LiveViolationSchema),
             }),
+          },
+        },
+      )
+      .patch(
+        "/cases/:id/epilogue",
+        async ({ params, body }) => {
+          await setEpilogueStep(ctx, params.id, body.stepId);
+          return { ok: true };
+        },
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          body: t.Object({ stepId: t.String() }),
+          response: {
+            200: t.Object({ ok: t.Boolean() }),
+            400: t.Object({ code: t.Literal("INVALID_REQUEST"), message: t.String() }),
           },
         },
       )

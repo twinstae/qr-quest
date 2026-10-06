@@ -524,6 +524,37 @@ describe("CASE 편집기 (ticket 13)", () => {
     });
   });
 
+  describe("PATCH /api/cases/:id/epilogue", () => {
+    it("고른 단계를 에필로그로 바꾼다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+      const steps = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+      const target = steps.find((step: { kind: string }) => step.kind === "QR");
+
+      const response = await client.patch(`/api/cases/${created.id}/epilogue`, {
+        stepId: target.id,
+      });
+
+      expect(response.status).toBe(200);
+      const after = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+      const finals = after.filter((step: { kind: string }) => step.kind === "FINAL");
+      expect(finals.map((step: { id: string }) => step.id)).toEqual([target.id]);
+    });
+
+    it("사건 소개 단계는 400", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+      const steps = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+      const intro = steps.find((step: { kind: string }) => step.kind === "INTRO");
+
+      const response = await client.patch(`/api/cases/${created.id}/epilogue`, {
+        stepId: intro.id,
+      });
+
+      expect(response.status).toBe(400);
+    });
+  });
+
   describe("POST /api/cases/:id/test-session", () => {
     it("isTest 세션을 만들어 토큰을 돌려준다", async () => {
       const { client } = await signedInClient();

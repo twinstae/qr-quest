@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Copy, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, Flag, Trash2 } from "lucide-react";
 
 import { ConfirmDialog } from "@/components/domains/confirm-dialog.tsx";
 import { EditStepDialog } from "@/components/domains/step-form-dialog.tsx";
@@ -30,6 +30,7 @@ export function StepListItem({
   onMoveDown,
   deleteStep,
   duplicateStep,
+  setAsEpilogue,
   isEpilogue,
 }: {
   /** 단계 수정 후 캐시 무효화 범위를 좁히는 데 쓴다 — 없으면 CASE 전체를 무효화한다. */
@@ -46,6 +47,8 @@ export function StepListItem({
   deleteStep?: () => Promise<void>;
   /** 넘기면 [복제] 버튼이 보인다. 복사본은 바로 다음 자리에 생긴다. */
   duplicateStep?: () => Promise<void>;
+  /** 넘기면 [에필로그로 지정] 버튼이 보인다 — 에필로그가 될 수 있는 문제 단계에만 넘긴다. */
+  setAsEpilogue?: () => Promise<void>;
 }) {
   return (
     <Card.Root variant="outline">
@@ -90,10 +93,15 @@ export function StepListItem({
           <span className={css({ color: "fg.default" })}>{step.title}</span>
         </Card.Description>
       </Card.Header>
-      <Card.Footer justifyContent="space-between" alignItems="center">
+      <Card.Footer justifyContent="space-between" alignItems="center" flexWrap="wrap" gap="2">
         {step.qrToken ? <QrCodeDownload path={`/t/${step.qrToken}`} label={step.name} /> : null}
-        <Flex gap="2">
+        <Flex gap="2" flexWrap="wrap">
           <EditStepDialog caseId={caseId} stepId={step.id} />
+          {setAsEpilogue && (
+            <Button variant="outline" size="sm" onClick={setAsEpilogue}>
+              <Flag /> 에필로그로 지정
+            </Button>
+          )}
           {duplicateStep && (
             <Button variant="outline" size="sm" onClick={duplicateStep}>
               <Copy /> 복제

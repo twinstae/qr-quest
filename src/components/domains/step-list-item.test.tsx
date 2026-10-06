@@ -209,3 +209,31 @@ describe("StepListItem > 복제", () => {
     expect(duplicateCount).toBe(1);
   });
 });
+
+describe("StepListItem > 에필로그 지정", () => {
+  it("setAsEpilogue를 넘기면 [에필로그로 지정]을 누를 수 있다", async () => {
+    let count = 0;
+
+    await runSiheom(
+      given.render(
+        withQueryClient(
+          <StepListItem
+            step={STEP}
+            setAsEpilogue={async () => {
+              count += 1;
+            }}
+          />,
+        ),
+      ),
+      actions.click(query.button("에필로그로 지정")),
+    );
+
+    expect(count).toBe(1);
+  });
+
+  it("넘기지 않으면 버튼이 없다", async () => {
+    await runSiheom(given.render(withQueryClient(<StepListItem step={STEP} />)));
+
+    expect(document.body.textContent).not.toContain("에필로그로 지정");
+  });
+});

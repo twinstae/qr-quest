@@ -6,7 +6,7 @@ import {
   type LiveViolation,
 } from "../domain/case.ts";
 import { generateQrToken, generateSessionToken } from "../domain/codes.ts";
-import { LiveReadinessError, NotExistError } from "../domain/errors.ts";
+import { InvalidRequestError, LiveReadinessError, NotExistError } from "../domain/errors.ts";
 import type { PlaySession } from "../domain/playSession.ts";
 import { requiresQrToken, type Step } from "../domain/step.ts";
 import type { StartSessionResult } from "./playService.ts";
@@ -164,6 +164,33 @@ export async function duplicateStep(ctx: AppContext, stepId: string): Promise<St
 
   const reordered = await reorderSteps(ctx, original.caseId, ordered);
   return reordered.find((step) => step.id === copy.id) ?? copy;
+}
+
+/**
+ * 에필로그(마지막 문지기)로 쓸 단계를 바꾼다. 고른 문제는 FINAL이 되고, 예전 에필로그는
+ * 일반 문제(QR)로 돌아간다. 순서와 QR 토큰은 그대로라 붙여둔 인쇄물을 다시 뽑지 않아도 된다.
+ */
+export async function setEpilogueStep(
+  ctx: AppContext,
+  caseId: string,
+  stepId: string,
+): Promise<void> {
+  const target = await getStepOrThrow(ctx, stepId);
+  if (target.caseId !== caseId) throw new NotExistError(`Step id=${stepId} not in case=${caseId}`);
+  if (!requiresQrToken(target.kind)) {
+    throw new InvalidRequestError("QR을 찍는 단계만 에필로그로 지정할 수 있어요.");
+  }
+
+  const setKind = (step: Step, kind: Step["kind"]) => {
+    const { id, caseId: _caseId, ...rest } = step;
+    return ctx.repo.step.update(id, { ...rest, kind });
+  };
+
+  const steps = await ctx.repo.step.listByCaseId(caseId);
+  for (const step of steps) {
+    if (step.kind === "FINAL" && step.id !== stepId) await setKind(step, "QR");
+  }
+  if (target.kind !== "FINAL") await setKind(target, "FINAL");
 }
 
 /**

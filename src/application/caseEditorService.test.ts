@@ -12,12 +12,13 @@ import {
 } from "../persistence/FakePlaySessionRepo.ts";
 import createFakeStepRepo from "../persistence/FakeStepRepo.ts";
 import { createStep, updateStep } from "./stepService.ts";
-import { LiveReadinessError } from "../domain/errors.ts";
+import { InvalidRequestError, LiveReadinessError, NotExistError } from "../domain/errors.ts";
 import {
   checkQrToken,
   cloneCase,
   checkLiveReadiness,
   duplicateStep,
+  setEpilogueStep,
   getStepForPreview,
   reissueEntryToken,
   reissueStepQrToken,
@@ -547,5 +548,55 @@ describe("duplicateStep", () => {
 
     expect(copy.kind).toBe("INTRO");
     expect(copy.qrToken).toBeNull();
+  });
+});
+
+describe("setEpilogueStep", () => {
+  it("고른 문제가 에필로그(FINAL)가 되고, 예전 에필로그는 일반 문제(QR)가 된다", async () => {
+    const ctx = contextWith({ steps: fullCaseSteps() });
+
+    await setEpilogueStep(ctx, TEST_CASE.id, "step-2");
+
+    const steps = await ctx.repo.step.listByCaseId(TEST_CASE.id);
+    const kindOf = (id: string) => steps.find((step) => step.id === id)?.kind;
+    expect(kindOf("step-2")).toBe("FINAL");
+    expect(kindOf("step-final")).toBe("QR");
+    expect(steps.filter((step) => step.kind === "FINAL")).toHaveLength(1);
+  });
+
+  it("QR 토큰과 순서는 그대로다 — 이미 붙인 인쇄물을 다시 뽑지 않아도 된다", async () => {
+    const ctx = contextWith({ steps: fullCaseSteps() });
+
+    await setEpilogueStep(ctx, TEST_CASE.id, "step-2");
+
+    const step2 = await ctx.repo.step.getById("step-2");
+    const oldFinal = await ctx.repo.step.getById("step-final");
+    expect(step2?.qrToken).toBe("QRTOKEN002");
+    expect(step2?.order).toBe(2);
+    expect(oldFinal?.qrToken).toBe("QRTOKENFIN");
+    expect(oldFinal?.order).toBe(4);
+  });
+
+  it("에필로그가 없던 CASE에도 지정할 수 있다", async () => {
+    const steps = fullCaseSteps().filter((step) => step.kind !== "FINAL");
+    const ctx = contextWith({ steps });
+
+    await setEpilogueStep(ctx, TEST_CASE.id, "step-3");
+
+    expect((await ctx.repo.step.getById("step-3"))?.kind).toBe("FINAL");
+  });
+
+  it("QR이 없는 단계(사건 소개·종결)는 에필로그가 될 수 없다", async () => {
+    const ctx = contextWith({ steps: fullCaseSteps() });
+
+    await expect(setEpilogueStep(ctx, TEST_CASE.id, "step-intro")).rejects.toThrow(
+      InvalidRequestError,
+    );
+  });
+
+  it("다른 CASE의 단계면 찾을 수 없다고 한다", async () => {
+    const ctx = contextWith({ steps: fullCaseSteps() });
+
+    await expect(setEpilogueStep(ctx, ANOTHER_CASE.id, "step-2")).rejects.toThrow(NotExistError);
   });
 });

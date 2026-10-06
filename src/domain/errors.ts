@@ -6,6 +6,13 @@ export class NotExistError extends Error {
   }
 }
 
+/** 요청 자체가 규칙에 맞지 않는다(400). 메시지는 화면에 그대로 보여줄 수 있게 쓴다. */
+export class InvalidRequestError extends Error {
+  constructor(public message: string) {
+    super(message);
+  }
+}
+
 export class FileTooLargeError extends Error {
   constructor(
     public message: string,
