@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, Trash2 } from "lucide-react";
 
 import { ConfirmDialog } from "@/components/domains/confirm-dialog.tsx";
 import { EditStepDialog } from "@/components/domains/step-form-dialog.tsx";
@@ -29,6 +29,7 @@ export function StepListItem({
   onMoveUp,
   onMoveDown,
   deleteStep,
+  duplicateStep,
   isEpilogue,
 }: {
   /** 단계 수정 후 캐시 무효화 범위를 좁히는 데 쓴다 — 없으면 CASE 전체를 무효화한다. */
@@ -43,6 +44,8 @@ export function StepListItem({
   onMoveDown?: () => void;
   /** 넘기면 [삭제] 버튼이 보인다 — 단독 미리보기 등에서는 생략한다. */
   deleteStep?: () => Promise<void>;
+  /** 넘기면 [복제] 버튼이 보인다. 복사본은 바로 다음 자리에 생긴다. */
+  duplicateStep?: () => Promise<void>;
 }) {
   return (
     <Card.Root variant="outline">
@@ -91,6 +94,11 @@ export function StepListItem({
         {step.qrToken ? <QrCodeDownload path={`/t/${step.qrToken}`} label={step.name} /> : null}
         <Flex gap="2">
           <EditStepDialog caseId={caseId} stepId={step.id} />
+          {duplicateStep && (
+            <Button variant="outline" size="sm" onClick={duplicateStep}>
+              <Copy /> 복제
+            </Button>
+          )}
           {deleteStep && (
             <ConfirmDialog
               title="단계 삭제"

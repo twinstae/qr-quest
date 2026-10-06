@@ -17,6 +17,7 @@ import {
   checkQrToken,
   cloneCase,
   checkLiveReadiness,
+  duplicateStep,
   getStepForPreview,
   reissueEntryToken,
   reissueStepQrToken,
@@ -495,5 +496,56 @@ describe("토큰 재발급 (기존 인쇄물 무효화, 요구 22)", () => {
     expect(reissued.entryToken).not.toBe(TEST_CASE.entryToken);
     expect(reissued.entryToken).toEqual(expect.any(String));
     expect(reissued.title).toBe(TEST_CASE.title);
+  });
+});
+
+describe("duplicateStep", () => {
+  it("바로 다음 자리에 복사본을 끼워 넣고, 뒤 단계는 한 칸씩 민다", async () => {
+    const ctx = contextWith({ steps: fullCaseSteps() });
+
+    const copy = await duplicateStep(ctx, "step-2");
+
+    expect(copy.id).not.toBe("step-2");
+    expect(copy.order).toBe(3);
+    expect(copy.name).toBe("QR 02 복사본");
+    expect(copy.title).toBe(TEST_STEP.title);
+    expect(copy.answerSpec).toEqual(TEST_STEP.answerSpec);
+
+    const steps = await ctx.repo.step.listByCaseId(TEST_CASE.id);
+    expect(steps.sort((a, b) => a.order - b.order).map((step) => step.name)).toEqual([
+      "사건 소개",
+      "QR 01",
+      "QR 02",
+      "QR 02 복사본",
+      "QR 03",
+      "마지막 단서",
+      "사건 종결",
+    ]);
+  });
+
+  it("QR 토큰은 새로 발급한다 — 같은 QR이 두 단계를 가리키면 안 된다", async () => {
+    const ctx = contextWith({ steps: fullCaseSteps() });
+
+    const copy = await duplicateStep(ctx, "step-2");
+
+    expect(copy.qrToken).toEqual(expect.any(String));
+    expect(copy.qrToken).not.toBe("QRTOKEN002");
+  });
+
+  it("에필로그(FINAL)를 복제하면 일반 문제(QR)가 된다 — 에필로그는 하나뿐이다", async () => {
+    const ctx = contextWith({ steps: fullCaseSteps() });
+
+    const copy = await duplicateStep(ctx, "step-final");
+
+    expect(copy.kind).toBe("QR");
+  });
+
+  it("QR이 없는 단계는 복사본도 QR이 없다", async () => {
+    const ctx = contextWith({ steps: fullCaseSteps() });
+
+    const copy = await duplicateStep(ctx, "step-intro");
+
+    expect(copy.kind).toBe("INTRO");
+    expect(copy.qrToken).toBeNull();
   });
 });

@@ -3,6 +3,7 @@ import { Elysia, status, t } from "elysia";
 import {
   checkQrToken,
   cloneCase,
+  duplicateStep,
   getStepForPreview,
   reissueEntryToken,
   reissueStepQrToken,
@@ -205,6 +206,18 @@ export function createApp(ctx: AppContext) {
           auth: true,
           params: t.Object({ id: t.String() }),
           response: t.Object({ deleted: t.Boolean() }),
+        },
+      )
+      .post(
+        "/steps/:id/duplicate",
+        async ({ params }) => {
+          const step = await duplicateStep(ctx, params.id);
+          return { id: step.id, order: step.order, name: step.name };
+        },
+        {
+          auth: true,
+          params: t.Object({ id: t.String() }),
+          response: t.Object({ id: t.String(), order: t.Number(), name: t.String() }),
         },
       )
       .post("/cases/:id/clone", ({ params }) => cloneCase(ctx, params.id), {

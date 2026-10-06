@@ -498,6 +498,32 @@ describe("CASE 편집기 (ticket 13)", () => {
     });
   });
 
+  describe("POST /api/steps/:id/duplicate", () => {
+    it("바로 뒤에 복사본을 만들어 돌려준다", async () => {
+      const { client } = await signedInClient();
+      const created = await createFullCase(client);
+      const steps = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+      const original = steps[1];
+
+      const response = await client.post(`/api/steps/${original.id}/duplicate`);
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload.name).toBe(`${original.name} 복사본`);
+      expect(payload.order).toBe(original.order + 1);
+      const after = await (await client.get(`/api/cases/${created.id}/steps`)).json();
+      expect(after).toHaveLength(steps.length + 1);
+    });
+
+    it("없는 단계면 404", async () => {
+      const { client } = await signedInClient();
+
+      const response = await client.post(`/api/steps/no-such-step/duplicate`);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
   describe("POST /api/cases/:id/test-session", () => {
     it("isTest 세션을 만들어 토큰을 돌려준다", async () => {
       const { client } = await signedInClient();

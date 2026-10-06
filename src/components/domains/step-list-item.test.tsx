@@ -181,3 +181,31 @@ describe("StepListItem > QR 표시", () => {
     expect(document.body.textContent).not.toContain("(에필로그)");
   });
 });
+
+describe("StepListItem > 복제", () => {
+  it("duplicateStep을 넘기지 않으면 복제 버튼이 없다", async () => {
+    await runSiheom(given.render(withQueryClient(<StepListItem step={STEP} />)));
+
+    expect(document.body.textContent).not.toContain("복제");
+  });
+
+  it("복제를 누르면 duplicateStep을 한 번 호출한다", async () => {
+    let duplicateCount = 0;
+
+    await runSiheom(
+      given.render(
+        withQueryClient(
+          <StepListItem
+            step={STEP}
+            duplicateStep={async () => {
+              duplicateCount += 1;
+            }}
+          />,
+        ),
+      ),
+      actions.click(query.button("복제")),
+    );
+
+    expect(duplicateCount).toBe(1);
+  });
+});

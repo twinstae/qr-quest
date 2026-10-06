@@ -235,6 +235,10 @@ function RouteComponent() {
                 canMoveDown={index < sortedSteps.length - 1}
                 onMoveUp={() => moveStep(index, index - 1)}
                 onMoveDown={() => moveStep(index, index + 1)}
+                duplicateStep={async () => {
+                  await getApiClient().steps({ id: step.id }).duplicate.post();
+                  await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
+                }}
                 deleteStep={async () => {
                   await getApiClient().steps({ id: step.id }).delete();
                   await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });

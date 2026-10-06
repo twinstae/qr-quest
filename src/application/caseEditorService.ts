@@ -139,6 +139,34 @@ export async function reorderSteps(
 }
 
 /**
+ * 단계를 복제해 바로 다음 자리에 끼워 넣는다. 비슷한 문제를 여러 개 만들 때 쓴다.
+ * QR 토큰은 새로 발급한다 — 같은 QR이 두 단계를 가리키면 안 된다.
+ * 에필로그(FINAL)는 하나뿐이어야 하므로 복사본은 일반 문제(QR)가 된다.
+ */
+export async function duplicateStep(ctx: AppContext, stepId: string): Promise<Step> {
+  const { id: _id, ...original } = await getStepOrThrow(ctx, stepId);
+  const kind = original.kind === "FINAL" ? "QR" : original.kind;
+
+  // 맨 뒤에 만든 뒤 reorderSteps로 원본 바로 다음으로 옮긴다 — 유일 인덱스 처리를 한곳에 둔다.
+  const copy = await ctx.repo.step.create({
+    ...original,
+    kind,
+    order: await ctx.repo.step.nextOrder(original.caseId),
+    name: `${original.name} 복사본`,
+    qrToken: requiresQrToken(kind) ? generateQrToken() : null,
+  });
+
+  const ordered = (await ctx.repo.step.listByCaseId(original.caseId))
+    .filter((step) => step.id !== copy.id)
+    .sort((a, b) => a.order - b.order)
+    .map((step) => step.id);
+  ordered.splice(ordered.indexOf(stepId) + 1, 0, copy.id);
+
+  const reordered = await reorderSteps(ctx, original.caseId, ordered);
+  return reordered.find((step) => step.id === copy.id) ?? copy;
+}
+
+/**
  * 관리자가 실제 참가자처럼 처음부터 끝까지 진행해 볼 때 쓴다(요구 30-8).
  * isTest=true로 표시해 통계에서 제외한다(16).
  */

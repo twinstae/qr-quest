@@ -5,7 +5,7 @@ import { caseInput, stepInput } from "../domain/fixtures.ts";
 import { createDrizzleCaseRepo } from "../persistence/drizzle/DrizzleCaseRepo.ts";
 import { createDrizzleStepRepo } from "../persistence/drizzle/DrizzleStepRepo.ts";
 import { createTestDatabase } from "../persistence/drizzle/test-helpers.ts";
-import { reorderSteps } from "./caseEditorService.ts";
+import { duplicateStep, reorderSteps } from "./caseEditorService.ts";
 
 // 가짜 저장소는 (case_id, order) 유일 인덱스를 흉내 내지 않는다 — 실제 DB로 확인한다.
 describe("reorderSteps (실제 DB)", () => {
@@ -28,6 +28,33 @@ describe("reorderSteps (실제 DB)", () => {
     expect(steps.map(({ name, order }) => ({ name, order }))).toEqual([
       { name: "둘째", order: 0 },
       { name: "첫째", order: 1 },
+    ]);
+  });
+});
+
+describe("duplicateStep (실제 DB)", () => {
+  it("가운데 단계를 복제해도 (case_id, order) 유일 인덱스에 걸리지 않는다", async () => {
+    await using db = await createTestDatabase();
+    const ctx = createFakeContext({
+      repo: { case: createDrizzleCaseRepo(db), step: createDrizzleStepRepo(db) },
+    });
+    const created = await ctx.repo.case.create(caseInput());
+    const first = await ctx.repo.step.create(
+      stepInput({ caseId: created.id, order: 0, name: "첫째", qrToken: "QR-A" }),
+    );
+    await ctx.repo.step.create(
+      stepInput({ caseId: created.id, order: 1, name: "둘째", qrToken: "QR-B" }),
+    );
+
+    await duplicateStep(ctx, first.id);
+
+    const steps = await ctx.repo.step.listByCaseId(created.id);
+    expect(
+      steps.sort((a, b) => a.order - b.order).map(({ name, order }) => ({ name, order })),
+    ).toEqual([
+      { name: "첫째", order: 0 },
+      { name: "첫째 복사본", order: 1 },
+      { name: "둘째", order: 2 },
     ]);
   });
 });
