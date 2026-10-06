@@ -70,6 +70,15 @@ Phase 2(13·14)가 끝나면 사장님이 개발자 없이 CASE 02를 만들 수
       에필로그는 스탬프판이 아니라 완주 안내로 분리했다.
     - 완주 시 인증번호는 에필로그 ON/OFF와 무관하게 항상 발급한다.
 
+24. [x] 시작 QR을 단계 목록 맨 위에서도 내려받는다
+    - 시작 QR은 단계가 아니라 CASE 자산(`/s/{entryToken}`)이라 목록에 없었고, 목록의 사건
+      소개·사건 종결이 "QR 없는 단계"로 보여 "시작/에필로그 QR을 어디서 만드나" 문의가 왔다.
+    - `StepListItem`의 "QR 없는 단계"·"QR 없음" 표시를 지우고, 목록 맨 위에 `StartQrCard`
+      (제목·인쇄 안내·QR/URL 복사)를 항상 둔다. 에필로그로 쓰는 마지막 단서(FINAL)에는
+      인쇄 시트처럼 `(에필로그)` 라벨을 붙인다.
+    - `StepQrCodeDownload`를 `QrCodeDownload`(path 기반)로 일반화해 시작·단계 QR이 같은
+      버튼을 쓴다.
+
 남은 일 / 새로 발견한 것:
 
 - [x] Panda v2 업그레이드 마이그레이션 (Vercel `bun run build` 46 MISSING_EXPORT 복구)

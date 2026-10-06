@@ -6,6 +6,7 @@ import { CasePlayOptionsPanel } from "@/components/domains/case-play-options.tsx
 import { CaseStatusControl } from "@/components/domains/case-status-control.tsx";
 import { CaseThemePicker } from "@/components/domains/case-theme-picker.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
+import { StartQrCard } from "@/components/domains/start-qr-card.tsx";
 import { StartTestModeButton } from "@/components/domains/start-test-mode-button.tsx";
 import { CreateStepDialog } from "@/components/domains/step-form-dialog.tsx";
 import { TestSessionActions } from "@/components/domains/test-session-actions.tsx";
@@ -211,34 +212,40 @@ function RouteComponent() {
         />
       </section>
 
-      {steps.length === 0 ? (
-        <EmptyState
-          icon={<MapPinPlus />}
-          title="아직 이 CASE에 단계가 없어요"
-          description="단계를 추가하면 QR 코드를 내려받아 책 사이에 배치할 수 있어요."
-          action={<CreateStepDialog caseId={caseItem.id} />}
-        />
-      ) : (
-        <VStack gap="3" alignItems="stretch" maxWidth="2xl">
-          {sortedSteps.map((step, index) => (
-            <StepListItem
-              key={step.id}
-              caseId={caseId}
-              step={step}
-              canMoveUp={index > 0}
-              canMoveDown={index < sortedSteps.length - 1}
-              onMoveUp={() => moveStep(index, index - 1)}
-              onMoveDown={() => moveStep(index, index + 1)}
-              deleteStep={async () => {
-                await getApiClient().steps({ id: step.id }).delete();
-                await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
-              }}
-            />
-          ))}
+      <VStack gap="3" alignItems="stretch" maxWidth="2xl">
+        {/* 시작 QR은 단계가 아니라 CASE 자산이라 단계가 없어도 항상 맨 위에 보여준다. */}
+        <StartQrCard entryToken={caseItem.entryToken} prologueEnabled={caseItem.prologueEnabled} />
 
-          <CreateStepDialog caseId={caseItem.id} />
-        </VStack>
-      )}
+        {steps.length === 0 ? (
+          <EmptyState
+            icon={<MapPinPlus />}
+            title="아직 이 CASE에 단계가 없어요"
+            description="단계를 추가하면 QR 코드를 내려받아 책 사이에 배치할 수 있어요."
+            action={<CreateStepDialog caseId={caseItem.id} />}
+          />
+        ) : (
+          <>
+            {sortedSteps.map((step, index) => (
+              <StepListItem
+                key={step.id}
+                caseId={caseId}
+                step={step}
+                isEpilogue={step.kind === "FINAL" && caseItem.epilogueEnabled}
+                canMoveUp={index > 0}
+                canMoveDown={index < sortedSteps.length - 1}
+                onMoveUp={() => moveStep(index, index - 1)}
+                onMoveDown={() => moveStep(index, index + 1)}
+                deleteStep={async () => {
+                  await getApiClient().steps({ id: step.id }).delete();
+                  await queryClient.invalidateQueries({ queryKey: caseKeys.steps(caseId) });
+                }}
+              />
+            ))}
+
+            <CreateStepDialog caseId={caseItem.id} />
+          </>
+        )}
+      </VStack>
     </Main>
   );
 }

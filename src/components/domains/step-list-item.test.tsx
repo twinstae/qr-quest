@@ -20,6 +20,26 @@ const STEP: StepListItemData = {
   hasAnswer: true,
 };
 
+const INTRO_STEP: StepListItemData = {
+  ...STEP,
+  id: "step-0",
+  order: 0,
+  kind: "INTRO",
+  name: "사건 소개",
+  qrToken: null,
+  title: "사건의 시작",
+  hasAnswer: false,
+};
+
+const FINAL_STEP: StepListItemData = {
+  ...STEP,
+  id: "step-9",
+  order: 9,
+  kind: "FINAL",
+  name: "마지막 단서",
+  qrToken: "FINALTOKEN",
+};
+
 describe("StepListItem > 순서 이동", () => {
   it("위로/아래로 누르면 각각 콜백을 부른다", async () => {
     let movedUp = 0;
@@ -132,5 +152,32 @@ describe("StepListItem > 삭제", () => {
     );
 
     expect(deleteCount).toBe(0);
+  });
+});
+
+describe("StepListItem > QR 표시", () => {
+  it("QR 토큰이 없어도 'QR 없는 단계'라고 설명하지 않는다", async () => {
+    await runSiheom(given.render(withQueryClient(<StepListItem step={INTRO_STEP} />)));
+
+    expect(document.body.textContent).not.toContain("QR 없는 단계");
+    expect(document.body.textContent).not.toContain("QR 없음");
+  });
+
+  it("QR 토큰이 있으면 QR 다운로드 버튼이 보인다", async () => {
+    await runSiheom(given.render(withQueryClient(<StepListItem step={STEP} />)));
+
+    expect(document.body.textContent).toContain("URL 복사");
+  });
+
+  it("에필로그 단계면 이름 옆에 (에필로그) 라벨을 붙인다", async () => {
+    await runSiheom(given.render(withQueryClient(<StepListItem step={FINAL_STEP} isEpilogue />)));
+
+    expect(document.body.textContent).toContain("(에필로그)");
+  });
+
+  it("에필로그가 아니면 (에필로그) 라벨을 붙이지 않는다", async () => {
+    await runSiheom(given.render(withQueryClient(<StepListItem step={FINAL_STEP} />)));
+
+    expect(document.body.textContent).not.toContain("(에필로그)");
   });
 });

@@ -2,7 +2,7 @@ import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 
 import { ConfirmDialog } from "@/components/domains/confirm-dialog.tsx";
 import { EditStepDialog } from "@/components/domains/step-form-dialog.tsx";
-import { StepQrCodeDownload } from "@/components/domains/step-qr-code.tsx";
+import { QrCodeDownload } from "@/components/domains/qr-code-download.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import * as Card from "@/components/ui/card.tsx";
@@ -29,10 +29,13 @@ export function StepListItem({
   onMoveUp,
   onMoveDown,
   deleteStep,
+  isEpilogue,
 }: {
   /** 단계 수정 후 캐시 무효화 범위를 좁히는 데 쓴다 — 없으면 CASE 전체를 무효화한다. */
   caseId?: string;
   step: StepListItemData;
+  /** 에필로그로 쓰이는 마지막 단서 단계인가 — 이름 옆에 (에필로그)를 붙인다. */
+  isEpilogue?: boolean;
   /** 순서 이동 버튼을 함께 보여줄 때만 넘긴다 — 단독 미리보기 등에서는 생략한다. */
   canMoveUp?: boolean;
   canMoveDown?: boolean;
@@ -45,7 +48,12 @@ export function StepListItem({
     <Card.Root variant="outline">
       <Card.Header pb="2">
         <Flex justify="space-between" align="center" gap="2">
-          <Card.Title>{step.name}</Card.Title>
+          <Card.Title>
+            {step.name}
+            {isEpilogue && (
+              <span className={css({ color: "fg.muted", fontWeight: "normal" })}> (에필로그)</span>
+            )}
+          </Card.Title>
           <Flex gap="1" flexShrink="0" align="center">
             {!step.published && <Badge variant="outline">비공개</Badge>}
             <Badge variant={step.hasAnswer ? "solid" : "outline"}>
@@ -77,17 +85,10 @@ export function StepListItem({
         </Flex>
         <Card.Description>
           <span className={css({ color: "fg.default" })}>{step.title}</span>
-          {step.qrToken === null && " · QR 없는 단계"}
         </Card.Description>
       </Card.Header>
       <Card.Footer justifyContent="space-between" alignItems="center">
-        {step.qrToken ? (
-          <Flex gap="2" align="center">
-            <StepQrCodeDownload qrToken={step.qrToken} label={step.name} />
-          </Flex>
-        ) : (
-          <span className={css({ textStyle: "xs", color: "fg.subtle" })}>QR 없음</span>
-        )}
+        {step.qrToken ? <QrCodeDownload path={`/t/${step.qrToken}`} label={step.name} /> : null}
         <Flex gap="2">
           <EditStepDialog caseId={caseId} stepId={step.id} />
           {deleteStep && (

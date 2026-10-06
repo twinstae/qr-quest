@@ -14,20 +14,21 @@ function triggerDownload(filename: string, href: string) {
 }
 
 function toFileName(label: string): string {
-  return label.trim().replace(/\s+/g, "-") || "step";
+  return label.trim().replace(/\s+/g, "-") || "qr";
 }
 
 /**
- * 단계 QR은 고정 URL(/t/{qrToken})만 담는다. 질문·정답·이미지를 고쳐도 토큰이
- * 그대로라 이미 붙여 둔 QR을 다시 인쇄할 필요가 없다 (요구 23).
+ * QR 한 장의 복사·다운로드 버튼. 단계 QR(/t/{qrToken})과 시작 QR(/s/{entryToken})이
+ * 같은 모양을 쓴다 — 둘 다 고정 URL만 담고, 내용을 고쳐도 토큰이 그대로라 이미 붙여 둔
+ * QR을 다시 인쇄할 필요가 없다 (요구 23).
  */
-export function StepQrCodeDownload({ qrToken, label }: { qrToken: string; label: string }) {
+export function QrCodeDownload({ path, label }: { path: string; label: string }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // window is unavailable during SSR; the correct origin is picked up on the
   // client-side render pass after hydration, before any download can happen.
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const url = `${origin}/t/${qrToken}`;
+  const url = `${origin}${path}`;
 
   function downloadPng() {
     const canvas = canvasRef.current;
