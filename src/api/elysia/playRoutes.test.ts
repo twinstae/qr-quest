@@ -287,6 +287,27 @@ describe("POST /api/play/sessions", () => {
   });
 });
 
+describe("DELETE /api/play/sessions", () => {
+  it("참가 세션 쿠키를 만료시켜 기기의 진행 정보를 지운다", async () => {
+    const app = appWith();
+
+    const response = await app.handle(
+      new Request("http://localhost/api/play/sessions", {
+        method: "DELETE",
+        headers: { cookie: `${PLAY_SESSION_COOKIE}=tok1,tok2; better-auth.session_token=keep` },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const cookie = response.headers.get("set-cookie") ?? "";
+    expect(cookie).toContain(`${PLAY_SESSION_COOKIE}=;`);
+    expect(cookie).toContain("Max-Age=0");
+    expect(cookie).toContain("Path=/");
+    // 관리자 로그인 쿠키는 건드리지 않는다.
+    expect(cookie).not.toContain("better-auth");
+  });
+});
+
 describe("GET /api/play/cases/:caseId/progress", () => {
   it("세션이 없으면 NOT_STARTED를 돌려준다", async () => {
     const app = appWith();

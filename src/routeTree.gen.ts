@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as IndexRouteImport } from "./routes/index";
+import { Route as ResetRouteImport } from "./routes/reset";
 import { Route as AdminAuthedRouteImport } from "./routes/admin/_authed";
 import { Route as AdminLoginRouteImport } from "./routes/admin/login";
 import { Route as ApiSplatRouteImport } from "./routes/api/$";
@@ -27,6 +28,11 @@ import { Route as AdminAuthedCasesCaseIdStatsRouteImport } from "./routes/admin/
 const IndexRoute = IndexRouteImport.update({
   id: "/",
   path: "/",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const ResetRoute = ResetRouteImport.update({
+  id: "/reset",
+  path: "/reset",
   getParentRoute: () => rootRouteImport,
 } as any);
 const AdminAuthedRoute = AdminAuthedRouteImport.update({
@@ -97,6 +103,7 @@ const AdminAuthedCasesCaseIdStatsRoute = AdminAuthedCasesCaseIdStatsRouteImport.
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/reset": typeof ResetRoute;
   "/admin": typeof AdminAuthedRouteWithChildren;
   "/admin/login": typeof AdminLoginRoute;
   "/api/$": typeof ApiSplatRoute;
@@ -113,6 +120,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
+  "/reset": typeof ResetRoute;
   "/admin": typeof AdminAuthedRouteWithChildren;
   "/admin/login": typeof AdminLoginRoute;
   "/api/$": typeof ApiSplatRoute;
@@ -130,6 +138,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
+  "/reset": typeof ResetRoute;
   "/admin/_authed": typeof AdminAuthedRouteWithChildren;
   "/admin/login": typeof AdminLoginRoute;
   "/api/$": typeof ApiSplatRoute;
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | "/"
+    | "/reset"
     | "/admin"
     | "/admin/login"
     | "/api/$"
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
+    | "/reset"
     | "/admin"
     | "/admin/login"
     | "/api/$"
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
   id:
     | "__root__"
     | "/"
+    | "/reset"
     | "/admin/_authed"
     | "/admin/login"
     | "/api/$"
@@ -197,6 +209,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  ResetRoute: typeof ResetRoute;
   AdminAuthedRoute: typeof AdminAuthedRouteWithChildren;
   AdminLoginRoute: typeof AdminLoginRoute;
   ApiSplatRoute: typeof ApiSplatRoute;
@@ -212,6 +225,13 @@ declare module "@tanstack/react-router" {
       path: "/";
       fullPath: "/";
       preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/reset": {
+      id: "/reset";
+      path: "/reset";
+      fullPath: "/reset";
+      preLoaderRoute: typeof ResetRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/admin/_authed": {
@@ -332,6 +352,7 @@ const AdminAuthedRouteWithChildren = AdminAuthedRoute._addFileChildren(AdminAuth
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ResetRoute: ResetRoute,
   AdminAuthedRoute: AdminAuthedRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   ApiSplatRoute: ApiSplatRoute,

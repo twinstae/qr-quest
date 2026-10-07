@@ -34,3 +34,8 @@ export function mergeSessionTokens(existing: string[], token: string): string[] 
 export function sessionCookieHeader(tokens: string[]): string {
   return `${PLAY_SESSION_COOKIE}=${tokens.join(",")}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_COOKIE_MAX_AGE_SECONDS}`;
 }
+
+/** 참가 세션 쿠키를 지우는 값. 기기 초기화(/reset)에서 쓴다 — 관리자 로그인 쿠키는 따로라 남는다. */
+export function clearedSessionCookieHeader(): string {
+  return `${PLAY_SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
+}

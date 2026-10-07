@@ -6,6 +6,7 @@ import { CaseListItem } from "@/components/domains/case-list-item.tsx";
 import { CreateCaseDialog } from "@/components/domains/case-form-dialog.tsx";
 import { DashboardSummary } from "@/components/domains/dashboard-summary.tsx";
 import { EmptyState } from "@/components/domains/empty-state.tsx";
+import { ResetDeviceQrCard } from "@/components/domains/reset-device-qr-card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { summarizeCaseStatuses } from "@/domain/case.ts";
 import { caseListQueryOptions, todayStatsQueryOptions } from "@/queries/cases.ts";
@@ -95,6 +96,11 @@ function RouteComponent() {
           ))}
         </Grid>
       )}
+
+      {/* 운영 도구. 참가자 기기의 저장 상태가 꼬였을 때 찍게 한다. */}
+      <styled.div mt="10">
+        <ResetDeviceQrCard />
+      </styled.div>
     </Main>
   );
 }

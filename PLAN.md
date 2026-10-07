@@ -90,6 +90,13 @@ Phase 2(13·14)가 끝나면 사장님이 개발자 없이 CASE 02를 만들 수
           버튼 기본값 "시작하기"(빈 문구는 저장하지 않고 화면이 기본값을 쓴다). 예상 소요 시간 0분이면 줄을 숨긴다.
           참가자 화면과 미리보기가 같은 `StartScreenCard`를 쓴다. `PATCH /cases/:id/start-screen`, 마이그레이션 `0004`.
 
+26. [x] 기기 초기화 페이지(`/reset`)와 그 QR
+    - 버그·잘못된 조작으로 기기에 저장된 상태가 꼬여 같은 에러가 반복될 때, QR을 찍거나 링크로 들어가기만
+      하면 그 기기의 진행 정보를 지운다(확인 버튼 없음, 여러 번 해도 같음). 실패하면 [다시 시도].
+    - 참가 세션 쿠키는 httpOnly라 서버가 만료시킨다(`DELETE /api/play/sessions`). localStorage·sessionStorage·
+      Cache Storage·IndexedDB는 `resetDevice`가 비운다. 관리자 로그인(better-auth 쿠키)은 남는다.
+    - QR은 CASE 목록 아래 `ResetDeviceQrCard`에서 내려받는다.
+
 남은 일 / 새로 발견한 것:
 
 - [x] Panda v2 업그레이드 마이그레이션 (Vercel `bun run build` 46 MISSING_EXPORT 복구)
