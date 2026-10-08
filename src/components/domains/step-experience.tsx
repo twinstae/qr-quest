@@ -16,7 +16,8 @@ export type Reveal = { text?: string; media?: Media; preset?: RevealPreset; soun
 export type StepExperienceState =
   | { status: "idle" }
   | { status: "incorrect"; message: string }
-  | { status: "correct"; reveal: Reveal; message: string };
+  /** `completed`: 이 정답으로 완주했다(에필로그까지 끝남) — 다음 단서가 없으니 완료로 안내한다. */
+  | { status: "correct"; reveal: Reveal; message: string; completed?: boolean };
 
 export function StepExperience({
   step,
@@ -29,7 +30,7 @@ export function StepExperience({
   state: StepExperienceState;
   onSubmit: (submission: AnswerSubmission) => Promise<void>;
   onRequestHint: () => Promise<string | undefined>;
-  /** 정답 화면에서 "다음 단서 찾기"를 눌렀을 때. */
+  /** 정답 화면에서 "다음 단서 찾기"(완주했다면 "완료하기")를 눌렀을 때. */
   onContinue: () => void;
 }) {
   const [soundEnabled, setSoundEnabled] = useSoundPreference();
@@ -59,7 +60,7 @@ export function StepExperience({
           media={state.reveal.media}
         />
         <Button size="lg" width="full" maxWidth="sm" onClick={onContinue}>
-          다음 단서 찾기
+          {state.completed ? "완료하기" : "다음 단서 찾기"}
         </Button>
       </VStack>
     );

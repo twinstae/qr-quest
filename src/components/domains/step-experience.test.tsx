@@ -225,6 +225,31 @@ describe("StepExperience > 정답", () => {
     expect(continued).toBe(true);
   });
 
+  it("완주한 정답(에필로그까지 끝남)이면 다음 단서 대신 완료하기를 보여준다", async () => {
+    let continued = false;
+
+    await runSiheom(
+      setup(
+        () => ({
+          status: "correct",
+          reveal: { text: "사건 종결" },
+          message: "정답이에요!",
+          completed: true,
+        }),
+        () => {
+          continued = true;
+        },
+      ),
+      actions.fill(query.textbox("정답"), "정답"),
+      actions.click(query.button("제출하기")),
+      assertions.visible(query.heading("사건 종결")),
+      assertions.not.visible(query.button("다음 단서 찾기")),
+      actions.click(query.button("완료하기")),
+    );
+
+    expect(continued).toBe(true);
+  });
+
   it("공개할 단서 문구가 비어 있으면 정답 메시지를 대신 보여준다", async () => {
     await runSiheom(
       setup(() => ({ status: "correct", reveal: {}, message: "정답이에요!" })),

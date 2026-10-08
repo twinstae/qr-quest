@@ -87,7 +87,13 @@ function StepScreen({ qrToken }: { qrToken: string }) {
 
         setState(
           outcome.kind === "CORRECT"
-            ? { status: "correct", reveal: outcome.reveal, message: outcome.message }
+            ? {
+                status: "correct",
+                reveal: outcome.reveal,
+                message: outcome.message,
+                // 완주하면 서버가 인증번호를 함께 준다 — 그때는 다음 단서가 없다.
+                completed: outcome.completionCode !== undefined,
+              }
             : {
                 status: "incorrect",
                 message: outcome.kind === "INCORRECT" ? outcome.message : "다시 시도해주세요.",
