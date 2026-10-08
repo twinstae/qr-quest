@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import * as Field from "@/components/ui/field.tsx";
 import { resolveCorrectMessage, type PublicAnswerSpec, type StepKind } from "@/domain/step.ts";
+import type { Theme } from "@/domain/theme.ts";
 import { css } from "styled-system/css";
 import { Flex, VStack } from "styled-system/jsx";
 
@@ -37,7 +38,14 @@ const noteClass = css({
  * 누를 수 없게(disabled) 그린다 — 제출 로직·세션·정답 판정은 전혀 없고, 참가자용 입력
  * (SimpleForm)을 그대로 넣으면 편집기 안에 중첩 <form>이 생긴다.
  */
-export function StepPreviewPanel({ kind }: { kind: StepKind }) {
+export function StepPreviewPanel({
+  kind,
+  theme = null,
+}: {
+  kind: StepKind;
+  /** CASE 테마. 참가자 화면처럼 휴대폰 화면에 입힌다. */
+  theme?: Theme | null;
+}) {
   const { watch } = useFormContext<StepEditorFormValues>();
   const values = watch();
   const [replay, setReplay] = useState(0);
@@ -74,7 +82,7 @@ export function StepPreviewPanel({ kind }: { kind: StepKind }) {
         ))}
       </Flex>
 
-      <PhoneMockup>
+      <PhoneMockup theme={theme}>
         {screen === "find" && (
           // 진행 화면(/play)에서 이 QR을 찾을 차례에 보이는 안내 — 기본 문구도 참가자와 같다.
           <QrScanPanel

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
 
 import { DialogShell } from "@/components/domains/dialog-shell.tsx";
@@ -16,6 +16,7 @@ import { Spinner } from "@/components/ui/spinner.tsx";
 import type { StepKind } from "@/domain/step.ts";
 import { getApiClient } from "@/lib/api-client";
 import { caseKeys } from "@/queries/cases.ts";
+import { caseThemeQueryOptions } from "@/queries/themes.ts";
 import { styled } from "styled-system/jsx";
 
 const LoadingBody = styled("div", {
@@ -32,6 +33,8 @@ const DEFAULT_STEP_KIND: StepKind = "QR";
 export function CreateStepDialog({ caseId }: { caseId: string }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  // 미리보기도 참가자 화면처럼 CASE 테마를 입힌다.
+  const { data: theme } = useQuery(caseThemeQueryOptions(caseId));
 
   return (
     <DialogShell
@@ -49,7 +52,7 @@ export function CreateStepDialog({ caseId }: { caseId: string }) {
         kind={DEFAULT_STEP_KIND}
         submitLabel="단계 만들기"
         defaultValues={EMPTY_STEP_EDITOR_VALUES}
-        preview={<StepPreviewPanel kind={DEFAULT_STEP_KIND} />}
+        preview={<StepPreviewPanel kind={DEFAULT_STEP_KIND} theme={theme} />}
         onCancel={() => setOpen(false)}
         onSubmit={async (payload) => {
           const client = getApiClient();
@@ -68,6 +71,11 @@ export function EditStepDialog({ caseId, stepId }: { caseId?: string; stepId: st
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState<LoadedStep | null>(null);
   const queryClient = useQueryClient();
+  // 미리보기도 참가자 화면처럼 CASE 테마를 입힌다.
+  const { data: theme } = useQuery({
+    ...caseThemeQueryOptions(caseId ?? ""),
+    enabled: caseId !== undefined,
+  });
 
   async function handleOpenChange(next: boolean) {
     setOpen(next);
@@ -119,7 +127,7 @@ export function EditStepDialog({ caseId, stepId }: { caseId?: string; stepId: st
           kind={loaded.kind}
           submitLabel="저장"
           defaultValues={loaded.defaultValues}
-          preview={<StepPreviewPanel kind={loaded.kind} />}
+          preview={<StepPreviewPanel kind={loaded.kind} theme={theme} />}
           onCancel={() => setOpen(false)}
           onSubmit={async (payload) => {
             const client = getApiClient();

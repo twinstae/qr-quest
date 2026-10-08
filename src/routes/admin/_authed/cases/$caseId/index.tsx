@@ -215,6 +215,7 @@ function RouteComponent() {
         {/* 시작 QR은 단계가 아니라 CASE 자산이라 단계가 없어도 항상 맨 위에 보여준다. */}
         <StartQrCard entryToken={caseItem.entryToken} prologueEnabled={caseItem.prologueEnabled}>
           <EditStartScreenDialog
+            caseId={caseItem.id}
             caseNumber={caseItem.number}
             thumbnail={caseItem.thumbnail}
             defaultValues={{

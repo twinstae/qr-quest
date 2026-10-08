@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useWatch } from "react-hook-form";
 import { Pencil } from "lucide-react";
 import * as v from "valibot";
@@ -13,6 +14,8 @@ import { Button } from "@/components/ui/button.tsx";
 import * as Fieldset from "@/components/ui/fieldset.tsx";
 import { DEFAULT_START_BUTTON_LABEL } from "@/domain/case.ts";
 import type { Media } from "@/domain/step.ts";
+import type { Theme } from "@/domain/theme.ts";
+import { caseThemeQueryOptions } from "@/queries/themes.ts";
 import { css } from "styled-system/css";
 
 /** 시작 화면에서 관리자가 고칠 수 있는 문구. */
@@ -51,7 +54,15 @@ const previewClass = css({
   top: "0",
 });
 
-function StartScreenPreview({ caseNumber, thumbnail }: { caseNumber: number; thumbnail?: Media }) {
+function StartScreenPreview({
+  caseNumber,
+  thumbnail,
+  theme,
+}: {
+  caseNumber: number;
+  thumbnail?: Media;
+  theme: Theme | null;
+}) {
   // 입력은 문자열이다 — 숫자가 아니면 미리보기에서는 시간 줄을 숨긴다.
   const values = useWatch() as Omit<StartScreenFields, "estimatedMinutes"> & {
     estimatedMinutes: string;
@@ -63,7 +74,7 @@ function StartScreenPreview({ caseNumber, thumbnail }: { caseNumber: number; thu
       <p className={css({ textStyle: "xs", fontWeight: "semibold", color: "fg.subtle", mb: "2" })}>
         참가자가 보는 화면
       </p>
-      <PhoneMockup>
+      <PhoneMockup theme={theme}>
         <StartScreenCard
           caseInfo={{
             number: caseNumber,
@@ -83,12 +94,15 @@ function StartScreenPreview({ caseNumber, thumbnail }: { caseNumber: number; thu
 export function StartScreenEditorForm({
   caseNumber,
   thumbnail,
+  theme = null,
   defaultValues,
   onSubmit,
   onCancel,
 }: {
   caseNumber: number;
   thumbnail?: Media;
+  /** CASE 테마. 참가자 화면처럼 미리보기에 입힌다. */
+  theme?: Theme | null;
   defaultValues: StartScreenFields;
   onSubmit: (values: StartScreenFields) => Promise<void>;
   onCancel?: () => void;
@@ -133,7 +147,7 @@ export function StartScreenEditorForm({
         </Fieldset.Root>
 
         <div className={previewClass}>
-          <StartScreenPreview caseNumber={caseNumber} thumbnail={thumbnail} />
+          <StartScreenPreview caseNumber={caseNumber} thumbnail={thumbnail} theme={theme} />
         </div>
       </div>
     </SimpleForm>
@@ -142,17 +156,20 @@ export function StartScreenEditorForm({
 
 /** CASE 상세 화면의 [시작 화면 편집] — 폼과 오른쪽 미리보기를 한 다이얼로그에 띄운다. */
 export function EditStartScreenDialog({
+  caseId,
   caseNumber,
   thumbnail,
   defaultValues,
   save,
 }: {
+  caseId: string;
   caseNumber: number;
   thumbnail?: Media;
   defaultValues: StartScreenFields;
   save: (values: StartScreenFields) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
+  const { data: theme } = useQuery(caseThemeQueryOptions(caseId));
 
   return (
     <DialogShell
@@ -169,6 +186,7 @@ export function EditStartScreenDialog({
       <StartScreenEditorForm
         caseNumber={caseNumber}
         thumbnail={thumbnail}
+        theme={theme}
         defaultValues={defaultValues}
         onCancel={() => setOpen(false)}
         onSubmit={async (values) => {

@@ -190,4 +190,38 @@ describe("StepPreviewPanel", () => {
       assertions.not.visible(query.within(preview, query.button("다음 단서 찾기"))),
     );
   });
+
+  it("CASE 테마를 넘기면 휴대폰 화면에 참가자 화면처럼 입힌다", async () => {
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="QR"
+          submitLabel="저장"
+          defaultValues={EMPTY_STEP_EDITOR_VALUES}
+          onSubmit={noSubmit}
+          preview={
+            <StepPreviewPanel
+              kind="QR"
+              theme={{
+                id: "theme-1",
+                name: "팔레스타인",
+                palette: "green",
+                headingFont: "noto-serif-kr",
+                bodyFont: "gowun-dodum",
+                background: { kind: "image", src: "https://example.com/bg.webp", alt: "" },
+                backgroundDim: 40,
+              }}
+            />
+          }
+        />,
+      ),
+      assertions.visible(query.within(preview, query.heading("제목 없음"))),
+    );
+
+    const phone = screen.getByRole("group", { name: "휴대폰 화면" });
+    expect(phone.querySelector("[data-theme-background]")).not.toBeNull();
+    expect(getComputedStyle(screen.getByRole("heading", { name: "제목 없음" })).fontFamily).toBe(
+      '"Noto Serif KR", serif',
+    );
+  });
 });
