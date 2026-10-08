@@ -131,6 +131,17 @@ export function ChoiceFields({
   disabled?: boolean;
 }) {
   const [selected, setSelected] = useState<string[]>([]);
+  // 서버가 답을 판정하는 동안 눌렸다는 걸 보여준다 — 단답형의 SubmitButton과 같은 모습.
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submit() {
+    setSubmitting(true);
+    try {
+      await onSubmit({ type: "CHOICE", choiceIds: selected });
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   function toggle(id: string) {
     setSelected((previous) => {
@@ -167,7 +178,8 @@ export function ChoiceFields({
         size="lg"
         width="full"
         disabled={disabled || selected.length === 0}
-        onClick={() => onSubmit({ type: "CHOICE", choiceIds: selected })}
+        loading={submitting}
+        onClick={submit}
       >
         제출하기
       </Button>

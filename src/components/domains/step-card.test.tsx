@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { actions, assertions, given, query, runSiheom } from "@siheom/react";
+import {
+  actions,
+  assertions,
+  effect,
+  given,
+  query,
+  runSiheom,
+  withFakeTimers,
+} from "@siheom/react";
 
 import { StepCardForm, type StepCardData } from "./step-card.tsx";
 import type { AnswerSubmission } from "@/domain/step.ts";
@@ -102,6 +110,52 @@ describe("StepCardForm > SINGLE_CHOICE", () => {
     await runSiheom(
       given.render(<StepCardForm step={step} onSubmit={noSubmit} onRequestHint={noHint} />),
       assertions.disabled(query.button("제출하기")),
+    );
+  });
+});
+
+describe("StepCardForm > 제출 중 표시", () => {
+  const slowSubmit = () => new Promise<void>((resolve) => setTimeout(resolve, 200));
+
+  it("객관식 제출이 오래 걸리는 동안 제출하기 버튼이 로딩 상태로 눌리지 않는다", async () => {
+    const step = baseStep({
+      answerSpec: { type: "SINGLE_CHOICE", choices: [{ id: "A", label: "창가 쪽 서가" }] },
+    });
+
+    await runSiheom(
+      given.render(<StepCardForm step={step} onSubmit={slowSubmit} onRequestHint={noHint} />),
+      actions.click(query.button("A. 창가 쪽 서가")),
+      withFakeTimers(
+        actions.click(query.button("제출하기")),
+        // 로딩 중에는 버튼 이름이 스피너로 바뀌므로 이름 없이 찾는다.
+        assertions.disabled(query.button(/^$|제출하기/)),
+        effect.elapsed(200),
+        assertions.visible(query.button("제출하기")),
+      ),
+    );
+
+    const submit = [...document.querySelectorAll("button")].find((button) =>
+      button.textContent?.includes("제출하기"),
+    )!;
+    expect(submit.disabled).toBe(false);
+  });
+
+  it("단답형 제출이 오래 걸리는 동안에도 제출하기 버튼이 로딩 상태다", async () => {
+    await runSiheom(
+      given.render(
+        <StepCardForm
+          step={baseStep({ answerSpec: { type: "SHORT_TEXT" } })}
+          onSubmit={slowSubmit}
+          onRequestHint={noHint}
+        />,
+      ),
+      actions.fill(query.textbox("정답"), "사과"),
+      withFakeTimers(
+        actions.click(query.button("제출하기")),
+        assertions.disabled(query.button(/^$|제출하기/)),
+        effect.elapsed(200),
+        assertions.visible(query.button("제출하기")),
+      ),
     );
   });
 });
