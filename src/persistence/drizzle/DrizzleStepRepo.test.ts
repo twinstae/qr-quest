@@ -42,6 +42,17 @@ describe("createDrizzleStepRepo", () => {
     expect(found?.hint).toEqual(TEST_STEP.hint);
   });
 
+  it("찾기 화면 문구를 저장하고 그대로 읽는다", async () => {
+    const { db, caseRepo, stepRepo } = await setup();
+    await using _db = db;
+    const created = await caseRepo.create(caseInput());
+    const findScreen = { title: "책방지기에게 받아주세요", guide: "받았다면\n버튼을 눌러주세요" };
+
+    const step = await stepRepo.create(stepInput({ caseId: created.id, findScreen }));
+
+    expect((await stepRepo.getById(step.id))?.findScreen).toEqual(findScreen);
+  });
+
   it("QR 토큰이 없는 단계는 null로 읽힌다 (JSON의 undefined로 새지 않는다)", async () => {
     const { db, caseRepo, stepRepo } = await setup();
     await using _db = db;

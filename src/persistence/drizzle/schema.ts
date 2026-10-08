@@ -11,7 +11,14 @@ import {
 
 import type { CaseStatus } from "../../domain/case.ts";
 import type { PlaySessionStatus } from "../../domain/playSession.ts";
-import type { AnswerSpec, Media, RevealPreset, SoundKey, StepKind } from "../../domain/step.ts";
+import type {
+  AnswerSpec,
+  FindScreen,
+  Media,
+  RevealPreset,
+  SoundKey,
+  StepKind,
+} from "../../domain/step.ts";
 import type { ThemeFont, ThemePalette } from "../../domain/theme.ts";
 
 /** 정답 시 공개되는 것. 화면이 그대로 렌더할 수 있게 한 덩어리로 저장한다. */
@@ -88,6 +95,8 @@ export const steps = pgTable(
     hint: text("hint"),
     correctMessage: text("correct_message"),
     wrongMessage: text("wrong_message"),
+    /** 이 단계의 QR을 찾을 차례에 보여줄 문구. 없으면 화면이 기본 문구를 쓴다. */
+    findScreen: jsonb("find_screen").$type<FindScreen>(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },

@@ -512,6 +512,43 @@ describe("getPlayProgress", () => {
     });
   });
 
+  it("에필로그에 찾기 화면 문구를 적어 두면 에필로그 차례에 그 문구를 함께 돌려준다", async () => {
+    const session = activeSession({ currentStepOrder: FINAL_STEP.order });
+    const findScreen = {
+      title: "마지막 에필로그 QR은 책방79-1 책방지기에게 받아주세요.",
+      guide: "큐알을 이미 받으셨다면 아래 버튼을 눌러주세요",
+    };
+    const ctx = contextWith({
+      steps: [INTRO_STEP, TEST_STEP, { ...FINAL_STEP, findScreen }, CLOSING_STEP],
+      sessions: [session],
+    });
+    await markSolved(ctx, session.id, TEST_STEP.id);
+
+    const result = await getPlayProgress(ctx, {
+      caseId: TEST_CASE.id,
+      sessionTokens: [session.token],
+    });
+
+    expect(result).toMatchObject({ kind: "WAITING", stepName: FINAL_STEP.name, findScreen });
+  });
+
+  it("순차 진행에서는 지금 찾을 문제의 찾기 화면 문구를 돌려준다", async () => {
+    const session = activeSession({ currentStepOrder: TEST_STEP.order });
+    const findScreen = { title: "QR 1은 계단 옆에 있어요" };
+    const ctx = contextWith({
+      cases: { [TEST_CASE.id]: { ...TEST_CASE, freeOrder: false } },
+      steps: [INTRO_STEP, { ...TEST_STEP, findScreen }, FINAL_STEP, CLOSING_STEP],
+      sessions: [session],
+    });
+
+    const result = await getPlayProgress(ctx, {
+      caseId: TEST_CASE.id,
+      sessionTokens: [session.token],
+    });
+
+    expect(result).toMatchObject({ kind: "WAITING", stepName: TEST_STEP.name, findScreen });
+  });
+
   it("완료 후에는 완료 코드와 종결 내용을 돌려준다", async () => {
     const session = activeSession({
       status: "COMPLETED",

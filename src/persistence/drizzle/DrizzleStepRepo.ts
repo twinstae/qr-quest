@@ -24,6 +24,7 @@ function toDomain(row: typeof steps.$inferSelect): Step {
     hint: row.hint ?? undefined,
     correctMessage: row.correctMessage ?? undefined,
     wrongMessage: row.wrongMessage ?? undefined,
+    findScreen: row.findScreen ?? undefined,
   };
 }
 
@@ -44,6 +45,7 @@ function toColumns(input: Omit<Step, "id" | "caseId">) {
     hint: input.hint ?? null,
     correctMessage: input.correctMessage ?? null,
     wrongMessage: input.wrongMessage ?? null,
+    findScreen: input.findScreen ?? null,
   };
 }
 

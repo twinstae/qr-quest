@@ -5,6 +5,7 @@ import { StepPreviewPanel } from "./step-preview-panel.tsx";
 import {
   EMPTY_STEP_EDITOR_VALUES,
   StepEditorForm,
+  toStepRequestBody,
   type StepEditorSubmit,
 } from "./step-editor-form.tsx";
 
@@ -247,6 +248,63 @@ describe("StepEditorForm > 정답/오답 메시지", () => {
       ),
       assertions.not.visible(query.textbox("정답 메시지")),
       assertions.not.visible(query.textbox("오답 메시지")),
+    );
+  });
+});
+
+describe("StepEditorForm > QR 찾기 화면 문구", () => {
+  it("비우면 기본 문구를 쓰고, 채우면 그 단계를 찾을 차례에 보여줄 문구로 저장된다", async () => {
+    let submitted: StepEditorSubmit | undefined;
+
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="FINAL"
+          submitLabel="저장"
+          defaultValues={{ ...EMPTY_STEP_EDITOR_VALUES, name: "에필로그", title: "제목" }}
+          onSubmit={async (payload) => {
+            submitted = payload;
+          }}
+        />,
+      ),
+      actions.fill(query.textbox("정답"), "사과"),
+      actions.fill(
+        query.textbox("찾기 화면 제목"),
+        "마지막 에필로그 QR은 책방79-1 책방지기에게 받아주세요.",
+      ),
+      actions.fill(
+        query.textbox("찾기 화면 안내"),
+        "큐알을 이미 받으셨다면 아래 버튼을 눌러주세요",
+      ),
+      actions.click(query.button("저장")),
+    );
+
+    expect(submitted && toStepRequestBody(submitted).findScreen).toEqual({
+      title: "마지막 에필로그 QR은 책방79-1 책방지기에게 받아주세요.",
+      guide: "큐알을 이미 받으셨다면 아래 버튼을 눌러주세요",
+    });
+  });
+
+  it("비워 두면 문구를 저장하지 않는다", () => {
+    const body = toStepRequestBody({
+      kind: "QR",
+      values: { ...EMPTY_STEP_EDITOR_VALUES, findTitle: " ", findGuide: "" },
+    } as StepEditorSubmit);
+
+    expect(body.findScreen).toBeUndefined();
+  });
+
+  it("소개 단계는 QR이 없으니 찾기 화면 문구 입력을 보여주지 않는다", async () => {
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="INTRO"
+          submitLabel="저장"
+          defaultValues={EMPTY_STEP_EDITOR_VALUES}
+          onSubmit={noSubmit}
+        />,
+      ),
+      assertions.not.visible(query.textbox("찾기 화면 제목")),
     );
   });
 });

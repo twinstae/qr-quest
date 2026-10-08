@@ -12,6 +12,7 @@ import {
   requiresQrToken,
   type AnswerSpec,
   type Choice,
+  type FindScreen,
   type Media,
   type MediaKind,
   type SoundKey,
@@ -91,6 +92,8 @@ const StepEditorEntries = {
   hint: v.string(),
   correctMessage: v.string(),
   wrongMessage: v.string(),
+  findTitle: v.string(),
+  findGuide: v.string(),
   revealText: v.string(),
   revealMedia: v.optional(ImageValueSchema),
   revealPreset: v.picklist(REVEAL_PRESETS),
@@ -127,6 +130,8 @@ export const EMPTY_STEP_EDITOR_VALUES: StepEditorDefaultValues = {
   hint: "",
   correctMessage: "",
   wrongMessage: "",
+  findTitle: "",
+  findGuide: "",
   revealText: "",
   revealMedia: undefined,
   revealPreset: "FADE_UP",
@@ -286,6 +291,17 @@ export function mediaFromValue(
   return value ? toMedia(value.src, value.alt, value.kind) : undefined;
 }
 
+/** 찾기 화면 문구 → 저장 값. 둘 다 비면 저장하지 않아 화면이 기본 문구를 쓴다. */
+function toFindScreen(values: Pick<StepEditorFormValues, "findTitle" | "findGuide">) {
+  const title = values.findTitle.trim();
+  const guide = values.findGuide.trim();
+  if (!title && !guide) return undefined;
+  const findScreen: FindScreen = {};
+  if (title) findScreen.title = title;
+  if (guide) findScreen.guide = guide;
+  return findScreen;
+}
+
 export type StepEditorSubmit = {
   kind: StepKind;
   values: StepEditorFormValues;
@@ -322,6 +338,7 @@ export function toStepRequestBody(payload: StepEditorSubmit) {
     hint: isQuestion ? values.hint || undefined : undefined,
     correctMessage: isQuestion ? values.correctMessage || undefined : undefined,
     wrongMessage: isQuestion ? values.wrongMessage || undefined : undefined,
+    findScreen: isQuestion ? toFindScreen(values) : undefined,
   };
 }
 
@@ -538,6 +555,27 @@ export function StepEditorForm({
               <SimpleImageUpload name="media" label="이미지" allowVideo />
             </Fieldset.Content>
           </Fieldset.Root>
+
+          {isQuestion && (
+            <Fieldset.Root>
+              <Fieldset.Legend>QR 찾기 화면 (선택)</Fieldset.Legend>
+              <Fieldset.HelperText>
+                이 QR을 찾을 차례에 참가자에게 보여줄 문구예요. 비우면 기본 문구를 써요.
+              </Fieldset.HelperText>
+              <Fieldset.Content>
+                <SimpleInput
+                  name="findTitle"
+                  label="찾기 화면 제목"
+                  placeholder="기본: 다음은 (단계 이름) 차례예요"
+                />
+                <SimpleInput
+                  name="findGuide"
+                  label="찾기 화면 안내"
+                  placeholder="예: 큐알을 이미 받으셨다면 아래 버튼을 눌러주세요"
+                />
+              </Fieldset.Content>
+            </Fieldset.Root>
+          )}
 
           {isQuestion && (
             <Fieldset.Root>

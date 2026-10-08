@@ -124,6 +124,11 @@ export const RevealSchema = t.Object({
   sound: t.Optional(t.Union([t.Literal("paper"), t.Literal("radio"), t.Literal("chime")])),
 });
 
+export const FindScreenSchema = t.Object({
+  title: t.Optional(t.String()),
+  guide: t.Optional(t.String()),
+});
+
 export const StepFieldsSchema = {
   name: t.String(),
   kind: StepKindSchema,
@@ -137,6 +142,7 @@ export const StepFieldsSchema = {
   hint: t.Optional(t.String()),
   correctMessage: t.Optional(t.String()),
   wrongMessage: t.Optional(t.String()),
+  findScreen: t.Optional(FindScreenSchema),
 };
 
 export const StepDisplaySchema = t.Object({

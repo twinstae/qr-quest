@@ -5,6 +5,7 @@ import {
   requiresQrToken,
   toPublicAnswerSpec,
   type AnswerSpec,
+  type FindScreen,
   type Media,
   type PublicAnswerSpec,
   type Step,
@@ -58,6 +59,7 @@ export type StepEditorInput = {
   hint?: string;
   correctMessage?: string;
   wrongMessage?: string;
+  findScreen?: FindScreen;
 };
 
 export type StepSummary = {
@@ -119,6 +121,7 @@ export async function createStep(
     hint: input.hint,
     correctMessage: input.correctMessage,
     wrongMessage: input.wrongMessage,
+    findScreen: input.findScreen,
   });
 }
 
@@ -151,5 +154,6 @@ export async function updateStep(
     hint: input.hint,
     correctMessage: input.correctMessage,
     wrongMessage: input.wrongMessage,
+    findScreen: input.findScreen,
   });
 }

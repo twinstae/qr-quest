@@ -38,6 +38,8 @@ const EDIT_VALUES: StepEditorDefaultValues = {
   hint: "표지 안에 답이 있습니다.",
   correctMessage: "",
   wrongMessage: "",
+  findTitle: "",
+  findGuide: "",
   revealText: "새로운 단서가 발견되었습니다.",
   revealMedia: undefined,
   revealPreset: "FADE_UP",

@@ -10,6 +10,7 @@ import {
   resolveCorrectMessage,
   resolveWrongMessage,
   type AnswerSubmission,
+  type FindScreen,
   type Step,
 } from "../domain/step.ts";
 import {
@@ -447,12 +448,14 @@ export type PlayProgressResult =
   /**
    * 다음 QR을 기다리는 중. `stamps`는 스탬프판 동그라미 칸 — 푼 문제에만 도장이 찍혀 있고,
    * `anyOrder`가 true면 남은 문제 QR을 아무 순서로나 찍으면 된다.
+   * `findScreen`은 지금 찾을 단계에 관리자가 적어 둔 안내 문구(자유 진행에서는 없다).
    */
   | {
       kind: "WAITING";
       stepName: string;
       anyOrder: boolean;
       stamps: StepStamp[];
+      findScreen?: FindScreen;
     };
 
 /** `/play/$caseId` 화면이 지금 무엇을 보여줘야 하는지 판단한다. */
@@ -492,13 +495,22 @@ export async function getPlayProgress(
   const epilogue = tour.plan.epilogue;
   const allProblemsSolved = tour.plan.problems.every((problem) => tour.solved.has(problem.id));
   if (epilogue && allProblemsSolved && !tour.solved.has(epilogue.id)) {
-    return { kind: "WAITING", stepName: epilogue.name, anyOrder: false, stamps };
+    return {
+      kind: "WAITING",
+      stepName: epilogue.name,
+      anyOrder: false,
+      stamps,
+      findScreen: epilogue.findScreen,
+    };
   }
+
+  if (tour.options.freeOrder) return { kind: "WAITING", stepName: "", anyOrder: true, stamps };
 
   return {
     kind: "WAITING",
-    stepName: tour.options.freeOrder ? "" : (current?.name ?? ""),
-    anyOrder: tour.options.freeOrder,
+    stepName: current?.name ?? "",
+    anyOrder: false,
     stamps,
+    findScreen: current?.findScreen,
   };
 }

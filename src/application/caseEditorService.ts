@@ -72,6 +72,7 @@ export async function cloneCase(ctx: AppContext, caseId: string): Promise<Case> 
       hint: step.hint,
       correctMessage: step.correctMessage,
       wrongMessage: step.wrongMessage,
+      findScreen: step.findScreen,
     });
   }
 

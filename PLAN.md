@@ -97,6 +97,11 @@ Phase 2(13·14)가 끝나면 사장님이 개발자 없이 CASE 02를 만들 수
       Cache Storage·IndexedDB는 `resetDevice`가 비운다. 관리자 로그인(better-auth 쿠키)은 남는다.
     - QR은 CASE 목록 아래 `ResetDeviceQrCard`에서 내려받는다.
 
+27. [ ] QA 피드백 2 (2026-10-08)
+    - [x] 완주한 정답 화면(에필로그까지 끝남)은 "다음 단서 찾기" 대신 "완료하기"
+    - [x] 단계마다 QR 찾기 화면 문구(제목·안내)를 바꾼다 — 예: 에필로그 "책방지기에게 받아주세요".
+          순차 진행·에필로그 차례에만 쓰고, 자유 진행의 "남은 문제 QR"은 기본 문구. `steps.find_screen`(jsonb), 마이그레이션 `0005`.
+
 남은 일 / 새로 발견한 것:
 
 - [x] Panda v2 업그레이드 마이그레이션 (Vercel `bun run build` 46 MISSING_EXPORT 복구)

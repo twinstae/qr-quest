@@ -17,7 +17,7 @@ import {
   readSessionTokens,
   sessionCookieHeader,
 } from "../../lib/play-session-cookie.ts";
-import { RevealSchema, StepDisplaySchema } from "./schemas.ts";
+import { FindScreenSchema, RevealSchema, StepDisplaySchema } from "./schemas.ts";
 
 // 참가 세션 쿠키 이름/병합 규칙은 한 기기에서 여러 CASE를 동시에 이어서 하기 때문에
 // src/lib/play-session-cookie.ts 한 곳에서 정의하고 여기서는 가져다 쓴다.
@@ -229,6 +229,8 @@ export function createPlayRoutes(ctx: AppContext) {
               anyOrder: t.Boolean(),
               // 스탬프판 동그라미 칸 — 푼 문제에만 도장이 찍혀 있다.
               stamps: t.Array(StampSchema),
+              // 지금 찾을 단계에 관리자가 적어 둔 찾기 화면 문구(자유 진행에서는 없다).
+              findScreen: t.Optional(FindScreenSchema),
             }),
           ]),
         },

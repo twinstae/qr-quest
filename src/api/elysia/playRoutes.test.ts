@@ -333,4 +333,24 @@ describe("GET /api/play/cases/:caseId/progress", () => {
     expect(payload.kind).toBe("NARRATIVE");
     expect(payload.step.id).toBe(INTRO_STEP.id);
   });
+
+  it("에필로그 차례에는 관리자가 적어 둔 찾기 화면 문구까지 내려준다", async () => {
+    const findScreen = {
+      title: "책방지기에게 받아주세요",
+      guide: "받았다면 아래 버튼을 눌러주세요",
+    };
+    const app = appWith([INTRO_STEP, TEST_STEP, { ...FINAL_STEP, findScreen }]);
+    const session = await startSession(app);
+    const client = rawClient(app);
+    await client.post(`/api/play/steps/${INTRO_STEP.id}/advance`, {}, session.token);
+    await client.post(
+      `/api/play/steps/${TEST_STEP.id}/submit-answer`,
+      { answer: "이민열, 김도균" },
+      session.token,
+    );
+
+    const response = await client.get(`/api/play/cases/${TEST_CASE.id}/progress`, session.token);
+
+    expect(await response.json()).toMatchObject({ kind: "WAITING", findScreen });
+  });
 });

@@ -30,6 +30,24 @@ describe("QrScanPanel", () => {
     expect(scanned).toEqual([{ kind: "step", qrToken: "QR02" }]);
   });
 
+  it("관리자가 적어 둔 찾기 화면 문구가 있으면 기본 안내 대신 보여준다", async () => {
+    await runSiheom(
+      given.render(
+        <QrScanPanel
+          scanner={FakeScanner}
+          stepName="에필로그"
+          title="마지막 에필로그 QR은 책방지기에게 받아주세요."
+          guide="큐알을 이미 받으셨다면 아래 버튼을 눌러주세요"
+          onScanned={() => {}}
+        />,
+      ),
+      assertions.visible(query.heading("마지막 에필로그 QR은 책방지기에게 받아주세요.")),
+      assertions.not.visible(query.heading("다음은 에필로그 차례예요")),
+    );
+
+    expect(document.body.textContent).toContain("큐알을 이미 받으셨다면 아래 버튼을 눌러주세요");
+  });
+
   it("사건과 상관없는 QR이면 넘어가지 않고 다시 찾도록 안내한다", async () => {
     const scanned: ScannedQr[] = [];
 

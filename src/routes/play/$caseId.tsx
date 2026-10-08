@@ -95,6 +95,8 @@ function PlayScreen({ caseId }: { caseId: string }) {
       <QrScanPanel
         stepName={progress.stepName}
         anyOrder={progress.anyOrder}
+        title={progress.findScreen?.title}
+        guide={progress.findScreen?.guide}
         onScanned={(target) => {
           if (target.kind === "start") {
             navigate({ to: "/s/$entryToken", params: { entryToken: target.entryToken } });
