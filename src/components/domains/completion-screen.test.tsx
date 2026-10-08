@@ -9,7 +9,7 @@ function findText(text: string): Element | undefined {
 }
 
 describe("CompletionScreen", () => {
-  it("인증번호를 직원 안내 문구와 함께 보여준다", async () => {
+  it("인증번호를 책방지기 안내 문구와 함께 보여준다", async () => {
     await runSiheom(
       given.render(
         <CompletionScreen
@@ -24,7 +24,7 @@ describe("CompletionScreen", () => {
 
     // 화면에서 인증번호로 가는 순서: 라벨 → 번호 → 직원 안내.
     expect(findText("완료 인증번호")).toBeDefined();
-    expect(findText("직원에게 이 번호를 보여주세요")).toBeDefined();
+    expect(findText("책방지기에게 이 번호를 보여주세요")).toBeDefined();
   });
 
   it("인증번호가 화면에서 가장 큰 글자다", async () => {

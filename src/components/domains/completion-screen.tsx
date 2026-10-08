@@ -7,7 +7,7 @@ import { VStack } from "styled-system/jsx";
 /**
  * FINAL 정답 직후와, 완료한 세션으로 재진입했을 때 모두 이 화면을 보여준다.
  *
- * 이 화면의 유일한 목적은 **직원이 1초에 인증번호를 읽는 것**이다(요구 14).
+ * 이 화면의 유일한 목적은 **책방지기가 1초에 인증번호를 읽는 것**이다(요구 14).
  * 그래서 인증번호가 화면에서 가장 큰 글자이고, 나머지 정보는 그 아래 작게 둔다.
  */
 export function CompletionScreen({
@@ -68,7 +68,7 @@ export function CompletionScreen({
               <p className={css({ textStyle: "sm", color: "fg.muted", mb: "2" })}>{progressText}</p>
             )}
             <p className={css({ textStyle: "xs", color: "fg.subtle" })}>
-              직원에게 이 번호를 보여주세요
+              책방지기에게 이 번호를 보여주세요
             </p>
           </Card.Body>
         )}
