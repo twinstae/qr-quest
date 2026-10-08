@@ -61,6 +61,7 @@ export function QrScanPanel({
   title,
   guide,
   hints = [],
+  disabled = false,
   onScanned,
   scanner: Scanner = LazyScanner,
 }: {
@@ -72,6 +73,8 @@ export function QrScanPanel({
   guide?: string;
   /** 지금 찾을 QR의 위치 힌트. 비어 있으면 힌트 칸을 숨긴다. */
   hints?: FindHint[];
+  /** 관리자 미리보기 — 모양만 보여주고 카메라는 켜지 않는다. */
+  disabled?: boolean;
   onScanned: (target: Exclude<ScannedQr, { kind: "unknown" }>) => void;
   /** 기본은 실제 카메라 스캐너(필요할 때 불러옴). */
   scanner?: ScannerComponent;
@@ -167,6 +170,7 @@ export function QrScanPanel({
             <Button
               size="lg"
               width="full"
+              disabled={disabled}
               onClick={() => {
                 setMessage("");
                 setOpen(true);

@@ -8,6 +8,8 @@ import {
   type StepEditorFormValues,
 } from "@/components/domains/step-editor-form.tsx";
 import { RevealPanel } from "@/components/domains/reveal-panel.tsx";
+import { PhoneMockup } from "@/components/domains/phone-mockup.tsx";
+import { QrScanPanel } from "@/components/domains/qr-scan-panel.tsx";
 import { ChoiceFields, StepCardView } from "@/components/domains/step-card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
@@ -15,13 +17,6 @@ import * as Field from "@/components/ui/field.tsx";
 import { resolveCorrectMessage, type PublicAnswerSpec, type StepKind } from "@/domain/step.ts";
 import { css } from "styled-system/css";
 import { Flex, VStack } from "styled-system/jsx";
-
-const sectionLabelClass = css({
-  textStyle: "xs",
-  fontWeight: "semibold",
-  color: "fg.subtle",
-  mb: "2",
-});
 
 const noteClass = css({
   textStyle: "xs",
@@ -45,6 +40,7 @@ export function StepPreviewPanel({ kind }: { kind: StepKind }) {
   const { watch } = useFormContext<StepEditorFormValues>();
   const values = watch();
   const [replay, setReplay] = useState(0);
+  const [screen, setScreen] = useState<PreviewScreen>("question");
 
   const isQuestion = isQuestionKind(kind);
   const answerPreview = isQuestion ? toAnswerPreviewSpec(values) : undefined;
@@ -55,53 +51,103 @@ export function StepPreviewPanel({ kind }: { kind: StepKind }) {
   const revealText =
     values.revealText.trim() || resolveCorrectMessage({ correctMessage: values.correctMessage });
 
-  return (
-    <VStack alignItems="stretch" gap="6" role="region" aria-label="참가자 화면 미리보기">
-      <div>
-        {/* 소개/마무리 단계에는 문제가 없다 — 그때는 관리자가 아는 이름으로 적는다. */}
-        <p className={sectionLabelClass}>{isQuestion ? "문제" : "참가자가 보는 화면"}</p>
-        {/* 참가자 화면과 같은 카드(StepCardView)를 쓴다. 힌트를 고치면 접힌 상태부터 다시 보여준다. */}
-        <StepCardView
-          key={values.hint}
-          step={{
-            name: values.name,
-            title: values.title || "제목 없음",
-            body: values.body,
-            media,
-            question: isQuestion ? values.question : undefined,
-            hasHint: isQuestion && values.hint.trim() !== "",
-          }}
-          onRequestHint={async () => values.hint}
-        >
-          {answerPreview && <AnswerPreview spec={answerPreview} placeholder={values.placeholder} />}
-        </StepCardView>
-        <p className={noteClass}>저장 전 초안이에요 — 여기서 눌러도 저장되지 않아요.</p>
-      </div>
+  const screens = isQuestion
+    ? (["find", "question", "reveal"] as const)
+    : (["question", "reveal"] as const);
 
-      <div>
-        <p className={sectionLabelClass}>정답을 맞히면 보이는 해설</p>
-        {/* 참가자 화면(step-experience.tsx)의 정답 화면과 같은 구성 — 해설 카드와 다음 버튼. */}
-        <VStack gap="4">
-          {/* key에 프리셋을 넣어 프리셋을 바꿀 때마다 연출이 다시 돌게 한다 —
-              연출은 마운트 때 한 번만 재생되므로 key가 바뀌지 않으면 두 번째부터 볼 수 없다. */}
-          <RevealPanel
-            key={`${values.revealPreset}-${replay}`}
-            preset={values.revealPreset}
-            text={revealText}
-            media={revealMedia}
-          />
-          <Button size="lg" width="full" maxWidth="sm" disabled>
-            다음 단서 찾기
+  return (
+    <VStack alignItems="stretch" gap="3" role="region" aria-label="참가자 화면 미리보기">
+      {/* 휴대폰 한 대에 화면 하나씩 — 두 대를 쌓으면 미리보기가 화면보다 길어져 폼 옆에 붙어 있지 못한다. */}
+      <Flex gap="2" justify="center" wrap="wrap">
+        {screens.map((option) => (
+          <Button
+            key={option}
+            type="button"
+            size="xs"
+            variant={screen === option ? "solid" : "outline"}
+            aria-pressed={screen === option}
+            onClick={() => setScreen(option)}
+          >
+            {screenLabel(option, isQuestion)}
           </Button>
-        </VStack>
-        <Flex justify="center" mt="3">
+        ))}
+      </Flex>
+
+      <PhoneMockup>
+        {screen === "find" && (
+          // 진행 화면(/play)에서 이 QR을 찾을 차례에 보이는 안내 — 기본 문구도 참가자와 같다.
+          <QrScanPanel
+            stepName={values.name}
+            title={values.findTitle}
+            guide={values.findGuide}
+            hints={values.findHint.trim() ? [{ stepName: values.name, text: values.findHint }] : []}
+            disabled
+            onScanned={() => {}}
+          />
+        )}
+
+        {screen === "question" && (
+          // 참가자 화면과 같은 카드(StepCardView)를 쓴다. 힌트를 고치면 접힌 상태부터 다시 보여준다.
+          <StepCardView
+            key={values.hint}
+            step={{
+              name: values.name,
+              title: values.title || "제목 없음",
+              body: values.body,
+              media,
+              question: isQuestion ? values.question : undefined,
+              hasHint: isQuestion && values.hint.trim() !== "",
+            }}
+            onRequestHint={async () => values.hint}
+          >
+            {answerPreview && (
+              <AnswerPreview spec={answerPreview} placeholder={values.placeholder} />
+            )}
+          </StepCardView>
+        )}
+
+        {screen === "reveal" && (
+          // 참가자 화면(step-experience.tsx)의 정답 화면과 같은 구성 — 해설 카드와 다음 버튼.
+          <>
+            {/* key에 프리셋을 넣어 프리셋을 바꿀 때마다 연출이 다시 돌게 한다 —
+                연출은 마운트 때 한 번만 재생되므로 key가 바뀌지 않으면 두 번째부터 볼 수 없다. */}
+            <RevealPanel
+              key={`${values.revealPreset}-${replay}`}
+              preset={values.revealPreset}
+              text={revealText}
+              media={revealMedia}
+            />
+            <Button size="lg" width="full" maxWidth="sm" disabled>
+              다음 단서 찾기
+            </Button>
+          </>
+        )}
+      </PhoneMockup>
+
+      <p className={noteClass}>저장 전 초안이에요 — 여기서 눌러도 저장되지 않아요.</p>
+      {screen === "reveal" && (
+        <Flex justify="center">
           <Button size="sm" variant="outline" onClick={() => setReplay((count) => count + 1)}>
-            <RotateCcw /> 다시 보기
+            <RotateCcw /> 연출 다시 보기
           </Button>
         </Flex>
-      </div>
+      )}
     </VStack>
   );
+}
+
+type PreviewScreen = "find" | "question" | "reveal";
+
+function screenLabel(screen: PreviewScreen, isQuestion: boolean): string {
+  switch (screen) {
+    case "find":
+      return "QR 찾기";
+    case "question":
+      // 소개/마무리 단계에는 문제가 없다 — 그때는 관리자가 아는 이름으로 적는다.
+      return isQuestion ? "문제" : "참가자 화면";
+    case "reveal":
+      return "해설";
+  }
 }
 
 const CHOICE_IDS = ["A", "B", "C", "D"] as const;

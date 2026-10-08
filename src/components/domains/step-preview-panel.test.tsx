@@ -39,6 +39,7 @@ describe("StepPreviewPanel", () => {
       actions.fill(query.textbox("제목"), "잃어버린 편지"),
       assertions.visible(query.within(preview, query.heading("잃어버린 편지"))),
       actions.fill(query.textbox("문구"), "서가 세 번째 칸을 보세요."),
+      actions.click(query.within(preview, query.button("해설"))),
       assertions.visible(query.within(preview, query.heading("서가 세 번째 칸을 보세요."))),
     );
   });
@@ -46,6 +47,7 @@ describe("StepPreviewPanel", () => {
   it("단서 문구가 비면 정답 메시지가, 그것도 비면 기본 문구가 단서 자리에 온다", async () => {
     await runSiheom(
       given.render(editor),
+      actions.click(query.within(preview, query.button("해설"))),
       assertions.visible(query.within(preview, query.heading(DEFAULT_CORRECT_MESSAGE))),
       actions.fill(query.textbox("정답 메시지"), "정답이에요!"),
       assertions.visible(query.within(preview, query.heading("정답이에요!"))),
@@ -128,6 +130,7 @@ describe("StepPreviewPanel", () => {
   it("해설 아래에 참가자 화면처럼 다음 단서 찾기 버튼이 보인다(누를 수는 없다)", async () => {
     await runSiheom(
       given.render(editor),
+      actions.click(query.within(preview, query.button("해설"))),
       assertions.disabled(query.within(preview, query.button("다음 단서 찾기"))),
     );
   });
@@ -137,11 +140,37 @@ describe("StepPreviewPanel", () => {
       given.render(editor),
       actions.fill(query.textbox("문제 (선택)"), "문제 첫 줄\n문제 둘째 줄"),
       actions.fill(query.textbox("문구"), "해설 첫 줄\n해설 둘째 줄"),
-      assertions.visible(query.within(preview, query.button("다음 단서 찾기"))),
+      assertions.visible(query.within(preview, query.button("문제"))),
     );
 
     const region = screen.getByRole("region", { name: "참가자 화면 미리보기" });
     expect(region.innerText).toContain("문제 첫 줄\n문제 둘째 줄");
+
+    await runSiheom(actions.click(query.within(preview, query.button("해설"))));
     expect(region.innerText).toContain("해설 첫 줄\n해설 둘째 줄");
+  });
+
+  it("휴대폰 모양 틀 안에 한 화면씩 보여주고, 버튼으로 화면을 바꾼다", async () => {
+    await runSiheom(
+      given.render(editor),
+      assertions.visible(query.within(preview, query.group("휴대폰 화면"))),
+      // 처음에는 문제 화면
+      assertions.visible(query.within(preview, query.heading("제목 없음"))),
+      actions.click(query.within(preview, query.button("해설"))),
+      assertions.visible(query.within(preview, query.heading(DEFAULT_CORRECT_MESSAGE))),
+      assertions.not.visible(query.within(preview, query.heading("제목 없음"))),
+    );
+  });
+
+  it("QR 찾기 화면에 찾기 화면 문구와 위치 힌트가 보이고, 카메라는 켤 수 없다", async () => {
+    await runSiheom(
+      given.render(editor),
+      actions.fill(query.textbox("찾기 화면 제목"), "책방지기에게 받아주세요"),
+      actions.fill(query.textbox("QR 위치 힌트"), "계단 옆 서가"),
+      actions.click(query.within(preview, query.button("QR 찾기"))),
+      assertions.visible(query.within(preview, query.heading("책방지기에게 받아주세요"))),
+      assertions.visible(query.within(preview, query.region("QR 위치 힌트"))),
+      assertions.disabled(query.within(preview, query.button("QR 코드 찍기"))),
+    );
   });
 });

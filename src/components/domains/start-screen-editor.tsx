@@ -4,6 +4,7 @@ import { Pencil } from "lucide-react";
 import * as v from "valibot";
 
 import { DialogShell } from "@/components/domains/dialog-shell.tsx";
+import { PhoneMockup } from "@/components/domains/phone-mockup.tsx";
 import { StartScreenCard } from "@/components/domains/start-screen-card.tsx";
 import { SimpleInput } from "@/components/form/simple-field";
 import { SimpleForm } from "@/components/form/simple-form";
@@ -62,17 +63,19 @@ function StartScreenPreview({ caseNumber, thumbnail }: { caseNumber: number; thu
       <p className={css({ textStyle: "xs", fontWeight: "semibold", color: "fg.subtle", mb: "2" })}>
         참가자가 보는 화면
       </p>
-      <StartScreenCard
-        caseInfo={{
-          number: caseNumber,
-          title: values.title || "제목 없음",
-          teaser: values.teaser,
-          thumbnail,
-          estimatedMinutes: Number.isFinite(minutes) ? minutes : 0,
-          startNote: values.startNote,
-          startButtonLabel: values.startButtonLabel,
-        }}
-      />
+      <PhoneMockup>
+        <StartScreenCard
+          caseInfo={{
+            number: caseNumber,
+            title: values.title || "제목 없음",
+            teaser: values.teaser,
+            thumbnail,
+            estimatedMinutes: Number.isFinite(minutes) ? minutes : 0,
+            startNote: values.startNote,
+            startButtonLabel: values.startButtonLabel,
+          }}
+        />
+      </PhoneMockup>
     </section>
   );
 }

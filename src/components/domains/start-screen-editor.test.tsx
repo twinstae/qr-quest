@@ -36,6 +36,15 @@ describe("StartScreenEditorForm", () => {
     expect(previewText).toContain("예상 소요 시간 약 45분");
   });
 
+  it("미리보기는 휴대폰 모양 틀 안에 보인다", async () => {
+    await runSiheom(
+      given.render(
+        <StartScreenEditorForm caseNumber={1} defaultValues={DEFAULTS} onSubmit={async () => {}} />,
+      ),
+      assertions.visible(query.within(preview, query.group("휴대폰 화면"))),
+    );
+  });
+
   it("저장하면 입력한 값을 넘긴다", async () => {
     let submitted: StartScreenFields | undefined;
 
