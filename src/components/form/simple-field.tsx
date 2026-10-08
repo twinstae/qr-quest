@@ -2,6 +2,7 @@ import { useId, useState, type ComponentProps } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { Input } from "@/components/ui/input.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
 import * as Field from "@/components/ui/field.tsx";
 import * as Checkbox from "@/components/ui/checkbox.tsx";
 import { getApiClient } from "@/lib/api-client.ts";
@@ -75,6 +76,59 @@ export function SimpleInput({
               name={name}
               value={field.value}
               onChange={field.onChange}
+              aria-invalid={isError}
+              aria-describedby={isError ? errorId : hint ? descriptionId : undefined}
+              aria-errormessage={isError ? errorId : undefined}
+              {...props}
+            />
+            {hint && !isError && <Field.HelperText id={descriptionId}>{hint}</Field.HelperText>}
+            {isError && errorMessage && (
+              <Field.ErrorText id={errorId} role="alert" aria-label={errorMessage}>
+                {errorMessage}
+              </Field.ErrorText>
+            )}
+          </Field.Root>
+        );
+      }}
+      control={control}
+      name={name}
+    />
+  );
+}
+
+/**
+ * 여러 줄 입력. 문제·보기·해설처럼 몇 줄씩 쓰는 글에 쓴다 — 줄바꿈이 그대로 저장되고,
+ * 쓰는 만큼 칸이 늘어난다(autoresize).
+ */
+export function SimpleTextarea({
+  name,
+  label,
+  hint,
+  rows = 2,
+  ...props
+}: ComponentProps<typeof Textarea> & { name: string; label: string; hint?: string }) {
+  const { control } = useFormContext();
+
+  const descriptionId = useId();
+  const errorId = useId();
+
+  return (
+    <Controller
+      render={({ field, fieldState }) => {
+        const isError = !!fieldState.error;
+
+        const errorMessage = fieldState.error?.root?.message ?? fieldState.error?.message;
+        return (
+          <Field.Root>
+            <Field.Label>
+              {label} {props.required && <Field.RequiredIndicator />}
+            </Field.Label>
+            <Textarea
+              name={name}
+              value={field.value}
+              onChange={field.onChange}
+              rows={rows}
+              autoresize
               aria-invalid={isError}
               aria-describedby={isError ? errorId : hint ? descriptionId : undefined}
               aria-errormessage={isError ? errorId : undefined}

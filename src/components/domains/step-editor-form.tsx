@@ -3,7 +3,12 @@ import { useFormContext } from "react-hook-form";
 import { Volume2 } from "lucide-react";
 import * as v from "valibot";
 
-import { SimpleCheckbox, SimpleImageUpload, SimpleInput } from "@/components/form/simple-field";
+import {
+  SimpleCheckbox,
+  SimpleImageUpload,
+  SimpleInput,
+  SimpleTextarea,
+} from "@/components/form/simple-field";
 import { SimpleForm } from "@/components/form/simple-form";
 import { SubmitButton } from "@/components/form/submit-button";
 import { Button } from "@/components/ui/button.tsx";
@@ -402,7 +407,7 @@ function AnswerTypeFields() {
           {CHOICE_IDS.map((id) => (
             <div key={id} className={css({ display: "flex", alignItems: "flex-end", gap: "3" })}>
               <div className={css({ flex: "1" })}>
-                <SimpleInput
+                <SimpleTextarea
                   name={`choice${id}Label` as const}
                   label={`보기 ${id}`}
                   placeholder={`보기 ${id} 내용`}
@@ -555,7 +560,7 @@ export function StepEditorForm({
             <Fieldset.Content>
               <SimpleInput name="name" label="단계 이름" placeholder="QR 02" />
               <SimpleInput name="title" label="제목" placeholder="이 QR을 찾으면 보이는 제목" />
-              <SimpleInput name="body" label="본문 (선택)" />
+              <SimpleTextarea name="body" label="본문 (선택)" />
               <SimpleImageUpload name="media" label="이미지" allowVideo />
             </Fieldset.Content>
           </Fieldset.Root>
@@ -572,12 +577,12 @@ export function StepEditorForm({
                   label="찾기 화면 제목"
                   placeholder="기본: 다음은 (단계 이름) 차례예요"
                 />
-                <SimpleInput
+                <SimpleTextarea
                   name="findGuide"
                   label="찾기 화면 안내"
                   placeholder="예: 큐알을 이미 받으셨다면 아래 버튼을 눌러주세요"
                 />
-                <SimpleInput
+                <SimpleTextarea
                   name="findHint"
                   label="QR 위치 힌트"
                   hint="찾기 화면의 힌트 칸에 보여요. 문제를 풀 때 보는 힌트와는 달라요."
@@ -591,7 +596,7 @@ export function StepEditorForm({
             <Fieldset.Root>
               <Fieldset.Legend>문제와 정답</Fieldset.Legend>
               <Fieldset.Content>
-                <SimpleInput name="question" label="문제 (선택)" />
+                <SimpleTextarea name="question" label="문제 (선택)" rows={3} />
               </Fieldset.Content>
               <AnswerTypeFields />
               {answerError && (
@@ -623,7 +628,7 @@ export function StepEditorForm({
           <Fieldset.Root>
             <Fieldset.Legend>정답 시 공개할 해설 (선택)</Fieldset.Legend>
             <Fieldset.Content>
-              <SimpleInput name="revealText" label="문구" />
+              <SimpleTextarea name="revealText" label="문구" rows={3} />
               <SimpleImageUpload name="revealMedia" label="이미지" allowVideo />
             </Fieldset.Content>
             <RevealPresetFields />

@@ -163,6 +163,35 @@ describe("StepEditorForm > 정답 검증", () => {
   });
 });
 
+describe("StepEditorForm > 여러 줄 입력", () => {
+  it("문제·보기·해설은 여러 줄로 써도 줄바꿈이 그대로 저장된다", async () => {
+    let submitted: StepEditorSubmit | undefined;
+
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="QR"
+          submitLabel="저장"
+          defaultValues={{ ...EMPTY_STEP_EDITOR_VALUES, name: "QR 05", title: "제목" }}
+          onSubmit={async (payload) => {
+            submitted = payload;
+          }}
+        />,
+      ),
+      actions.fill(query.textbox("문제 (선택)"), "1948년에 일어난 일은?\n아래에서 고르세요."),
+      actions.click(query.button("객관식(단일 선택)")),
+      actions.fill(query.textbox("보기 A"), "나크바\n(대재앙)"),
+      actions.click(query.checkbox("보기 A를 정답으로 표시")),
+      actions.fill(query.textbox("문구"), "해설 첫 줄\n해설 둘째 줄"),
+      actions.click(query.button("저장")),
+    );
+
+    expect(submitted?.values.question).toBe("1948년에 일어난 일은?\n아래에서 고르세요.");
+    expect(submitted?.values.choiceALabel).toBe("나크바\n(대재앙)");
+    expect(submitted?.values.revealText).toBe("해설 첫 줄\n해설 둘째 줄");
+  });
+});
+
 describe("StepEditorForm > 정답 시 공개할 해설", () => {
   it("정답을 맞히면 보여줄 내용은 단서가 아니라 해설이라고 부른다", async () => {
     await runSiheom(

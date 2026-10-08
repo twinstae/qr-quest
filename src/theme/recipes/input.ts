@@ -1,5 +1,60 @@
 import { defineRecipe } from "@pandacss/dev";
 
+/** 입력칸 모양. 여러 줄 입력(textarea)도 같은 모양을 쓴다. */
+export const inputVariants = {
+  outline: {
+    borderWidth: "1px",
+    borderColor: "gray.outline.border",
+    focusVisibleRing: "inside",
+    _invalid: {
+      focusRingColor: "error",
+      borderColor: "error",
+    },
+  },
+  surface: {
+    bg: "gray.surface.bg",
+    borderWidth: "1px",
+    borderColor: "gray.surface.border",
+    focusVisibleRing: "inside",
+
+    _invalid: {
+      focusRingColor: "error",
+      borderColor: "error",
+    },
+  },
+  subtle: {
+    borderWidth: "1px",
+    borderColor: "transparent",
+    bg: "gray.subtle.bg",
+    color: "gray.subtle.fg",
+    focusVisibleRing: "inside",
+
+    _invalid: {
+      focusRingColor: "error",
+      borderColor: "error",
+    },
+  },
+  flushed: {
+    borderBottomWidth: "1px",
+    borderBottomColor: "gray.outline.border",
+    borderRadius: "0",
+    color: "fg.default",
+    px: "0",
+    _invalid: {
+      borderColor: "error",
+    },
+    _focus: {
+      borderColor: "colorPalette.solid.bg",
+      boxShadowColor: "colorPalette.solid.bg",
+      boxShadow: "0 1px 0 0 var(--shadow-color)",
+      _invalid: {
+        borderColor: "error",
+        boxShadowColor: "error",
+      },
+    },
+  },
+} as const;
+
 export const input = defineRecipe({
   className: "input",
   jsx: ["Input", "Field.Input"],
@@ -23,59 +78,7 @@ export const input = defineRecipe({
     variant: "outline",
   },
   variants: {
-    variant: {
-      outline: {
-        borderWidth: "1px",
-        borderColor: "gray.outline.border",
-        focusVisibleRing: "inside",
-        _invalid: {
-          focusRingColor: "error",
-          borderColor: "error",
-        },
-      },
-      surface: {
-        bg: "gray.surface.bg",
-        borderWidth: "1px",
-        borderColor: "gray.surface.border",
-        focusVisibleRing: "inside",
-
-        _invalid: {
-          focusRingColor: "error",
-          borderColor: "error",
-        },
-      },
-      subtle: {
-        borderWidth: "1px",
-        borderColor: "transparent",
-        bg: "gray.subtle.bg",
-        color: "gray.subtle.fg",
-        focusVisibleRing: "inside",
-
-        _invalid: {
-          focusRingColor: "error",
-          borderColor: "error",
-        },
-      },
-      flushed: {
-        borderBottomWidth: "1px",
-        borderBottomColor: "gray.outline.border",
-        borderRadius: "0",
-        color: "fg.default",
-        px: "0",
-        _invalid: {
-          borderColor: "error",
-        },
-        _focus: {
-          borderColor: "colorPalette.solid.bg",
-          boxShadowColor: "colorPalette.solid.bg",
-          boxShadow: "0 1px 0 0 var(--shadow-color)",
-          _invalid: {
-            borderColor: "error",
-            boxShadowColor: "error",
-          },
-        },
-      },
-    },
+    variant: inputVariants,
     size: {
       "2xs": { textStyle: "xs", px: "1.5", "--input-height": "sizes.7" },
       xs: { textStyle: "sm", px: "2", "--input-height": "sizes.8" },

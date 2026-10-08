@@ -7,6 +7,7 @@ import { dialog } from "./dialog";
 import { field } from "./field";
 import { fieldset } from "./fieldset";
 import { input } from "./input";
+import { textarea } from "./textarea";
 import { table } from "./table";
 import { card } from "./card";
 import { spinner } from "./spinner";
@@ -20,6 +21,7 @@ export const recipes = {
   absoluteCenter,
   spinner,
   input,
+  textarea,
   badge,
   revealAnimation,
 };
