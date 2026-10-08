@@ -48,6 +48,32 @@ describe("QrScanPanel", () => {
     expect(document.body.textContent).toContain("큐알을 이미 받으셨다면 아래 버튼을 눌러주세요");
   });
 
+  it("QR 위치 힌트가 있으면 힌트 칸에 보여준다", async () => {
+    await runSiheom(
+      given.render(
+        <QrScanPanel
+          scanner={FakeScanner}
+          stepName="QR 02"
+          hints={[{ stepName: "QR 02", text: "계단 옆 서가를 보세요" }]}
+          onScanned={() => {}}
+        />,
+      ),
+      assertions.visible(query.region("QR 위치 힌트")),
+    );
+
+    expect(document.querySelector('[aria-label="QR 위치 힌트"]')?.textContent).toContain(
+      "계단 옆 서가를 보세요",
+    );
+  });
+
+  it("QR 위치 힌트가 없으면 힌트 칸을 숨긴다", async () => {
+    await runSiheom(
+      given.render(<QrScanPanel scanner={FakeScanner} stepName="QR 03" onScanned={() => {}} />),
+      assertions.visible(query.heading("다음은 QR 03 차례예요")),
+      assertions.not.visible(query.region("QR 위치 힌트")),
+    );
+  });
+
   it("사건과 상관없는 QR이면 넘어가지 않고 다시 찾도록 안내한다", async () => {
     const scanned: ScannedQr[] = [];
 

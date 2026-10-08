@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, useState, type ComponentType } from "react";
 import type { IDetectedBarcode, IScannerError } from "@yudiel/react-qr-scanner";
-import { Camera, X } from "lucide-react";
+import { Camera, Lightbulb, X } from "lucide-react";
 
+import type { FindHint } from "@/application/playService.ts";
 import { Button } from "@/components/ui/button.tsx";
 import * as Card from "@/components/ui/card.tsx";
 import { parseScannedQr, type ScannedQr } from "@/domain/scannedQr.ts";
@@ -59,6 +60,7 @@ export function QrScanPanel({
   anyOrder = false,
   title,
   guide,
+  hints = [],
   onScanned,
   scanner: Scanner = LazyScanner,
 }: {
@@ -68,6 +70,8 @@ export function QrScanPanel({
   /** 관리자가 적어 둔 찾기 화면 제목·안내. 비어 있으면 기본 문구를 쓴다. */
   title?: string;
   guide?: string;
+  /** 지금 찾을 QR의 위치 힌트. 비어 있으면 힌트 칸을 숨긴다. */
+  hints?: FindHint[];
   onScanned: (target: Exclude<ScannedQr, { kind: "unknown" }>) => void;
   /** 기본은 실제 카메라 스캐너(필요할 때 불러옴). */
   scanner?: ScannerComponent;
@@ -100,6 +104,8 @@ export function QrScanPanel({
               ? "QR 코드가 네모 칸 안에 들어오게 비춰 주세요. 인식되면 바로 다음 화면으로 넘어가요."
               : findGuide}
           </p>
+
+          {!open && hints.length > 0 && <FindHintSection hints={hints} />}
 
           {open ? (
             <section
@@ -172,5 +178,47 @@ export function QrScanPanel({
         </VStack>
       </Card.Body>
     </Card.Root>
+  );
+}
+
+/** QR이 있는 곳을 알려주는 힌트 칸. 여러 QR 중 고를 때(자유 진행)는 어느 QR 힌트인지 이름을 붙인다. */
+function FindHintSection({ hints }: { hints: FindHint[] }) {
+  const named = hints.length > 1;
+
+  return (
+    <section
+      aria-label="QR 위치 힌트"
+      className={css({
+        width: "full",
+        p: "3",
+        borderRadius: "l2",
+        bg: "bg.muted",
+        textAlign: "start",
+      })}
+    >
+      <p
+        className={css({
+          display: "flex",
+          alignItems: "center",
+          gap: "1.5",
+          textStyle: "sm",
+          fontWeight: "semibold",
+          mb: "1",
+        })}
+      >
+        <Lightbulb className={css({ boxSize: "4" })} /> 힌트
+      </p>
+      <ul className={css({ display: "flex", flexDirection: "column", gap: "1" })}>
+        {hints.map((hint) => (
+          <li
+            key={hint.stepName}
+            className={css({ textStyle: "sm", color: "fg.muted", whiteSpace: "pre-line" })}
+          >
+            {named && <strong className={css({ color: "fg.default" })}>{hint.stepName}: </strong>}
+            {hint.text}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

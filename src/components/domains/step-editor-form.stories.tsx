@@ -40,6 +40,7 @@ const EDIT_VALUES: StepEditorDefaultValues = {
   wrongMessage: "",
   findTitle: "",
   findGuide: "",
+  findHint: "",
   revealText: "새로운 단서가 발견되었습니다.",
   revealMedia: undefined,
   revealPreset: "FADE_UP",

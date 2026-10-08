@@ -491,6 +491,7 @@ describe("getPlayProgress", () => {
       stepName: "",
       anyOrder: true,
       stamps: [{ stepId: TEST_STEP.id, name: TEST_STEP.name, solved: false }],
+      hints: [],
     });
   });
 
@@ -509,6 +510,7 @@ describe("getPlayProgress", () => {
       stepName: FINAL_STEP.name,
       anyOrder: false,
       stamps: [{ stepId: TEST_STEP.id, name: TEST_STEP.name, solved: true }],
+      hints: [],
     });
   });
 
@@ -547,6 +549,88 @@ describe("getPlayProgress", () => {
     });
 
     expect(result).toMatchObject({ kind: "WAITING", stepName: TEST_STEP.name, findScreen });
+  });
+
+  it("순차 진행에서는 지금 찾을 문제의 QR 위치 힌트만 돌려준다", async () => {
+    const session = activeSession({ currentStepOrder: TEST_STEP.order });
+    const ctx = contextWith({
+      cases: { [TEST_CASE.id]: { ...TEST_CASE, freeOrder: false } },
+      steps: [
+        INTRO_STEP,
+        { ...TEST_STEP, findScreen: { hint: "계단 옆 서가를 보세요" } },
+        { ...FINAL_STEP, findScreen: { hint: "책방지기에게 물어보세요" } },
+        CLOSING_STEP,
+      ],
+      sessions: [session],
+    });
+
+    const result = await getPlayProgress(ctx, {
+      caseId: TEST_CASE.id,
+      sessionTokens: [session.token],
+    });
+
+    expect(result).toMatchObject({
+      kind: "WAITING",
+      hints: [{ stepName: TEST_STEP.name, text: "계단 옆 서가를 보세요" }],
+    });
+  });
+
+  it("자유 진행에서는 아직 못 푼 문제들의 QR 위치 힌트를 돌려준다", async () => {
+    const solvedStep: Step = {
+      ...TEST_STEP,
+      id: "step-solved",
+      order: 2,
+      name: "QR 02",
+      qrToken: "QRTOKEN02",
+      findScreen: { hint: "이미 푼 문제" },
+    };
+    const session = activeSession({ currentStepOrder: TEST_STEP.order });
+    const ctx = contextWith({
+      steps: [
+        INTRO_STEP,
+        { ...TEST_STEP, findScreen: { hint: "계단 옆 서가를 보세요" } },
+        solvedStep,
+        FINAL_STEP,
+        CLOSING_STEP,
+      ],
+      sessions: [session],
+    });
+    await markSolved(ctx, session.id, solvedStep.id);
+
+    const result = await getPlayProgress(ctx, {
+      caseId: TEST_CASE.id,
+      sessionTokens: [session.token],
+    });
+
+    expect(result).toMatchObject({
+      kind: "WAITING",
+      anyOrder: true,
+      hints: [{ stepName: TEST_STEP.name, text: "계단 옆 서가를 보세요" }],
+    });
+  });
+
+  it("에필로그 차례에는 에필로그의 QR 위치 힌트를 돌려준다", async () => {
+    const session = activeSession({ currentStepOrder: FINAL_STEP.order });
+    const ctx = contextWith({
+      steps: [
+        INTRO_STEP,
+        { ...TEST_STEP, findScreen: { hint: "계단 옆 서가를 보세요" } },
+        { ...FINAL_STEP, findScreen: { hint: "책방지기에게 물어보세요" } },
+        CLOSING_STEP,
+      ],
+      sessions: [session],
+    });
+    await markSolved(ctx, session.id, TEST_STEP.id);
+
+    const result = await getPlayProgress(ctx, {
+      caseId: TEST_CASE.id,
+      sessionTokens: [session.token],
+    });
+
+    expect(result).toMatchObject({
+      kind: "WAITING",
+      hints: [{ stepName: FINAL_STEP.name, text: "책방지기에게 물어보세요" }],
+    });
   });
 
   it("완료 후에는 완료 코드와 종결 내용을 돌려준다", async () => {

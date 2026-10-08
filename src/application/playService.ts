@@ -449,6 +449,7 @@ export type PlayProgressResult =
    * 다음 QR을 기다리는 중. `stamps`는 스탬프판 동그라미 칸 — 푼 문제에만 도장이 찍혀 있고,
    * `anyOrder`가 true면 남은 문제 QR을 아무 순서로나 찍으면 된다.
    * `findScreen`은 지금 찾을 단계에 관리자가 적어 둔 안내 문구(자유 진행에서는 없다).
+   * `hints`는 지금 찾을 QR의 위치 힌트 — 자유 진행에서는 아직 못 푼 문제 전부의 힌트다.
    */
   | {
       kind: "WAITING";
@@ -456,7 +457,18 @@ export type PlayProgressResult =
       anyOrder: boolean;
       stamps: StepStamp[];
       findScreen?: FindScreen;
+      hints: FindHint[];
     };
+
+/** 찾기 화면의 QR 위치 힌트 한 줄. 여러 개일 때 어느 QR 힌트인지 알 수 있게 이름을 붙인다. */
+export type FindHint = { stepName: string; text: string };
+
+function findHintsOf(steps: Step[]): FindHint[] {
+  return steps.flatMap((step) => {
+    const text = step.findScreen?.hint?.trim();
+    return text ? [{ stepName: step.name, text }] : [];
+  });
+}
 
 /** `/play/$caseId` 화면이 지금 무엇을 보여줘야 하는지 판단한다. */
 export async function getPlayProgress(
@@ -501,10 +513,14 @@ export async function getPlayProgress(
       anyOrder: false,
       stamps,
       findScreen: epilogue.findScreen,
+      hints: findHintsOf([epilogue]),
     };
   }
 
-  if (tour.options.freeOrder) return { kind: "WAITING", stepName: "", anyOrder: true, stamps };
+  if (tour.options.freeOrder) {
+    const unsolved = tour.plan.problems.filter((problem) => !tour.solved.has(problem.id));
+    return { kind: "WAITING", stepName: "", anyOrder: true, stamps, hints: findHintsOf(unsolved) };
+  }
 
   return {
     kind: "WAITING",
@@ -512,5 +528,6 @@ export async function getPlayProgress(
     anyOrder: false,
     stamps,
     findScreen: current?.findScreen,
+    hints: findHintsOf(current ? [current] : []),
   };
 }

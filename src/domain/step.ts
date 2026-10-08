@@ -72,7 +72,12 @@ export type StepKind = "INTRO" | "QR" | "FINAL" | "CLOSING";
  * 이 단계의 QR을 찾을 차례에 보여줄 화면 문구. 비어 있으면 기본 문구("다음은 QR 02 차례예요")를 쓴다.
  * 예: 에필로그 QR은 붙여두지 않고 책방지기가 건네줄 때 "책방지기에게 받아주세요"로 바꾼다.
  */
-export type FindScreen = { title?: string; guide?: string };
+export type FindScreen = {
+  title?: string;
+  guide?: string;
+  /** 이 QR이 있는 곳을 알려주는 힌트. 찾기 화면의 힌트 칸에 보인다. */
+  hint?: string;
+};
 
 export type Step = {
   id: string;

@@ -302,10 +302,34 @@ describe("StepEditorForm > QR 찾기 화면 문구", () => {
     });
   });
 
+  it("QR 위치 힌트를 채우면 찾기 화면 문구와 함께 저장된다", async () => {
+    let submitted: StepEditorSubmit | undefined;
+
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="QR"
+          submitLabel="저장"
+          defaultValues={{ ...EMPTY_STEP_EDITOR_VALUES, name: "QR 01", title: "제목" }}
+          onSubmit={async (payload) => {
+            submitted = payload;
+          }}
+        />,
+      ),
+      actions.fill(query.textbox("정답"), "사과"),
+      actions.fill(query.textbox("QR 위치 힌트"), "계단 옆 서가를 보세요"),
+      actions.click(query.button("저장")),
+    );
+
+    expect(submitted && toStepRequestBody(submitted).findScreen).toEqual({
+      hint: "계단 옆 서가를 보세요",
+    });
+  });
+
   it("비워 두면 문구를 저장하지 않는다", () => {
     const body = toStepRequestBody({
       kind: "QR",
-      values: { ...EMPTY_STEP_EDITOR_VALUES, findTitle: " ", findGuide: "" },
+      values: { ...EMPTY_STEP_EDITOR_VALUES, findTitle: " ", findGuide: "", findHint: "" },
     } as StepEditorSubmit);
 
     expect(body.findScreen).toBeUndefined();

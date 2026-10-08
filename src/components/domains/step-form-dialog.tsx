@@ -92,6 +92,7 @@ export function EditStepDialog({ caseId, stepId }: { caseId?: string; stepId: st
           wrongMessage: step.wrongMessage ?? "",
           findTitle: step.findScreen?.title ?? "",
           findGuide: step.findScreen?.guide ?? "",
+          findHint: step.findScreen?.hint ?? "",
           revealText: step.reveal.text ?? "",
           revealMedia: step.reveal.media,
           revealPreset: step.reveal.preset ?? "FADE_UP",

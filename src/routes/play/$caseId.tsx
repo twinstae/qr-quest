@@ -97,6 +97,7 @@ function PlayScreen({ caseId }: { caseId: string }) {
         anyOrder={progress.anyOrder}
         title={progress.findScreen?.title}
         guide={progress.findScreen?.guide}
+        hints={progress.hints}
         onScanned={(target) => {
           if (target.kind === "start") {
             navigate({ to: "/s/$entryToken", params: { entryToken: target.entryToken } });

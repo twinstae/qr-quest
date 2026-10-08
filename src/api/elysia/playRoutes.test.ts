@@ -353,4 +353,22 @@ describe("GET /api/play/cases/:caseId/progress", () => {
 
     expect(await response.json()).toMatchObject({ kind: "WAITING", findScreen });
   });
+
+  it("지금 찾을 QR의 위치 힌트를 내려준다", async () => {
+    const app = appWith([
+      INTRO_STEP,
+      { ...TEST_STEP, findScreen: { hint: "계단 옆 서가를 보세요" } },
+      FINAL_STEP,
+    ]);
+    const session = await startSession(app);
+    const client = rawClient(app);
+    await client.post(`/api/play/steps/${INTRO_STEP.id}/advance`, {}, session.token);
+
+    const response = await client.get(`/api/play/cases/${TEST_CASE.id}/progress`, session.token);
+
+    expect(await response.json()).toMatchObject({
+      kind: "WAITING",
+      hints: [{ stepName: TEST_STEP.name, text: "계단 옆 서가를 보세요" }],
+    });
+  });
 });

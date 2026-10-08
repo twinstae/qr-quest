@@ -231,6 +231,8 @@ export function createPlayRoutes(ctx: AppContext) {
               stamps: t.Array(StampSchema),
               // 지금 찾을 단계에 관리자가 적어 둔 찾기 화면 문구(자유 진행에서는 없다).
               findScreen: t.Optional(FindScreenSchema),
+              // 지금 찾을 QR의 위치 힌트 — 자유 진행이면 아직 못 푼 문제들의 힌트.
+              hints: t.Array(t.Object({ stepName: t.String(), text: t.String() })),
             }),
           ]),
         },

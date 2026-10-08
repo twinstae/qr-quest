@@ -127,6 +127,7 @@ export const RevealSchema = t.Object({
 export const FindScreenSchema = t.Object({
   title: t.Optional(t.String()),
   guide: t.Optional(t.String()),
+  hint: t.Optional(t.String()),
 });
 
 export const StepFieldsSchema = {

@@ -94,6 +94,7 @@ const StepEditorEntries = {
   wrongMessage: v.string(),
   findTitle: v.string(),
   findGuide: v.string(),
+  findHint: v.string(),
   revealText: v.string(),
   revealMedia: v.optional(ImageValueSchema),
   revealPreset: v.picklist(REVEAL_PRESETS),
@@ -132,6 +133,7 @@ export const EMPTY_STEP_EDITOR_VALUES: StepEditorDefaultValues = {
   wrongMessage: "",
   findTitle: "",
   findGuide: "",
+  findHint: "",
   revealText: "",
   revealMedia: undefined,
   revealPreset: "FADE_UP",
@@ -292,13 +294,15 @@ export function mediaFromValue(
 }
 
 /** 찾기 화면 문구 → 저장 값. 둘 다 비면 저장하지 않아 화면이 기본 문구를 쓴다. */
-function toFindScreen(values: Pick<StepEditorFormValues, "findTitle" | "findGuide">) {
+function toFindScreen(values: Pick<StepEditorFormValues, "findTitle" | "findGuide" | "findHint">) {
   const title = values.findTitle.trim();
   const guide = values.findGuide.trim();
-  if (!title && !guide) return undefined;
+  const hint = values.findHint.trim();
+  if (!title && !guide && !hint) return undefined;
   const findScreen: FindScreen = {};
   if (title) findScreen.title = title;
   if (guide) findScreen.guide = guide;
+  if (hint) findScreen.hint = hint;
   return findScreen;
 }
 
@@ -572,6 +576,12 @@ export function StepEditorForm({
                   name="findGuide"
                   label="찾기 화면 안내"
                   placeholder="예: 큐알을 이미 받으셨다면 아래 버튼을 눌러주세요"
+                />
+                <SimpleInput
+                  name="findHint"
+                  label="QR 위치 힌트"
+                  hint="찾기 화면의 힌트 칸에 보여요. 문제를 풀 때 보는 힌트와는 달라요."
+                  placeholder="예: 계단 옆 서가 두 번째 칸을 살펴보세요"
                 />
               </Fieldset.Content>
             </Fieldset.Root>
