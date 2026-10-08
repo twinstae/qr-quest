@@ -46,7 +46,7 @@ export function CompletionScreen({
         {closingMedia && <StepMedia media={closingMedia} />}
         <Card.Header alignItems="center">
           <Card.Title textStyle="xl">{closingTitle ?? "사건 종결"}</Card.Title>
-          {closingBody && <Card.Description>{closingBody}</Card.Description>}
+          {closingBody && <Card.Description whiteSpace="pre-line">{closingBody}</Card.Description>}
         </Card.Header>
         {completionCode && (
           <Card.Body width="full">

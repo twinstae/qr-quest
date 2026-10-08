@@ -114,4 +114,34 @@ describe("StepPreviewPanel", () => {
       assertions.not.visible(query.within(preview, query.button("A. 창가 쪽 서가"))),
     );
   });
+
+  it("참가자 화면과 같은 카드를 쓴다 — 힌트는 누르기 전까지 감춰져 있다", async () => {
+    await runSiheom(
+      given.render(editor),
+      actions.fill(query.textbox("힌트"), "표지 안을 보세요"),
+      assertions.not.visible(query.within(preview, query.status("힌트"))),
+      actions.click(query.within(preview, query.button("힌트 보기"))),
+      assertions.textContent(query.within(preview, query.status("힌트")), "표지 안을 보세요"),
+    );
+  });
+
+  it("해설 아래에 참가자 화면처럼 다음 단서 찾기 버튼이 보인다(누를 수는 없다)", async () => {
+    await runSiheom(
+      given.render(editor),
+      assertions.disabled(query.within(preview, query.button("다음 단서 찾기"))),
+    );
+  });
+
+  it("문제와 해설의 줄바꿈이 미리보기에도 그대로 보인다", async () => {
+    await runSiheom(
+      given.render(editor),
+      actions.fill(query.textbox("문제 (선택)"), "문제 첫 줄\n문제 둘째 줄"),
+      actions.fill(query.textbox("문구"), "해설 첫 줄\n해설 둘째 줄"),
+      assertions.visible(query.within(preview, query.button("다음 단서 찾기"))),
+    );
+
+    const region = screen.getByRole("region", { name: "참가자 화면 미리보기" });
+    expect(region.innerText).toContain("문제 첫 줄\n문제 둘째 줄");
+    expect(region.innerText).toContain("해설 첫 줄\n해설 둘째 줄");
+  });
 });

@@ -80,7 +80,9 @@ export function RevealPanel({
     >
       {media && <StepMedia media={media} />}
       <Card.Header alignItems="center">
-        <Card.Title textStyle="xl">{text}</Card.Title>
+        <Card.Title textStyle="xl" whiteSpace="pre-line">
+          {text}
+        </Card.Title>
       </Card.Header>
       {folded && (
         <button type="button" onClick={() => setUnfolded(true)} className={foldButtonClass}>

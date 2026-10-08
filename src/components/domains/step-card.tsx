@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronDown, Eye, Lightbulb } from "lucide-react";
 import * as v from "valibot";
 
@@ -83,7 +83,7 @@ function HintDisclosure({ requestHint }: { requestHint: () => Promise<string | u
         </Badge>
       </Collapsible.Trigger>
       <Collapsible.Content>
-        <Card.Description role="status" aria-label="힌트" pt="2">
+        <Card.Description role="status" aria-label="힌트" pt="2" whiteSpace="pre-line">
           {loading ? "불러오는 중…" : hint}
         </Card.Description>
       </Collapsible.Content>
@@ -122,10 +122,13 @@ export function ChoiceFields({
   choices,
   multiple,
   onSubmit,
+  disabled = false,
 }: {
   choices: Choice[];
   multiple: boolean;
   onSubmit: (submission: AnswerSubmission) => Promise<void>;
+  /** 관리자 미리보기 — 모양은 같지만 누를 수 없다. */
+  disabled?: boolean;
 }) {
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -147,11 +150,13 @@ export function ChoiceFields({
           justifyContent="flex-start"
           width="full"
           // 버튼 기본값(한 줄·고정 높이)이면 긴 보기가 잘린다 — 줄을 바꾸고 높이를 늘린다.
-          whiteSpace="normal"
+          // 관리자가 넣은 줄바꿈도 그대로 보여준다.
+          whiteSpace="pre-line"
           height="auto"
           minHeight="11"
           py="2.5"
           textAlign="start"
+          disabled={disabled}
           onClick={() => toggle(choice.id)}
         >
           {choice.id}. {choice.label}
@@ -161,7 +166,7 @@ export function ChoiceFields({
         type="button"
         size="lg"
         width="full"
-        disabled={selected.length === 0}
+        disabled={disabled || selected.length === 0}
         onClick={() => onSubmit({ type: "CHOICE", choiceIds: selected })}
       >
         제출하기
@@ -253,17 +258,19 @@ function AnswerFields({
   }
 }
 
-export function StepCardForm({
+/**
+ * 문제 카드의 겉모습. 참가자 화면(StepCardForm)과 관리자 미리보기가 같은 카드를 써서
+ * 미리보기와 실제 화면이 어긋나지 않는다. 정답 입력은 children으로 받는다.
+ */
+export function StepCardView({
   step,
-  onSubmit,
   onRequestHint,
+  children,
 }: {
   step: StepCardData;
-  onSubmit: (submission: AnswerSubmission) => Promise<void>;
   onRequestHint: () => Promise<string | undefined>;
+  children?: ReactNode;
 }) {
-  const answerSpec = step.answerSpec;
-
   return (
     <Card.Root variant="elevated" width="full" maxWidth="sm">
       {step.media && <StepMedia media={step.media} />}
@@ -274,23 +281,48 @@ export function StepCardForm({
             {step.name}
           </span>
         </Flex>
-        {step.body && <Card.Description>{step.body}</Card.Description>}
+        {/* 관리자가 쓴 글은 줄바꿈까지 그대로 보여준다(문제·본문이 몇 줄씩 길다). */}
+        {step.body && <Card.Description whiteSpace="pre-line">{step.body}</Card.Description>}
         {step.hasHint && <HintDisclosure requestHint={onRequestHint} />}
         {step.debugAnswer && <AnswerDisclosure answer={step.debugAnswer} />}
       </Card.Header>
       <Card.Body>
         {step.question && (
-          <p className={css({ textStyle: "md", fontWeight: "medium", mb: "3" })}>{step.question}</p>
+          <p
+            className={css({
+              textStyle: "md",
+              fontWeight: "medium",
+              mb: "3",
+              whiteSpace: "pre-line",
+            })}
+          >
+            {step.question}
+          </p>
         )}
-
-        {answerSpec && (
-          <AnswerFields
-            answerSpec={answerSpec}
-            placeholder={step.placeholder}
-            onSubmit={onSubmit}
-          />
-        )}
+        {children}
       </Card.Body>
     </Card.Root>
+  );
+}
+
+export function StepCardForm({
+  step,
+  onSubmit,
+  onRequestHint,
+}: {
+  step: StepCardData;
+  onSubmit: (submission: AnswerSubmission) => Promise<void>;
+  onRequestHint: () => Promise<string | undefined>;
+}) {
+  return (
+    <StepCardView step={step} onRequestHint={onRequestHint}>
+      {step.answerSpec && (
+        <AnswerFields
+          answerSpec={step.answerSpec}
+          placeholder={step.placeholder}
+          onSubmit={onSubmit}
+        />
+      )}
+    </StepCardView>
   );
 }

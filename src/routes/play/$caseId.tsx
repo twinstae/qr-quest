@@ -66,7 +66,7 @@ function PlayScreen({ caseId }: { caseId: string }) {
           {step.media && <StepMedia media={step.media} />}
           <Card.Header>
             <Card.Title textStyle="xl">{step.title}</Card.Title>
-            {step.body && <Card.Description>{step.body}</Card.Description>}
+            {step.body && <Card.Description whiteSpace="pre-line">{step.body}</Card.Description>}
           </Card.Header>
           <Card.Footer>
             <Button

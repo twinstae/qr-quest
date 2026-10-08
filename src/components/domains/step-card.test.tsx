@@ -229,3 +229,38 @@ describe("StepCardForm > 긴 보기", () => {
     expect(button.getBoundingClientRect().height).toBeGreaterThan(60);
   });
 });
+
+/** 화면에 그려진 글자(innerText) — 줄바꿈이 무시되면 줄바꿈 대신 공백이 나온다. */
+function renderedText(text: string): string | undefined {
+  const firstLine = text.split("\n")[0] ?? "";
+  const element = [...document.querySelectorAll<HTMLElement>("p, h2, h3, div, span, button")]
+    .filter((candidate) => candidate.textContent?.includes(firstLine))
+    .at(-1);
+  return element?.innerText;
+}
+
+describe("StepCardForm > 줄바꿈", () => {
+  it("관리자가 넣은 줄바꿈을 본문·문제·보기에서 그대로 보여준다", async () => {
+    await runSiheom(
+      given.render(
+        <StepCardForm
+          step={baseStep({
+            body: "본문 첫 줄\n본문 둘째 줄",
+            question: "문제 첫 줄\n문제 둘째 줄",
+            answerSpec: {
+              type: "SINGLE_CHOICE",
+              choices: [{ id: "A", label: "보기 첫 줄\n보기 둘째 줄" }],
+            },
+          })}
+          onSubmit={noSubmit}
+          onRequestHint={noHint}
+        />,
+      ),
+      assertions.visible(query.heading("첫 번째 문제")),
+    );
+
+    expect(renderedText("본문 첫 줄\n본문 둘째 줄")).toBe("본문 첫 줄\n본문 둘째 줄");
+    expect(renderedText("문제 첫 줄\n문제 둘째 줄")).toBe("문제 첫 줄\n문제 둘째 줄");
+    expect(renderedText("보기 첫 줄\n보기 둘째 줄")).toBe("A. 보기 첫 줄\n보기 둘째 줄");
+  });
+});
