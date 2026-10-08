@@ -96,7 +96,7 @@ export function StepPreviewPanel({ kind }: { kind: StepKind }) {
       </div>
 
       <div>
-        <p className={sectionLabelClass}>정답을 맞히면 보이는 단서</p>
+        <p className={sectionLabelClass}>정답을 맞히면 보이는 해설</p>
         {/* key에 프리셋을 넣어 프리셋을 바꿀 때마다 연출이 다시 돌게 한다 —
             연출은 마운트 때 한 번만 재생되므로 key가 바뀌지 않으면 두 번째부터 볼 수 없다. */}
         <RevealPanel

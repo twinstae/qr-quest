@@ -163,6 +163,23 @@ describe("StepEditorForm > 정답 검증", () => {
   });
 });
 
+describe("StepEditorForm > 정답 시 공개할 해설", () => {
+  it("정답을 맞히면 보여줄 내용은 단서가 아니라 해설이라고 부른다", async () => {
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="QR"
+          submitLabel="저장"
+          defaultValues={EMPTY_STEP_EDITOR_VALUES}
+          onSubmit={noSubmit}
+        />,
+      ),
+      assertions.visible(query.group("정답 시 공개할 해설 (선택)")),
+      assertions.not.visible(query.group("정답 시 공개할 단서 (선택)")),
+    );
+  });
+});
+
 describe("StepEditorForm > 공개 연출", () => {
   it("기본값은 FADE_UP·효과음 없음이다", async () => {
     let submitted: StepEditorSubmit | undefined;

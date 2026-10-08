@@ -611,7 +611,7 @@ export function StepEditorForm({
           )}
 
           <Fieldset.Root>
-            <Fieldset.Legend>정답 시 공개할 단서 (선택)</Fieldset.Legend>
+            <Fieldset.Legend>정답 시 공개할 해설 (선택)</Fieldset.Legend>
             <Fieldset.Content>
               <SimpleInput name="revealText" label="문구" />
               <SimpleImageUpload name="revealMedia" label="이미지" allowVideo />
