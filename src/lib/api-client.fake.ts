@@ -3,6 +3,7 @@
 //
 // 업로드는 서버와 같은 도메인 규칙(validateMediaUpload)으로 판단하므로, 413/415 응답 모양과
 // 문구가 실제와 같다. 그 밖의 호출은 { data: null, error: null }을 돌려준다.
+import type { PlayProgressResult, SubmitAnswerResult } from "@/application/playService.ts";
 import { FileTooLargeError, UnsupportedFileTypeError } from "@/domain/errors.ts";
 import {
   DEFAULT_MAX_IMAGE_BYTES,
@@ -17,10 +18,16 @@ export const fakeServer = {
   maxImageBytes: DEFAULT_MAX_IMAGE_BYTES,
   maxVideoBytes: DEFAULT_MAX_VIDEO_BYTES,
   presigned: [] as PresignInput[],
+  /** `GET /play/cases/:caseId/progress`가 돌려줄 진행. */
+  playProgress: undefined as PlayProgressResult | undefined,
+  /** `POST /play/steps/:id/submit-answer`가 돌려줄 결과. */
+  submitAnswerResult: undefined as SubmitAnswerResult | undefined,
   reset() {
     fakeServer.maxImageBytes = DEFAULT_MAX_IMAGE_BYTES;
     fakeServer.maxVideoBytes = DEFAULT_MAX_VIDEO_BYTES;
     fakeServer.presigned = [];
+    fakeServer.playProgress = undefined;
+    fakeServer.submitAnswerResult = undefined;
   },
 };
 
@@ -61,7 +68,19 @@ async function presign(input: PresignInput) {
   };
 }
 
-const IMPLEMENTED: Record<string, unknown> = { uploads: { presign: { post: presign } } };
+const IMPLEMENTED: Record<string, unknown> = {
+  uploads: { presign: { post: presign } },
+  play: {
+    steps: () => ({
+      "submit-answer": {
+        post: async () => ({ data: fakeServer.submitAnswerResult ?? null, error: null }),
+      },
+    }),
+    cases: () => ({
+      progress: { get: async () => ({ data: fakeServer.playProgress ?? null, error: null }) },
+    }),
+  },
+};
 
 /** 구현한 경로는 그대로, 나머지 호출 체인은 빈 응답으로 흉내 낸다. */
 function chain(implemented: unknown): unknown {

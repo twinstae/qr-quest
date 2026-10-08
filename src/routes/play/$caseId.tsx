@@ -18,10 +18,8 @@ export const Route = createFileRoute("/play/$caseId")({
   component: RouteComponent,
   loader: async ({ params, context }) => {
     await Promise.all([
-      context.queryClient.query({
-        ...playProgressQueryOptions(params.caseId),
-        staleTime: "static",
-      }),
+      // "static"을 쓰지 않는다 — 정답·시작 때 무효화한 진행은 다시 받아야 한다(static은 무효화도 무시한다).
+      context.queryClient.query(playProgressQueryOptions(params.caseId)),
       context.queryClient.query({ ...caseThemeQueryOptions(params.caseId), staleTime: "static" }),
     ]);
   },

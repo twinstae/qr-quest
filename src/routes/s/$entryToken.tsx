@@ -6,6 +6,7 @@ import { CompletionScreen } from "@/components/domains/completion-screen.tsx";
 import { StartScreenCard } from "@/components/domains/start-screen-card.tsx";
 import { startOrResumeSession } from "@/lib/play-session";
 import { caseByEntryQueryOptions } from "@/queries/cases.ts";
+import { playKeys } from "@/queries/play.ts";
 import { caseThemeQueryOptions } from "@/queries/themes.ts";
 import { VStack } from "styled-system/jsx";
 
@@ -20,6 +21,8 @@ export const Route = createFileRoute("/s/$entryToken")({
       startOrResumeSession(params.entryToken).catch(() => undefined),
     ]);
     if (!session) throw notFound();
+    // 시작(또는 이어하기)하면 진행이 바뀐다 — 시작 전에 받아 둔 진행 캐시를 버리게 한다.
+    await context.queryClient.invalidateQueries({ queryKey: playKeys.progress(session.caseId) });
     if (caseData) {
       await context.queryClient.query({
         ...caseThemeQueryOptions(caseData.id),

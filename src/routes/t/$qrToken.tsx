@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -6,11 +6,11 @@ import { CaseThemedScreen } from "@/components/domains/case-themed-screen.tsx";
 import { CompletionScreen } from "@/components/domains/completion-screen.tsx";
 import { GuidanceScreen } from "@/components/domains/guidance-screen.tsx";
 import { StepExperience, type StepExperienceState } from "@/components/domains/step-experience.tsx";
-import type { HintResult, PlayStepResult, SubmitAnswerResult } from "@/application/playService.ts";
+import type { HintResult, PlayStepResult } from "@/application/playService.ts";
 import { getApiClient } from "@/lib/api-client";
 import { unwrapPlayResult } from "@/lib/play-client";
 import { useWakeLock } from "@/lib/use-wake-lock";
-import { playStepQueryOptions } from "@/queries/play.ts";
+import { playStepQueryOptions, submitPlayAnswer } from "@/queries/play.ts";
 import { caseThemeQueryOptions } from "@/queries/themes.ts";
 
 export const Route = createFileRoute("/t/$qrToken")({
@@ -46,6 +46,7 @@ function RouteComponent() {
 function StepScreen({ qrToken }: { qrToken: string }) {
   const { data: result } = useQuery(playStepQueryOptions(qrToken));
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [state, setState] = useState<StepExperienceState>({ status: "idle" });
   useWakeLock(result?.kind === "ALLOWED" && state.status !== "correct");
 
@@ -75,15 +76,7 @@ function StepScreen({ qrToken }: { qrToken: string }) {
       step={step}
       state={state}
       onSubmit={async (submission) => {
-        const client = getApiClient();
-        const response = await client.play
-          .steps({ id: step.id })
-          ["submit-answer"].post(
-            submission.type === "CHOICE"
-              ? { choiceIds: submission.choiceIds }
-              : { answer: submission.value },
-          );
-        const outcome = unwrapPlayResult<SubmitAnswerResult>(response);
+        const outcome = await submitPlayAnswer(queryClient, step, submission);
 
         setState(
           outcome.kind === "CORRECT"
