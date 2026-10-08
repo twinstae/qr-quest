@@ -19,6 +19,11 @@ export type StepExperienceState =
   /** `completed`: 이 정답으로 완주했다(에필로그까지 끝남) — 다음 단서가 없으니 완료로 안내한다. */
   | { status: "correct"; reveal: Reveal; message: string; completed?: boolean };
 
+/** 정답 화면의 다음 버튼 문구. 완주했으면(에필로그까지 끝남) 다음 단서가 없으니 완료로 안내한다. */
+export function continueLabel(completed: boolean): string {
+  return completed ? "완료하기" : "다음 단서 찾기";
+}
+
 export function StepExperience({
   step,
   state,
@@ -60,7 +65,7 @@ export function StepExperience({
           media={state.reveal.media}
         />
         <Button size="lg" width="full" maxWidth="sm" onClick={onContinue}>
-          {state.completed ? "완료하기" : "다음 단서 찾기"}
+          {continueLabel(state.completed === true)}
         </Button>
       </VStack>
     );

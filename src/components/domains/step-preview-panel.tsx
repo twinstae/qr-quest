@@ -8,6 +8,7 @@ import {
   type StepEditorFormValues,
 } from "@/components/domains/step-editor-form.tsx";
 import { RevealPanel } from "@/components/domains/reveal-panel.tsx";
+import { continueLabel } from "@/components/domains/step-experience.tsx";
 import { PhoneMockup } from "@/components/domains/phone-mockup.tsx";
 import { QrScanPanel } from "@/components/domains/qr-scan-panel.tsx";
 import { ChoiceFields, StepCardView } from "@/components/domains/step-card.tsx";
@@ -117,8 +118,9 @@ export function StepPreviewPanel({ kind }: { kind: StepKind }) {
               text={revealText}
               media={revealMedia}
             />
+            {/* 에필로그(FINAL)를 맞히면 완주라 참가자 화면에는 [완료하기]가 나온다. */}
             <Button size="lg" width="full" maxWidth="sm" disabled>
-              다음 단서 찾기
+              {continueLabel(kind === "FINAL")}
             </Button>
           </>
         )}

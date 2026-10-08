@@ -173,4 +173,21 @@ describe("StepPreviewPanel", () => {
       assertions.disabled(query.within(preview, query.button("QR 코드 찍기"))),
     );
   });
+
+  it("에필로그는 참가자 화면처럼 해설 아래에 다음 단서 대신 완료하기가 보인다", async () => {
+    await runSiheom(
+      given.render(
+        <StepEditorForm
+          kind="FINAL"
+          submitLabel="저장"
+          defaultValues={EMPTY_STEP_EDITOR_VALUES}
+          onSubmit={noSubmit}
+          preview={<StepPreviewPanel kind="FINAL" />}
+        />,
+      ),
+      actions.click(query.within(preview, query.button("해설"))),
+      assertions.disabled(query.within(preview, query.button("완료하기"))),
+      assertions.not.visible(query.within(preview, query.button("다음 단서 찾기"))),
+    );
+  });
 });
